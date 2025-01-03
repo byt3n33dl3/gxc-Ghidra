@@ -125,7 +125,7 @@ for Eclipse.  The plugin and its corresponding instructions can be found within 
 `Extensions/Eclipse/GhidraDev/` or at [this link][ghidradev].  Alternatively, Visual Studio Code may
 be used to edit scripts by clicking the Visual Studio Code icon in the Script Manager.
 Fully-featured Visual Studio Code projects can be created from a Ghidra CodeBrowser window at 
-_Tools -> Create VSCode Module project_.
+_Tools and Create VSCode Module project_.
 
 **NOTE:** Both the *GhidraDev* plugin for Eclipse and Visual Studio Code integrations only support 
 developing against fully built Ghidra installations which can be downloaded from the
@@ -199,6 +199,18 @@ Dyldcache, DEX, ART, Java class, Android boot image, Plan9 executables, Amiga HU
 ZIMG, MBN/SBL bootloader, ELF coredump, MDMP (Windows minidump), PDP11, XTAC, CGC,
 WASM (WebAssembly binary), Commodore VICE emulator, QNX, WAD, OFF, TIC-80,
 GB/GBA, NDS and N3DS, and mount several filesystems like NTFS, FAT, HFS+, EXT.
+
+<p align="center">
+    <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="Ghidra/Features/Base/src/main/resources/images/Seal_of_the_U.S._National_Security_Agency.svg">
+        <img src="Ghidra/Features/Base/src/main/resources/images/Seal_of_the_U.S._National_Security_Agency.svg" alt="ghidra" width='350' />
+    </picture>
+</p>
+
+<div align="center">
+<h2>National Security Agency</h2>
+Ghidra Contributors and Story
+<p></div>
 
 ## Contribute
 If you would like to contribute bug fixes, improvements, and new features back to Ghidra, please 
