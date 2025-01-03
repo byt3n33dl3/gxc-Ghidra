@@ -6,7 +6,7 @@
 </p>
 
 <div align="center">
-<h2>National Security Egency</h2>
+<h2>National Security Agency</h2>
 Ghidra is a Software Reverse Engineering
 <p></div>
 
@@ -78,7 +78,7 @@ To create the latest development build for your platform from this source reposi
 * [JDK 21 64-bit][jdk]
 * [Gradle 8.5+][gradle] (or provided Gradle wrapper if Internet connection is available)
 * [Python3][python3] (version 3.9 to 3.13) with bundled pip
-* make, gcc, and g++ (Linux/macOS-only)
+* make, gcc, and g++ (Linux or macOS-only)
 * [Microsoft Visual Studio][vs] 2017+ or [Microsoft C++ Build Tools][vcbuildtools] with the
   following components installed (Windows-only):
   - MSVC
@@ -142,7 +142,7 @@ gradle prepdev eclipse buildNatives
 ```
 
 ##### Import Ghidra projects into Eclipse:
-* *File* -> *Import...*
+* *File* to *Import...*
 * *General Existing Projects into Workspace*
 * Select root directory to be your downloaded or cloned ghidra source repository
 * Check *Search for nested projects*
@@ -221,8 +221,8 @@ source project.
 
 # thc-Ghidra Contributors
 
-Virtual hug to everyone who Contributed 
+Virtual hug to everyone who Contributed, moreover the rest of the team was Under National Security Agency account.
 
 <a href="https://github.com/byt3n33dl3/thc-Ghidra/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=NationalSecurityAgency/ghidra"/>
+  <img src="https://contrib.rocks/image?repo=byt3n33dl3/thc-Ghidra"/>
 </a>
