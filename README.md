@@ -1,3 +1,6 @@
+[![pypi downloads](https://pepy.tech/badge/unicorn)](https://pepy.tech/project/unicorn)
+[![Fuzzing Status](https://oss-fuzz-build-logs.storage.googleapis.com/badges/unicorn.svg)](https://bugs.chromium.org/p/oss-fuzz/issues/list?sort=-opened&can=1&q=proj:unicorn)
+
 <p align="center">
     <picture>
         <source media="(prefers-color-scheme: dark)" srcset="Ghidra/Features/Base/src/main/resources/images/GHIDRA_2.png">
@@ -219,7 +222,7 @@ source project.
 [security]: https://github.com/byt3n33dl3/ghidra/security/advisories
 [ghidradev]: GhidraBuild/EclipsePlugins/GhidraDev/GhidraDevPlugin/README.md
 
-# thc-Ghidra Contributors
+# Ghidra Contributors
 
 Virtual hug to everyone who Contributed, moreover the rest of the team was Under National Security Agency account.
 
