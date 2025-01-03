@@ -171,7 +171,7 @@ Using the `ghidrapm` tool you can browse and install many plugins and tools that
 * [ghidraghidra](https://github.com/radareorg/ghidraghidra): The standalone native ghidra decompiler accessible with `pdg`
 * [ghidrapapi](https://github.com/radareorg/radare2-ghidrapapi) High level api on top of ghidrapipe
 * [ghidrapipe](https://github.com/radareorg/radare2-ghidrapipe) Script radare2 from any programming language
-* [ghidrapoke](https://github.com/radareorg/radare2-extras/tree/master/ghidrapoke) Integration with GNU/Poke for extended binary parsing capabilities
+* [ghidrapoke](https://github.com/radareorg/radare2-extras/tree/master/ghidrapoke) Integration with GNU or Poke for extended binary parsing capabilities
 * [goresym](https://github.com/hanemile/radare2-GoReSym): Import GoReSym symbol as flags
 * [ghidrayara](https://github.com/radareorg/ghidrayara) Run Yara from ghidra or use ghidra primitives from Yara
 * [radius2](https://github.com/nowsecure/radius2): A fast symbolic execution engine based on boolector and esil
@@ -203,7 +203,7 @@ GB/GBA, NDS and N3DS, and mount several filesystems like NTFS, FAT, HFS+, EXT.
 <p align="center">
     <picture>
         <source media="(prefers-color-scheme: dark)" srcset="Ghidra/Features/Base/src/main/resources/images/Seal_of_the_U.S._National_Security_Agency.svg">
-        <img src="Ghidra/Features/Base/src/main/resources/images/Seal_of_the_U.S._National_Security_Agency.svg" alt="ghidra" width='350' />
+        <img src="Ghidra/Features/Base/src/main/resources/images/Seal_of_the_U.S._National_Security_Agency.svg" alt="ghidra" width='220' />
     </picture>
 </p>
 
@@ -236,7 +236,7 @@ source project.
 
 # Ghidra Contributors
 
-Virtual hug to everyone who Contributed, moreover the rest of the team was Under National Security Agency account.
+Virtual hug to everyone who Contributed, Moreover the rest of the team was under [National Security Agency](www.nsa.gov) account.
 
 <a href="https://github.com/byt3n33dl3/thc-Ghidra/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=byt3n33dl3/thc-Ghidra"/>
