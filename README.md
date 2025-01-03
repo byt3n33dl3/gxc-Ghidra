@@ -1,6 +1,22 @@
-<img src="Ghidra/Features/Base/src/main/resources/images/GHIDRA_3.png" width="400">
+<p align="center">
+    <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="Ghidra/Features/Base/src/main/resources/images/GHIDRA_2.png">
+        <img src="Ghidra/Features/Base/src/main/resources/images/GHIDRA_2.png" alt="ghidra" width='350' />
+    </picture>
+</p>
 
-# Ghidra Software Reverse Engineering Framework
+<div align="center">
+<h2>National Security Egency</h2>
+Ghidra is a Software Reverse Engineering
+<p></div>
+
+<p align="center">
+  <a href="#ghidra">About</a> •
+  <a href="#the-expand-update">Update</a> •
+  <a href="#developer">NSA</a>
+</p>
+
+# Ghidra 
 
 Ghidra is a software reverse engineering (SRE) framework created and maintained by the 
 [National Security Agency][nsa] Research Directorate. This framework includes a suite of 
@@ -16,6 +32,19 @@ on complex SRE efforts, and to provide a customizable and extensible SRE researc
 applied Ghidra SRE capabilities to a variety of problems that involve analyzing malicious code and 
 generating deep insights for SRE analysts who seek a better understanding of potential 
 vulnerabilities in networks and systems.
+
+## The `Expand` Update
+
+ghidra is a complete rewrite of radare. It provides a set of libraries, tools and
+plugins to ease reverse engineering tasks. Distributed mostly under LGPLv3, and Apache 2.0 each plugin can have different licenses (see ghidra -L, rasm2 -L, ...).
+
+The radare project started as a simple command-line hexadecimal editor focused
+on forensics. Today, ghidra is a featureful low-level command-line tool with
+support for scripting with the embedded Javascript interpreter or via ghidrapipe.
+
+ghidra can edit files on local hard drives, view kernel memory, and debug programs
+locally or via a remote gdb/windbg servers. ghidra's wide architecture support allows
+you to analyze, emulate, debug, modify, and disassemble any binary.
 
 If you are a U.S. citizen interested in projects like this, to develop Ghidra and other 
 cybersecurity tools for NSA to help protect our nation and its allies, consider applying for a 
@@ -62,8 +91,11 @@ To create the latest development build for your platform from this source reposi
 unzip ghidra-master
 cd ghidra-master
 ```
-**NOTE:** Instead of downloading the compressed source, you may instead want to clone the GitHub 
-repository: `git clone https://github.com/NationalSecurityAgency/ghidra.git`
+**NOTE:** Instead of downloading the compressed source, you may instead want to clone the GitHub repository: 
+
+```
+git clone https://github.com/byt3n33dl3/ghidra.git
+```
 
 ##### Download additional build dependencies into source repository:
 **NOTE:** If an Internet connection is available and you did not install Gradle, the following 
@@ -82,7 +114,7 @@ For more detailed information on building Ghidra, please read the [Developer Gui
 
 For issues building, please check the [Known Issues][known-issues] section for possible solutions.
 
-## Develop
+## Developer
 
 ### User Scripts and Extensions
 Ghidra installations support users writing custom scripts and extensions via the *GhidraDev* plugin 
@@ -111,7 +143,7 @@ gradle prepdev eclipse buildNatives
 
 ##### Import Ghidra projects into Eclipse:
 * *File* -> *Import...*
-* *General* | *Existing Projects into Workspace*
+* *General Existing Projects into Workspace*
 * Select root directory to be your downloaded or cloned ghidra source repository
 * Check *Search for nested projects*
 * Click *Finish*
@@ -121,11 +153,54 @@ When Eclipse finishes building the projects, Ghidra can be launched and debugged
 
 For more detailed information on developing Ghidra, please read the [Developer Guide][devguide]. 
 
+## Popular Plugins:
+
+Using the `ghidrapm` tool you can browse and install many plugins and tools that use radare2.
+
+* [esilsolve](https://github.com/radareorg/esilsolve): The symbolic execution plugin, based on esil and z3
+* [iaito](https://github.com/radareorg/iaito): The official Qt graphical interface
+* [keystone](https://github.com/radareorg/radare2-extras/tree/master/keystone) Assembler instructions using the Keystone library
+* [decai](https://github.com/radareorg/ghidraai) Decompiler based on AI
+* [ghidraai](https://github.com/radareorg/ghidraai) Run a Language Model in localhost with Llama inside ghidra!
+* [ghidradec](https://github.com/wargio/ghidradec-js): A decompiler based on ghidra written in JS, accessed with the `pdd` command
+* [ghidradiaphora](https://github.com/FernandoDoming/ghidradiaphora): [Diaphora](https://github.com/joxeankoret/diaphora)'s binary diffing engine on top of radare2
+* [ghidrafrida](https://github.com/nowsecure/ghidrafrida): The frida io plugin. Start ghidra with `ghidra frida://0` to use it
+* [ghidraghidra](https://github.com/radareorg/ghidraghidra): The standalone native ghidra decompiler accessible with `pdg`
+* [ghidrapapi](https://github.com/radareorg/radare2-ghidrapapi) High level api on top of ghidrapipe
+* [ghidrapipe](https://github.com/radareorg/radare2-ghidrapipe) Script radare2 from any programming language
+* [ghidrapoke](https://github.com/radareorg/radare2-extras/tree/master/ghidrapoke) Integration with GNU/Poke for extended binary parsing capabilities
+* [goresym](https://github.com/hanemile/radare2-GoReSym): Import GoReSym symbol as flags
+* [ghidrayara](https://github.com/radareorg/ghidrayara) Run Yara from ghidra or use ghidra primitives from Yara
+* [radius2](https://github.com/nowsecure/radius2): A fast symbolic execution engine based on boolector and esil
+* [ghidrasarif](https://github.com/radareorg/ghidrasarif) import/extend/export SARIF documents
+
+## Operating Systems
+
+Windows (since XP), Linux, Darwin, GNU/Hurd, Apple's {Mac,i,iPad,watch}OS, Android, Wasmer,
+[Dragonfly, Net, Free, Open] BSD, Z/OS, QNX, SerenityOS, Solaris, AIX, Haiku, Vinix, FirefoxOS.
+
+## Architectures
+
+i386, x86-64, Alpha, ARM, AVR, BPF, MIPS, PowerPC, SPARC, RISC-V, SH, m68k,
+S390, XCore, CR16, HPPA, ARC, Blackfin, Z80, H8/300, V810, PDP11, m680x, V850,
+CRIS, XAP (CSR), PIC, LM32, 8051, 6502, i4004, i8080, Propeller, EVM, OR1K
+Tricore, CHIP-8, LH5801, T8200, GameBoy, SNES, SPC700, MSP430, Xtensa, xcore,
+NIOS II, Java, Dalvik, Pickle, WebAssembly, MSIL, EBC, TMS320 (c54x, c55x,
+c55+, c64x), Hexagon, Brainfuck, Malbolge, whitespace, DCPU16, LANAI, lm32,
+MCORE, mcs96, RSP, SuperH-4, VAX, KVX, Am29000, LOONGARCH, JDH8, s390x, STM8.
+
+## File Formats
+
+ELF, Mach-O, Fatmach-O, PE, PE+, MZ, COFF, XCOFF, OMF, TE, XBE, SEP64, BIOS/UEFI, 
+Dyldcache, DEX, ART, Java class, Android boot image, Plan9 executables, Amiga HUNK,
+ZIMG, MBN/SBL bootloader, ELF coredump, MDMP (Windows minidump), PDP11, XTAC, CGC,
+WASM (WebAssembly binary), Commodore VICE emulator, QNX, WAD, OFF, TIC-80,
+GB/GBA, NDS and N3DS, and mount several filesystems like NTFS, FAT, HFS+, EXT.
+
 ## Contribute
 If you would like to contribute bug fixes, improvements, and new features back to Ghidra, please 
 take a look at our [Contributor Guide][contrib] to see how you can participate in this open 
 source project.
-
 
 [nsa]: https://www.nsa.gov
 [contrib]: CONTRIBUTING.md
@@ -133,13 +208,13 @@ source project.
 [installationguide]: GhidraDocs/InstallationGuide.md
 [known-issues]: DevGuide.md#known-issues
 [career]: https://www.intelligencecareers.gov/nsa
-[releases]: https://github.com/NationalSecurityAgency/ghidra/releases
+[releases]: https://github.com/byt3n33dl3/ghidra/releases
 [jdk]: https://adoptium.net/temurin/releases
 [gradle]: https://gradle.org/releases/
 [python3]: https://www.python.org/downloads/
 [vs]: https://visualstudio.microsoft.com/vs/community/
 [vcbuildtools]: https://visualstudio.microsoft.com/visual-cpp-build-tools/
 [eclipse]: https://www.eclipse.org/downloads/packages/
-[master]: https://github.com/NationalSecurityAgency/ghidra/archive/refs/heads/master.zip
-[security]: https://github.com/NationalSecurityAgency/ghidra/security/advisories
+[master]: https://github.com/byt3n33dl3/ghidra/archive/refs/heads/master.zip
+[security]: https://github.com/byt3n33dl3/ghidra/security/advisories
 [ghidradev]: GhidraBuild/EclipsePlugins/GhidraDev/GhidraDevPlugin/README.md

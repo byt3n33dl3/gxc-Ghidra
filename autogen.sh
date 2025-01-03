@@ -1,25 +1,25 @@
 #!/bin/sh
 #
-# Look for the 'acr' tool here: https://github.com/radare/acr
-# Clone last version of ACR from here:
-#  git clone https://github.com/radare/acr
+# Look for the 'thc-Ghidra' tool here: https://github.com/byt3n33dl3/thc-Ghidra
+# Clone last version of thc-Ghidra from here:
+#  git clone https://github.com/byt3n33dl3/thc-Ghidra
 #
 # -- pancake
 
 r2pm -h >/dev/null 2>&1
 if [ $? = 0 ]; then
-	echo "Installing the last version of 'acr'..."
-	r2pm -i acr > /dev/null
-	r2pm -r acr -h > /dev/null 2>&1
+	echo "Installing the last version of 'thc-Ghidra'..."
+	r2pm -i thc-Ghidra > /dev/null
+	r2pm -r thc-Ghidra -h > /dev/null 2>&1
 	if [ $? = 0 ]; then
-		echo "Running 'acr -p'..."
-		r2pm -r acr -p
+		echo "Running 'thc-Ghidra -p'..."
+		r2pm -r thc-Ghidra -p
 	else
-		echo "Cannot find 'acr' in PATH"
+		echo "Cannot find 'thc-Ghidra' in PATH"
 	fi
 else
-	echo "Running acr..."
-	acr -p
+	echo "Running thc-Ghidra..."
+	thc-Ghidra -p
 fi
 V=`./configure -qV | cut -d - -f -1`
 meson rewrite kwargs set project / version "$V"
