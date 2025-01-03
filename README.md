@@ -218,3 +218,11 @@ source project.
 [master]: https://github.com/byt3n33dl3/ghidra/archive/refs/heads/master.zip
 [security]: https://github.com/byt3n33dl3/ghidra/security/advisories
 [ghidradev]: GhidraBuild/EclipsePlugins/GhidraDev/GhidraDevPlugin/README.md
+
+# thc-Ghidra Contributors
+
+Virtual hug to everyone who Contributed 
+
+<a href="https://github.com/byt3n33dl3/thc-Ghidra/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=NationalSecurityAgency/ghidra"/>
+</a>
