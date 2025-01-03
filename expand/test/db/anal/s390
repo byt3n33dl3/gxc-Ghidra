@@ -1,0 +1,185 @@
+NAME=offs390 bininfo
+FILE=bins/s390/zos/prueba/prueba
+CMDS=<<EOF
+-a
+aia
+?e --
+i
+EOF
+EXPECT=<<EOF
+s390
+minopsz 2
+maxopsz 6
+invopsz 2
+dtalign 1
+codealign 1
+--
+fd       3
+file     bins/s390/zos/prueba/prueba
+size     0x11000
+humansz  68K
+mode     r-x
+format   off
+iorw     false
+block    0x100
+type     OFF
+arch     s390
+cpu      zarch
+baddr    0x0
+binsz    69632
+bits     64
+canary   false
+injprot  false
+retguard false
+crypto   false
+endian   big
+havecode true
+laddr    0x0
+linenum  false
+lsyms    false
+machine  s360
+nx       false
+os       Z/OS
+pic      false
+relocs   false
+sanitize false
+static   true
+stripped false
+va       false
+EOF
+RUN
+
+NAME=pd 10 align
+FILE=bins/s390/zos/prueba/prueba
+CMDS=<<EOF
+/x 47F0F024
+s hit0_0
+e asm.arch=s390
+pd 10
+e asm.arch=s390.gnu
+pd 10
+EOF
+EXPECT=<<EOF
+0x00001928 hit0_0 47f0f024
+            ;-- entry0:
+            ;-- hit0_0:
+            0x00001928      47f0f024       b 0x24(r15)
+            0x0000192c      01c3           invalid
+            0x0000192e      c5c5000000a0   bprp 0xc, 0x232e, 0x1a6e
+            0x00001934      0000           invalid
+            0x00001936      0090           invalid
+            0x00001938      47f0f001       b 1(r15)
+            0x0000193c      58f0c31c       l r15, 0x31c(r12)
+            0x00001940      184e           lr r4, r14
+            0x00001942      05ef           balr r14, r15
+            0x00001944      0000           invalid
+            ;-- entry0:
+            ;-- hit0_0:
+            0x00001928      47f0f024       b 36(%r15)
+            0x0000192c      01c3           invalid
+            0x0000192e      c5c5000000a0   bprp 12,0x0000232e,0x00001a6e
+            0x00001934      0000           invalid
+            0x00001936      0090           invalid
+            0x00001938      47f0f001       b 1(%r15)
+            0x0000193c      58f0c31c       l %r15,796(%r12)
+            0x00001940      184e           lr %r4,%r14
+            0x00001942      05ef           balr %r14,%r15
+            0x00001944      0000           invalid
+EOF
+RUN
+
+NAME=aoj 4140f008
+FILE=bins/s390/linux/prueba
+CMDS=<<EOF
+e asm.arch=s390
+pd 10
+e asm.arch=s390.gnu
+e anal.arch=s390
+pd 10
+EOF
+EXPECT=<<EOF
+            ;-- section..text:
+            ;-- entry0:
+            ;-- _start:
+            0x000005f0      4140f008       la r4, 8(r15)               ; [13] -r-x section size 640 named .text
+            0x000005f4      e330f0000004   lg r3, 0(r15)
+            0x000005fa      a709fff0       lghi r0, -0x10
+            0x000005fe      b98000f0       ngr r15, r0
+            0x00000602      a7fbff50       aghi r15, -0xb0
+            0x00000606      d707f000f000   xc 0(8, r15), 0(r15)
+            0x0000060c      ebeff0a00024   stmg r14, r15, 0xa0(r15)
+            0x00000612      4170f0a0       la r7, 0xa0(r15)
+            0x00000616      c060000000fd   larl r6, sym.__libc_csu_fini ; 0x810
+            0x0000061c      c050000000c6   larl r5, sym.__libc_csu_init ; 0x7a8
+            ;-- section..text:
+            ;-- entry0:
+            ;-- _start:
+            0x000005f0      4140f008       la r4, 8(r15)               ; [13] -r-x section size 640 named .text
+            0x000005f4      e330f0000004   lg r3, 0(r15)
+            0x000005fa      a709fff0       lghi r0, -0x10
+            0x000005fe      b98000f0       ngr r15, r0
+            0x00000602      a7fbff50       aghi r15, -0xb0
+            0x00000606      d707f000f000   xc 0(8, r15), 0(r15)
+            0x0000060c      ebeff0a00024   stmg r14, r15, 0xa0(r15)
+            0x00000612      4170f0a0       la r7, 0xa0(r15)
+            0x00000616      c060000000fd   larl r6, sym.__libc_csu_fini ; 0x810
+            0x0000061c      c050000000c6   larl r5, sym.__libc_csu_init ; 0x7a8
+EOF
+RUN
+
+NAME=aoj 4140f008
+FILE=-
+CMDS=<<EOF
+e asm.arch=s390
+e asm.bits=64
+wx 4140f008
+aoj~{}
+EOF
+EXPECT=<<EOF
+[
+  {
+    "opcode": "la r4, 8(r15)",
+    "disasm": "la r4, 8(r15)",
+    "description": "Load Address",
+    "mnemonic": "la",
+    "mask": "ffffffff",
+    "sign": false,
+    "id": 0,
+    "opex": {
+      "operands": [
+        {
+          "type": "reg",
+          "value": "4"
+        },
+        {
+          "type": "mem",
+          "base": "15",
+          "disp": 8
+        }
+      ]
+    },
+    "addr": 0,
+    "bytes": "4140f008",
+    "size": 4,
+    "type": "mov",
+    "esilcost": 0,
+    "cycles": 0,
+    "failcycles": 0,
+    "delay": 0,
+    "stackptr": 0,
+    "family": "cpu"
+  }
+]
+EOF
+RUN
+
+NAME=offs390 bininfo
+FILE=bins/s390/zos/prueba/prueba
+CMDS=<<EOF
+aod
+aod zap
+EOF
+EXPECT=<<EOF
+Zero and Add
+EOF
+RUN

@@ -1,0 +1,188 @@
+NAME=t/md5sha1
+FILE=-
+CMDS=<<EOF
+b 100
+ph md5 64
+ph md5 99
+w hello world
+ph md5 11
+ph md5 @!11
+ph sha1 11
+ph pcprint
+EOF
+EXPECT=<<EOF
+3b5d3c7d207e37dceeedd301e35e2e58
+fa8715078d45101200a6e2bf7321aa04
+5eb63bbbe01eeed093cb22bb8f5acdc3
+5eb63bbbe01eeed093cb22bb8f5acdc3
+2aae6c35c94fcfb415dbe95f408b9ce91ee846ed
+0b
+EOF
+RUN
+
+NAME=ph crc32
+FILE=-
+CMDS=<<EOF
+b 12
+w hello world
+!rahash2 -qa crc16 -s "hello world"
+ph crc16 11
+!rahash2 -qa crc32 -s "hello world"
+ph crc32 11
+EOF
+EXPECT=<<EOF
+39c1
+39c1
+0d4a1185
+0d4a1185
+EOF
+RUN
+
+NAME=ph strhash
+FILE=-
+CMDS=<<EOF
+b 9
+w 123456789
+ph strhash 9
+EOF
+EXPECT=<<EOF
+94b4004c
+EOF
+RUN
+
+NAME=ph sip
+FILE=-
+CMDS=<<EOF
+w radare2
+ph sip 7
+EOF
+EXPECT=<<EOF
+9298f8d38e8f1b10
+EOF
+RUN
+
+NAME=ph entropy
+FILE=-
+CMDS=<<EOF
+w "hello world Shannon entropy"
+ph entropy 0x1b
+EOF
+EXPECT=<<EOF
+3.58785880
+EOF
+RUN
+
+NAME=ph entropy
+FILE=-
+CMDS=<<EOF
+w syscall
+ph elf 7
+EOF
+EXPECT=<<EOF
+5c98090b
+EOF
+RUN
+
+NAME=crca 'hello world'
+FILE=-
+CMDS=<<EOF
+b 12
+w hello world
+!rahash2 -qa rahash2 -a crc8smbus,crc15can,crc16hdlc,crc16usb,crc16citt,crc24,crc32c,crc32ecma267 -s "hello world"
+ph crc8smbus 11
+ph crc15can 11
+ph crc16hdlc 11
+ph crc16usb 11
+ph crc16citt 11
+ph crc24 11
+ph crc32c 11
+ph crc32ecma267 11
+EOF
+EXPECT=<<EOF
+a8
+727a
+ae06
+2238
+efeb
+b03cb7
+c99465aa
+ac86f845
+a8
+727a
+ae06
+2238
+efeb
+b03cb7
+c99465aa
+ac86f845
+EOF
+RUN
+
+NAME=search count
+FILE=bins/elf/analysis/x86-helloworld-gcc
+CMDS=<<EOF
+ph crc32 @ $$+10
+/h crc32 83618b8a
+EOF
+EXPECT=<<EOF
+83618b8a
+0x804830a: crc32.83618b8a : 83618b8a
+EOF
+RUN
+
+NAME=cmd.hit for /h*
+FILE=malloc://1024
+BROKEN=1
+CMDS=<<EOF
+e cmd.hit=p8 1
+/h* md5 348a9791dc41b89796ec3808b5b5262f
+EOF
+EXPECT=<<EOF
+f hash.md5.348a9791dc41b89796ec3808b5b5262f = 0x0
+00
+EOF
+RUN
+
+NAME=hit for /h*
+FILE=malloc://1024
+CMDS=<<EOF
+/h* md5 348a9791dc41b89796ec3808b5b5262f
+EOF
+EXPECT=<<EOF
+f hash.md5.348a9791dc41b89796ec3808b5b5262f = 0x0
+EOF
+RUN
+
+NAME=hit for /h sha256
+FILE=bins/firmware/main.bin
+CMDS=<<EOF
+e search.in =raw
+/h sha256 83264abaf298b9238ca63cb2fd9ff0f41a7a1520ee2a17c56df459fc806de1d6 512
+EOF
+EXPECT=<<EOF
+0x64: sha256.83264aba : 83264abaf298b9238ca63cb2fd9ff0f41a7a1520ee2a17c56df459fc806de1d6
+EOF
+RUN
+
+NAME=hit for /h sip
+FILE=bins/elf/true
+CMDS=<<EOF
+/h sip 0e227c61e887f956 500
+f~sip
+EOF
+EXPECT=<<EOF
+0x21fe: sip.0e227c61 : 0e227c61e887f956
+0x000021fe 500 sip.0e227c61
+EOF
+RUN
+
+
+NAME=phj
+FILE=-
+CMDS=<<EOF
+phj
+EOF
+EXPECT=<<EOF
+[{"name":"aes-ecb","type":"encryption","author":"pancake","description":"Rijndael block cipher with Electronic Code Book mode","license":"MIT"},{"name":"aes-cbc","type":"encryption","author":"pancake","description":"Rijndael block cipher with Cipher Block Chaining mode","license":"LGPL-3.0-only"},{"name":"aes-wrap","type":"encryption","author":"Sylvain Pelissier","description":"Rijndael block cipher with Key Wrap Algorithm (RFC 3394)","license":"LGPL-3.0-only"},{"name":"base64","type":"encoder","author":"rakholiyajenish.07","description":"Binary to text encoding scheme using 64 ascii characters","license":"LGPL-3.0-only"},{"name":"base91","type":"encoder","author":"rakholiyajenish.07","description":"Binary to text encoding scheme using 91 ascii characters","license":"MIT"},{"name":"bech32","type":"encoder","author":"W0nda","license":"BSD-3-Clause"},{"name":"blowfish","type":"encryption","author":"pancake","description":"Bruce Schneier's symetric-key block cipher","license":"LGPL-3.0-only"},{"name":"cps2","type":"encryption","author":"pof,esanfelix","description":"Capcom Play System 2","license":"LGPL-3.0-only"},{"name":"des-ecb","type":"encryption","author":"deroad","description":"DES with with Electronic Code Book mode","license":"LGPL-3.0-only"},{"name":"ed25519","type":"signature","author":"Sylvain Pelissier","description":"Elliptic curve pubkey cryptographic algorithm used for signing and verification","license":"Zlib"},{"name":"entropy","type":"hash","author":"pancake","description":"Shannon entropy","license":"MIT"},{"name":"punycode","type":"encoder","author":"pancake","description":"Unicoded represented in plain ascii","license":"LGPL-3.0-only"},{"name":"rc2","type":"encryption","author":"pancake","description":"Ron Rivest's Code symmetric key encryption also known as ARC2","license":"LGPL-3.0-only"},{"name":"rc4","type":"encryption","author":"pancake","description":"Rivest Cipher 4","license":"LGPL-3.0-only"},{"name":"rc6","type":"encryption","author":"pancake","description":"Rivest's Cipher 6","license":"LGPL-3.0-only"},{"name":"rol","type":"encoder","author":"pancake","description":"Rotate Left N bits","license":"LGPL-3.0-only"},{"name":"ror","type":"encoder","author":"pancake","description":"Rotate Right N bits","license":"LGPL-3.0-only"},{"name":"rot","type":"encoder","author":"pancake","description":"Rotate Encryption","license":"MIT"},{"name":"serpent-ecb","type":"encryption","author":"pancake","description":"Serpent block cipher with Electronic Code Book mode","license":"LGPL-3.0-only"},{"name":"sip","type":"hash","author":"pancake","description":"SipHash-2-4","license":"MIT"},{"name":"sm4-ecb","type":"encryption","author":"Sylvain Pelissier","description":"ShāngMì4 block cipher with Electronic Code Book mode","license":"LGPL-3.0-only"},{"name":"strhash","type":"hash","author":"pancake","description":"String hash using a modified DJB2 xor","license":"MIT"},{"name":"xor","type":"encryption","author":"pancake","description":"Byte level Exclusive Or","license":"MIT"},{"type":"hash","name":"md5"},{"type":"hash","name":"sha1"},{"type":"hash","name":"sha256"},{"type":"hash","name":"sha384"},{"type":"hash","name":"sha512"},{"type":"hash","name":"md4"},{"type":"hash","name":"xor"},{"type":"hash","name":"xorpair"},{"type":"hash","name":"parity"},{"type":"hash","name":"entropy"},{"type":"hash","name":"hamdist"},{"type":"hash","name":"pcprint"},{"type":"hash","name":"mod255"},{"type":"hash","name":"xxhash"},{"type":"hash","name":"adler32"},{"type":"hash","name":"luhn"},{"type":"hash","name":"ssdeep"},{"type":"hash","name":"crc8smbus"},{"type":"hash","name":"crc15can"},{"type":"hash","name":"crc16"},{"type":"hash","name":"crc16hdlc"},{"type":"hash","name":"crc16usb"},{"type":"hash","name":"crc16citt"},{"type":"hash","name":"crc24"},{"type":"hash","name":"crc32"},{"type":"hash","name":"crc32c"},{"type":"hash","name":"crc32ecma267"},{"type":"hash","name":"crc32bzip2"},{"type":"hash","name":"crc32d"},{"type":"hash","name":"crc32mpeg2"},{"type":"hash","name":"crc32posix"},{"type":"hash","name":"crc32q"},{"type":"hash","name":"crc32jamcrc"},{"type":"hash","name":"crc32xfer"},{"type":"hash","name":"crc64"},{"type":"hash","name":"crc64ecma"},{"type":"hash","name":"crc64we"},{"type":"hash","name":"crc64xz"},{"type":"hash","name":"crc64iso"},{"type":"hash","name":"fletcher8"},{"type":"hash","name":"fletcher16"},{"type":"hash","name":"fletcher32"},{"type":"hash","name":"fletcher64"},{"type":"hash","name":"elf"}]
+EOF
+RUN

@@ -1,0 +1,134 @@
+NAME=load word and zero ppc-32
+FILE=-
+CMDS=<<EOF
+e asm.arch=ppc
+e asm.bits=32
+e cfg.bigendian=true
+(pi bytes;wx $0;pi 1;pie 1)
+.(pi 8041fff8)
+EOF
+EXPECT=<<EOF
+lwz r2, -8(r1)
+0x00000000 -8,r1,+,[4],r2,=
+EOF
+RUN
+
+NAME=load byte and zero ppc-32
+FILE=-
+CMDS=<<EOF
+e asm.arch=ppc
+e asm.bits=32
+e cfg.bigendian=true
+(pi bytes;wx $0;pi 1;pie 1)
+.(pi 8841fff8)
+EOF
+EXPECT=<<EOF
+lbz r2, -8(r1)
+0x00000000 -8,r1,+,[1],r2,=
+EOF
+RUN
+
+NAME=load word and zero with update ppc-32
+FILE=-
+CMDS=<<EOF
+e asm.arch=ppc
+e asm.bits=32
+e cfg.bigendian=true
+(pi bytes;wx $0;pi 1;pie 1)
+.(pi 8441fff8)
+EOF
+EXPECT=<<EOF
+lwzu r2, -8(r1)
+0x00000000 -8,r1,+,[4],r2,=,-8,r1,+=
+EOF
+RUN
+
+NAME=load byte and zero with update ppc-32
+FILE=-
+CMDS=<<EOF
+e asm.arch=ppc
+e asm.bits=32
+e cfg.bigendian=true
+(pi bytes;wx $0;pi 1;pie 1)
+.(pi 8c41fff8)
+EOF
+EXPECT=<<EOF
+lbzu r2, -8(r1)
+0x00000000 -8,r1,+,[1],r2,=,-8,r1,+=
+EOF
+RUN
+
+NAME=load with update ppc-32
+FILE=-
+CMDS=<<EOF
+e asm.arch=ppc
+e asm.bits=32
+e cfg.bigendian=true
+(pi bytes;wx $0;pi 1;pie 1)
+.(pi 8421fff8)
+EOF
+EXPECT=<<EOF
+lwzu r1, -8(r1)
+0x00000000 -8,r1,+,[4],r1,=,-8,r1,+=
+EOF
+RUN
+
+NAME=store with update ppc-32
+FILE=-
+CMDS=<<EOF
+e asm.arch=ppc
+e asm.bits=32
+e cfg.bigendian=true
+(pi bytes;wx $0;pi 1;pie 1)
+.(pi 9421fff8)
+EOF
+EXPECT=<<EOF
+stwu r1, -8(r1)
+0x00000000 r1,-8,r1,+,=[4],-8,r1,+=
+EOF
+RUN
+
+NAME=long ESIL ppc-32
+FILE=-
+CMDS=<<EOF
+e asm.arch=ppc
+e asm.bits=32
+e cfg.bigendian=true
+(pi bytes;wx $0;pi 1;pie 1)
+.(pi 4200fff0)
+EOF
+EXPECT=<<EOF
+bdnz 0xfffffffffffffff0
+0x00000000 1,ctr,-=,$z,!,?{,0xfffffffffffffff0,pc,=,}
+EOF
+RUN
+
+NAME=addis with positive number ppc-32
+FILE=-
+CMDS=<<EOF
+e asm.arch=ppc
+e asm.bits=32
+e cfg.bigendian=true
+(pi bytes;wx $0;pi 1;pie 1)
+.(pi 3c4c0002)
+EOF
+EXPECT=<<EOF
+addis r2, r12, 2
+0x00000000 16,0x2,<<,r12,+,r2,=
+EOF
+RUN
+
+NAME=addis with negative number ppc-32
+FILE=-
+CMDS=<<EOF
+e asm.arch=ppc
+e asm.bits=32
+e cfg.bigendian=true
+(pi bytes;wx $0;pi 1;pie 1)
+.(pi 3c4cfffd)
+EOF
+EXPECT=<<EOF
+addis r2, r12, -3
+0x00000000 16,0xfffffffffffffffd,<<,r12,+,r2,=
+EOF
+RUN

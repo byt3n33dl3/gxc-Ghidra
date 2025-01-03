@@ -1,0 +1,298 @@
+NAME=arj x86 16 bits
+FILE=malloc://0x100
+CMDS=<<EOF
+e asm.arch = x86
+e anal.arch = x86
+e asm.bits=16
+arj
+EOF
+EXPECT=<<EOF
+{"ip":0,"ax":0,"bx":0,"cx":0,"dx":0,"sp":0,"bp":0,"si":0,"di":0,"flags":0}
+EOF
+RUN
+
+NAME=lcall offset (#12284)
+FILE=-
+CMDS=<<EOF
+e asm.arch=x86
+e asm.bits=16
+wx 9a34002001
+?v $ij
+EOF
+EXPECT=<<EOF
+0x1234
+EOF
+RUN
+
+NAME=ljmp offset (#12284)
+FILE=-
+CMDS=<<EOF
+e asm.arch=x86
+e asm.bits=16
+wx ea34002001
+?v $ij
+EOF
+EXPECT=<<EOF
+0x1234
+EOF1
+RUN
+
+NAME=aoj pushf
+FILE=-
+CMDS=<<EOF
+e asm.arch=x86
+e asm.bits=16
+wx 9c
+aoj~{}
+EOF
+EXPECT=<<EOF
+[
+  {
+    "opcode": "pushf",
+    "disasm": "pushf",
+    "pseudo": "push (cpuflags)",
+    "description": "push flags register onto the stack",
+    "mnemonic": "pushf",
+    "mask": "ff",
+    "esil": "2,sp,-=,eflags,sp,=[2]",
+    "sign": false,
+    "id": 612,
+    "opex": {
+      "operands": [
+        {
+          "size": 2,
+          "rw": 1,
+          "type": "reg",
+          "value": "flags"
+        }
+      ]
+    },
+    "addr": 0,
+    "bytes": "9c",
+    "size": 1,
+    "type": "upush",
+    "esilcost": 0,
+    "cycles": 2,
+    "failcycles": 0,
+    "delay": 0,
+    "stack": "inc",
+    "stackptr": 2,
+    "family": "cpu"
+  }
+]
+EOF
+RUN
+
+NAME=16bit segment bounds - capstone
+FILE=malloc://1024k
+CMDS=<<EOF
+e asm.arch=x86
+e anal.arch=x86
+e asm.bits=16
+e anal.hasnext=0
+wx e9c300 @ f000:ffaa
+s f000:ffaa
+pi 1
+EOF
+EXPECT=<<EOF
+jmp 0xf0070
+EOF
+BROKEN=1
+RUN
+
+NAME=16bit segment bounds 2
+FILE=malloc://1024k
+CMDS=<<EOF
+e asm.arch=x86
+e asm.bits=16
+e io.va=1
+wx e97ae7 @ f000:1911
+s f000:1911
+ao 1~jump
+EOF
+EXPECT=<<EOF
+description: jump
+jump: 0x000f008e
+EOF
+RUN
+
+NAME=x86-16 les,lds arg anal
+FILE=-
+CMDS=<<EOF
+e asm.arch=x86
+e asm.bits=16
+wx 558becc57606c47e0a5dc3
+af
+pdf
+EOF:
+EXPECT=<<EOF
+/ 11: fcn.00000000 (int16_t arg_6h, int16_t arg_ah);
+| `- args(sp[0x4..0x8])
+|           0000:0000     55             push bp
+|           0000:0001     8bec           mov bp, sp
+|           0000:0003     c57606         lds si, [arg_6h]
+|           0000:0006     c47e0a         les di, [arg_ah]
+|           0000:0009     5d             pop bp
+\           0000:000a     c3             ret
+EOF
+RUN
+
+NAME=x86-16 seg:off call addr replace with analysed func name
+FILE=-
+CMDS=<<EOF
+e asm.arch=x86
+e asm.bits=16
+wx 9090558bec9a0d0000005dc390558bec5dc3
+af funcA @ 0xd
+af funcB @ 0x2
+pdf @ 0x2
+EOF
+EXPECT=<<EOF
+/ 10: funcB ();
+|           0000:0002     55             push bp
+|           0000:0003     8bec           mov bp, sp
+|           0000:0005     9a0d000000     lcall funcA
+|           0000:000a     5d             pop bp
+\           0000:000b     c3             ret
+EOF
+RUN
+
+
+NAME=x86-16 seg:off lcall addr replace with non-analysed func
+FILE=-
+CMDS=<<EOF
+e asm.arch=x86
+e asm.bits=16
+wx 9090558bec9a0d0000005dc390558bec5dc3
+pd 1 @ 0x5
+EOF
+EXPECT=<<EOF
+            0000:0005     9a0d000000     lcall 0:0xd
+EOF
+RUN
+
+NAME=x86-16 seg:off ljmp addr replace with non-analysed func
+FILE=-
+CMDS=<<EOF
+e asm.arch=x86
+e asm.bits=16
+wx 9090558becea0d0000005dc390558bec5dc3
+pd 1 @ 0x5
+EOF
+EXPECT=<<EOF
+        ,=< 0000:0005     ea0d000000     ljmp 0:0xd
+EOF
+RUN
+
+NAME=x86-16 seg:off ljmp addr replace with analysed func
+FILE=-
+CMDS=<<EOF
+e asm.arch=x86
+e asm.bits=16
+wx 9090558becea0d0000005dc390558bec5dc3
+af funcA @ 0xd
+pd 1 @ 0x5
+EOF
+EXPECT=<<EOF
+        ,=< 0000:0005     ea0d000000     ljmp funcA
+EOF
+RUN
+
+NAME=x86-16 seg:off ljmp addr replace with non-analysed func higher segment
+FILE=malloc://2048
+CMDS=<<EOF
+e asm.arch=x86
+e asm.bits=16
+e asm.offset.segment.bits=8
+s 0x400
+wx 9090558becea000004005dc3
+pd 1 @ 0x405
+EOF
+EXPECT=<<EOF
+        `=< 0000:0405     ea00000400     ljmp 4:0
+EOF
+RUN
+
+NAME=x86-16 seg:off ljmp addr replace with analysed func higher segment
+FILE=malloc://2048
+CMDS=<<EOF
+e asm.arch=x86
+e asm.bits=16
+e asm.offset.segment.bits=8
+s 0x400
+wx 558becea000004005dc3
+af funcA @ 0x400
+pd 1 @ 0x403
+EOF
+EXPECT=<<EOF
+\       `=< 0000:0403     ea00000400     ljmp funcA
+EOF
+RUN
+
+NAME=x86-16 seg:off lcall addr replace with non-analysed func higher segment
+FILE=malloc://2048
+CMDS=<<EOF
+e asm.arch=x86
+e asm.bits=16
+e asm.segmen.bits=8
+s 0x400
+wx 9090558bec9a000004005dc3
+pd 1 @ 0x405
+EOF
+EXPECT=<<EOF
+            0000:0405     9a00000400     lcall 4:0
+EOF
+RUN
+
+NAME=x86-16 seg:off lcall addr replace with analysed func higher segment
+FILE=malloc://2048
+CMDS=<<EOF
+e asm.arch=x86
+e asm.bits=16
+e asm.offset.segment.bits=8
+s 0x400
+wx 558bec9a000004005dc3
+af funcA @ 0x400
+pd 1 @ 0x403
+EOF
+EXPECT=<<EOF
+|           0000:0403     9a00000400     lcall funcA
+EOF
+RUN
+
+NAME=int 0x20
+FILE=bins/mz/INSTALL.EXE
+CMDS=<<EOF
+af
+pdf
+EOF
+EXPECT=<<EOF
+            ;-- section.seg_000:
+            ;-- mz.dos_header:
+/ 50: entry0 ();
+|           0000:0000     b8800b         mov ax, 0xb80                 ; [00] -rwx section size 16818 named seg_000
+|           0000:0003     ba1c04         mov dx, 0x41c
+|           0000:0006     050000         add ax, 0                     ; RELOC 16 
+|           0000:0009     3b060200       cmp ax, word [2]              ; [0x2:2]=0xba0b
+|       ,=< 0000:000d     731a           jae 0x29
+|       |   0000:000f     2d2000         sub ax, 0x20
+|       |   0000:0012     fa             cli
+|       |   0000:0013     8ed0           mov ss, ax
+|       |   0000:0015     fb             sti
+|       |   0000:0016     2d1900         sub ax, 0x19
+|       |   ; DATA XREF from entry0 @ 0x16(r)
+|       |   0000:0019     8ec0           mov es, ax
+|       |   0000:001b     50             push ax
+|       |   0000:001c     b9c700         mov cx, 0xc7
+|       |   0000:001f     33ff           xor di, di
+|       |   0000:0021     57             push di
+|       |   0000:0022     be4401         mov si, 0x144
+|       |   0000:0025     fc             cld
+|       |   0000:0026     f3a5           rep movsw word es:[di], word [si]
+|       |   0000:0028     cb             retf
+|       `-> 0000:0029     b409           mov ah, 9
+|           0000:002b     ba3201         mov dx, 0x132
+|           0000:002e     cd21           int 0x21
+\           0000:0030     cd20           int 0x20
+EOF
+RUN

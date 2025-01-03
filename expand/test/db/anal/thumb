@@ -1,0 +1,73 @@
+NAME=thumb tbb jmptbl
+FILE=malloc://512
+CMDS=<<EOF
+e asm.arch=arm
+e asm.bits=16
+e asm.nbytes=6
+e asm.flags.inbytes=true
+wx 10b50078114c06281ed2dfe800f01d1d030e1d150e480078002815d00d48a1690222bde81040fcf74dba0020e2f7aefb03220948a169f4e70020e2f7a7fbbde810400020fff7c2bf10bd0000bc0b0010a1010020c9e00508cdf8050870b5002500b10578e6f766f9691c884200d2002500211148eef72cf8e6f75cf90f4c98b165700120f7f718f961780170a0611820f7f712f9206105466178e2f7edfe2846bde87040eaf742bd002020700d206070bde87040f1f76cb9841c0708bc0b001008b506208df80000012269460148fcf7f9f908bd412a0608feb50446e6f72af910b1e6f727f9401e254a0623c0b251788df804102578062d0bd2dfe805f00a03
+af
+pdr~case
+
+e asm.arch=arm
+e asm.bits=16
+e asm.nbytes=32
+e asm.flags.inbytes=true
+wx 10b50078114c06281ed2dfe800f01d1d030e1d150e480078002815d00d48a1690222bde81040fcf74dba0020e2f7aefb03220948a169f4e70020e2f7a7fbbde810400020fff7c2bf10bd0000bc0b0010a1010020c9e00508cdf8050870b5002500b10578e6f766f9691c884200d2002500211148eef72cf8e6f75cf90f4c98b165700120f7f718f961780170a0611820f7f712f9206105466178e2f7edfe2846bde87040eaf742bd002020700d206070bde87040f1f76cb9841c0708bc0b001008b506208df80000012269460148fcf7f9f908bd412a0608feb50446e6f72af910b1e6f727f9401e254a0623c0b251788df804102578062d0bd2dfe805f00a03
+af
+pdr~case
+EOF
+EXPECT=<<EOF
+| 0x00000008                    bhs case.0xa.0
+| 0x0000000a      switch.0x0.:  tbb [0x00000010]                       ; switch table (6 cases) at 0xe
+| 0x00000014       case.0xa.2:  ldr r0, [0x00000050]                   ; [0x50:4]=0x200001a1
+| 0x0000001a                    beq case.0xa.0
+| 0x0000002a       case.0xa.3:  movs r0, 0
+| 0x00000038       case.0xa.5:  movs r0, 0
+\ 0x00000048      case.0xa.0.:  pop {r4, pc}
+| 0x00000008                                                                        bhs case.0xa.0
+| 0x0000000a                                                    switch.0x0000000a:  tbb [0x00000010] ; switch table (6 cases) at 0xe
+| 0x00000014                                                           case.0xa.2:  ldr r0, [0x00000050] ; [0x50:4]=0x200001a1
+| 0x0000001a                                                                        beq case.0xa.0
+| 0x0000002a                                                           case.0xa.3:  movs r0, 0
+| 0x00000038                                                           case.0xa.5:  movs r0, 0
+\ 0x00000048                                     case.0xa.0,case.0xa.1,case.0xa.4:  pop {r4, pc}
+EOF
+RUN
+
+NAME=thumb unaligned mov, pc
+FILE=malloc://512
+CMDS=<<EOF
+e asm.arch=arm
+e asm.bits=16
+wx 01308fe213ff2fe178460c30c0460190491a921a0b2701df2f62696e2f736800
+s8
+af
+aeim
+aepc 8
+2ds
+dr?r0
+x 16 @r:r0
+EOF
+EXPECT=<<EOF
+0x00000018
+- offset -  1819 1A1B 1C1D 1E1F 2021 2223 2425 2627  89ABCDEF01234567
+0x00000018  2f62 696e 2f73 6800 0000 0000 0000 0000  /bin/sh.........
+EOF
+RUN
+
+NAME=false posititve syscalls in thumb code
+FILE=bins/elf/libarm.so
+CMDS=<<EOF
+aae
+pi 1 @@ syscall.*
+EOF
+EXPECT=<<EOF
+svc 0xef
+svc 0x9e
+svc 0x72
+svc 0xa7
+svc 0x42
+svc 0xb6
+EOF
+RUN

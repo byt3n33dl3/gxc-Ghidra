@@ -1,0 +1,70 @@
+NAME=pipe args
+FILE=-
+CMDS=#!pipe echo hello world
+EXPECT=<<EOF
+hello world
+EOF
+RUN
+
+NAME=pipe r2p
+FILE=-
+CMDS=!*r2p x 32
+EXPECT=<<EOF
+- offset -   0 1  2 3  4 5  6 7  8 9  A B  C D  E F  0123456789ABCDEF
+0x00000000  0000 0000 0000 0000 0000 0000 0000 0000  ................
+0x00000010  0000 0000 0000 0000 0000 0000 0000 0000  ................
+
+EOF
+RUN
+
+NAME=r2pipe.py
+FILE=bins/elf/_Exit (42)
+CMDS=<<EOF
+?q `env~?^ASAN=1$`
+?+ env LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libasan.so.5
+#!pipe python bins/src/get-funcs.py
+EOF
+EXPECT=<<EOF
+
+Function names:
+sym.imp._Exit
+entry0
+
+Disassembly of entry0:
+            ;-- section..text:
+            ;-- _start():
+/ 16: entry0 (); // noreturn
+|           0x08049020      55             push ebp                    ; [10] -r-x section size 16 named .text
+|           0x08049021      89e5           mov ebp, esp
+|           0x08049023      83ec08         sub esp, 8
+|           0x08049026      83ec0c         sub esp, 0xc
+|           0x08049029      6a2a           push 0x2a                   ; '*' ; 42
+\           0x0804902b      e8e0ffffff     call sym.imp._Exit          ; void _Exit(int status)
+
+EOF
+RUN
+
+NAME=double redirect into an alias
+FILE=--
+CMDS=<<EOF
+echo hello > $a
+echo world > $a
+cat $a
+EOF
+EXPECT=<<EOF
+world
+EOF
+RUN
+
+# XXX note that theres a missing newline here
+NAME=double redirect into an alias append
+FILE=--
+CMDS=<<EOF
+echo hello > $a
+echo world >> $a
+cat $a
+EOF
+EXPECT=<<EOF
+helloworld
+EOF
+RUN

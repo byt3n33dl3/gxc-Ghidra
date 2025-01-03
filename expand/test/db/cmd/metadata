@@ -1,0 +1,811 @@
+NAME=CC-*
+FILE=bins/mach0/FileDP
+CMDS=<<EOF
+C*~?
+CC~?
+CC-*
+CC~?
+C*~?
+EOF
+EXPECT=<<EOF
+39
+13
+0
+26
+EOF
+RUN
+
+NAME=Cr 10 px
+FILE=-
+ARGS=-a x86 -b32
+CMDS=<<EOF
+wx 90909090c3c3
+Cr 2 px 2 @ 2
+b 32
+pd 5
+EOF
+EXPECT=<<EOF
+            0x00000000      90             nop
+            0x00000001      90             nop
+            0x00000002 ; (Cr 2 px 2)
+- offset -   2 3  4 5  6 7  8 9  A B  C D  E F 1011  23456789ABCDEF01
+0x00000002  9090                                     ..
+            0x00000004      c3             ret
+            0x00000005      c3             ret
+EOF
+RUN
+
+NAME=Cr 10 px2
+FILE=-
+ARGS=-a x86 -b32
+CMDS=<<EOF
+wx 90909090c3c3
+Cr 2 px 2 @ 2
+pd 5
+EOF
+EXPECT=<<EOF
+            0x00000000      90             nop
+            0x00000001      90             nop
+            0x00000002 ; (Cr 2 px 2)
+- offset -   2 3  4 5  6 7  8 9  A B  C D  E F 1011  23456789ABCDEF01
+0x00000002  9090                                     ..
+            0x00000004      c3             ret
+            0x00000005      c3             ret
+EOF
+RUN
+
+NAME=Cr 10 pd
+FILE=-
+ARGS=-a x86 -b32
+CMDS=<<EOF
+wx 90909090c3c3
+Cr 2 pd 1 @ 2
+pd 5
+EOF
+EXPECT=<<EOF
+            0x00000000      90             nop
+            0x00000001      90             nop
+            0x00000002 ; (Cr 2 pd 1)
+0x00000002 ; (Cr 2 pd 1)
+0x00000002 ; (Cr 2 pd 1)
+0x00000002 ; (Cr 2 pd 1)
+0x00000002 ; (Cr 2 pd 1)
+0x00000002 ; (Cr 2 pd 1)
+0x00000002 ; (Cr 2 pd 1)
+0x00000002 ; (Cr 2 pd 1)
+0x00000002 ; (Cr 2 pd 1)
+0x00000002 ; (Cr 2 pd 1)
+  0x00000004      c3             ret
+  0x00000005      c3             ret
+EOF
+RUN
+
+NAME=CCf-*
+FILE=bins/mach0/FileDP
+CMDS=<<EOF
+af
+CCf-*~?
+CC hello
+CC world @ $$+32
+CCf~?
+CCf-*
+CCf~?
+EOF
+EXPECT=<<EOF
+0
+2
+0
+EOF
+RUN
+
+NAME=Cs
+FILE=malloc://1024
+CMDS=<<EOF
+w hello world
+Cs @ $$
+C*~[1]
+EOF
+EXPECT=<<EOF
+12
+EOF
+RUN
+
+NAME=Cs 5
+FILE=malloc://1024
+CMDS=<<EOF
+w hello world
+Cs 5
+C*~[1]
+EOF
+EXPECT=<<EOF
+5
+EOF
+RUN
+
+NAME=Cz
+FILE=malloc://1024
+CMDS=<<EOF
+w hello world
+Cz
+C*~[1]
+EOF
+EXPECT=<<EOF
+12
+EOF
+RUN
+
+NAME=Cd : data
+FILE=malloc://1024
+CMDS=<<EOF
+e asm.arch=x86
+e asm.bits=32
+w 909090
+Cd 3
+pd 2
+EOF
+EXPECT=<<EOF
+            0x00000000      hex size=3 delta=0
+0x00000000  3930 39                                  909
+
+            0x00000003      3039           xor byte [ecx], bh
+EOF
+RUN
+
+NAME=Cd : data + align
+FILE=malloc://1024
+BROKEN=1
+CMDS=<<EOF
+e asm.arch=x86
+e asm.bits=32
+w 909090
+Cd 3
+s 1
+pd 2
+EOF
+EXPECT=<<EOF
+            0x00000001 hex length=3 delta=1
+0x00000001  30 39                                    09
+
+            0x00000003      3039           xor byte [ecx], bh
+EOF
+RUN
+
+NAME=Cs : convert to string
+FILE=malloc://1024
+CMDS=<<EOF
+w hello
+Cs 6
+pd 1
+EOF
+EXPECT=<<EOF
+            0x00000000     .string "hello" ; len=6
+EOF
+RUN
+
+NAME=Cs : concatenated strings bug
+FILE=malloc://1024
+CMDS=<<EOF
+w hello\x00world
+Cs 6
+Cs 6@6
+pd 2
+EOF
+EXPECT=<<EOF
+            0x00000000     .string "hello" ; len=6
+            0x00000006     .string "world" ; len=6
+EOF
+RUN
+
+NAME=Cs : concatenated strings bug
+FILE=malloc://1024
+CMDS=<<EOF
+w hello\x00world
+Cs 6
+Cs 6@6
+pd 2
+EOF
+EXPECT=<<EOF
+            0x00000000     .string "hello" ; len=6
+            0x00000006     .string "world" ; len=6
+EOF
+RUN
+
+NAME=Cs : string count bug
+FILE=malloc://128
+CMDS=<<EOF
+w hello
+Cs 6
+C*~?
+EOF
+EXPECT=<<EOF
+1
+EOF
+RUN
+
+NAME=Ch : hide bytes in pd
+FILE=malloc://128
+CMDS=<<EOF
+e asm.arch=x86
+e asm.bits=64
+e scr.color=false
+wx 554889e54883c768
+Ch 2
+pd 2
+Ch-
+EOF
+EXPECT=<<EOF
+            0x00000000 (2 bytes hidden)
+            0x00000002      89e5           mov ebp, esp
+EOF
+RUN
+
+NAME=Ch : add/del hide bytes
+FILE=malloc://1024
+CMDS=<<EOF
+e scr.color=false
+wx 554889e54883c768
+Ch 2@0x100
+C*~?
+Ch-@0x100
+C*~?
+EOF
+EXPECT=<<EOF
+1
+0
+EOF
+RUN
+
+NAME=Cf should be silent
+FILE=-
+CMDS=Cf 32 2xx
+EXPECT=<<EOF
+EOF
+RUN
+
+NAME=format memory metadata
+FILE=-
+CMDS=<<EOF
+wx 41424344
+Cf 4 x
+pd 1
+EOF
+EXPECT=<<EOF
+            0x00000000 pf x # size=4
+0x00000000 = 0x44434241
+EOF
+RUN
+
+NAME=arm1.bin dword pointers with Cd
+FILE=bins/elf/arm1.bin
+CMDS=<<EOF
+s 0xdb98
+Cd 4[3]
+pd 3
+EOF
+EXPECT=<<EOF
+            0x0000db98      .dword 0x00085038 ; obj.main_arena
+            0x0000db9c      .dword 0x000844ac ; obj.check_action
+            0x0000dba0      .dword 0x000663c4 ; str.free__:_invalid_pointer
+EOF
+RUN
+
+NAME=arm1.bin dword pointers with Cd and ahi 1
+FILE=bins/elf/arm1.bin
+CMDS=<<EOF
+s 0xdb98
+Cd 4[3]
+ahi 1
+pd 3
+EOF
+EXPECT=<<EOF
+            0x0000db98      .int32 00111000010100000000100000000000b ; obj.main_arena
+            0x0000db9c      .dword 0x000844ac ; obj.check_action
+            0x0000dba0      .dword 0x000663c4 ; str.free__:_invalid_pointer
+EOF
+RUN
+
+NAME=arm1.bin dword pointers with Cd and ahi 8
+FILE=bins/elf/arm1.bin
+CMDS=<<EOF
+s 0xdb98
+Cd 4[3]
+ahi 8
+pd 3
+EOF
+EXPECT=<<EOF
+            0x0000db98      .int32 2050070o ; obj.main_arena
+            0x0000db9c      .dword 0x000844ac ; obj.check_action
+            0x0000dba0      .dword 0x000663c4 ; str.free__:_invalid_pointer
+EOF
+RUN
+
+NAME=arm1.bin dword pointers with Cd and ahi 10
+FILE=bins/elf/arm1.bin
+CMDS=<<EOF
+s 0xdb98
+Cd 4[3]
+ahi 10
+pd 3
+EOF
+EXPECT=<<EOF
+            0x0000db98      .int32 544824 ; obj.main_arena
+            0x0000db9c      .dword 0x000844ac ; obj.check_action
+            0x0000dba0      .dword 0x000663c4 ; str.free__:_invalid_pointer
+EOF
+RUN
+
+NAME=arm1.bin dword pointers with Cd and ahi 16
+FILE=bins/elf/arm1.bin
+CMDS=<<EOF
+s 0xdb98
+Cd 4[3]
+ahi 16
+pd 3
+EOF
+EXPECT=<<EOF
+            0x0000db98      .dword 0x00085038 ; obj.main_arena
+            0x0000db9c      .dword 0x000844ac ; obj.check_action
+            0x0000dba0      .dword 0x000663c4 ; str.free__:_invalid_pointer
+EOF
+RUN
+
+NAME=Ch and CCu on instr with potential LEA cmt
+FILE=bins/pe/ConsoleApplication1.exe
+CMDS=<<EOF
+Ch 6 @ 0x004010fa
+CCu get error @ 0x004010fa
+pd 1 @ 0x004010fa
+EOF
+EXPECT=<<EOF
+            0x004010fa (6 bytes hidden)                                ; get error
+EOF
+RUN
+
+NAME=C[Chsdmf][*j] without arguments
+FILE=malloc://1024
+CMDS=<<EOF
+k anal/meta/range.0x5=0x5120
+w hello world
+Cs @ $$
+s 0x100
+e asm.arch=x86
+e asm.bits=32
+w 909090
+Cd 3
+s 0x200
+wx 554889e54883c768
+Ch 2
+s 0x300
+wx 41424344
+Cf 4 x
+s 0x0
+CCu Hello!
+s 0x380
+wx cafebabe00000032
+Cm 8 wwww
+Cs
+?e ----
+Cd
+?e ----
+Ch
+?e ----
+Cf
+?e ----
+CC
+?e ----
+Cm
+?e ----
+C
+?e ----
+Cs*
+?e ----
+Cd*
+?e ----
+Ch*
+?e ----
+Cf*
+?e ----
+CC*
+?e ----
+Cm*
+?e ----
+C*
+?e ----
+Csj
+?e ----
+Cdj
+?e ----
+Chj
+?e ----
+Cfj
+?e ----
+CCj
+?e ----
+Cmj
+?e ----
+Cj
+EOF
+EXPECT=<<EOF
+0x00000000 ascii[12] "hello world"
+----
+0x00000100 data Cd 3
+----
+0x00000200 hidden Ch 2
+----
+0x00000300 format 4 x
+----
+0x00000000 CCu "Hello!"
+----
+0x00000380 magic 8 wwww
+----
+0x00000000 ascii[12] "hello world"
+0x00000000 CCu "Hello!"
+0x00000100 data Cd 3
+0x00000200 hidden Ch 2
+0x00000300 format 4 x
+0x00000380 magic 8 wwww
+----
+Cs 12 @ 0x00000000 # hello world
+----
+Cd 3 @ 0x00000100
+----
+Ch 2 @ 0x00000200
+----
+Cf 4 x @ 0x00000300
+----
+CCu base64:SGVsbG8h @ 0x00000000
+----
+Cm 8 wwww @ 0x00000380
+----
+Cs 12 @ 0x00000000 # hello world
+CCu base64:SGVsbG8h @ 0x00000000
+Cd 3 @ 0x00000100
+Ch 2 @ 0x00000200
+Cf 4 x @ 0x00000300
+Cm 8 wwww @ 0x00000380
+----
+[{"offset":0,"type":"Cs","name":"aGVsbG8gd29ybGQ=","enc":"latin1","ascii":true}]
+----
+[{"offset":256,"type":"Cd","name":"_","size":3}]
+----
+[{"offset":512,"type":"Ch","name":"_"}]
+----
+[{"offset":768,"type":"Cf","name":"x"}]
+----
+[{"offset":0,"type":"CCu","name":"Hello!"}]
+----
+[{"offset":896,"type":"Cm","name":"wwww"}]
+----
+[{"offset":0,"type":"Cs","name":"aGVsbG8gd29ybGQ=","enc":"latin1","ascii":true},{"offset":0,"type":"CCu","name":"Hello!"},{"offset":256,"type":"Cd","name":"_","size":3},{"offset":512,"type":"Ch","name":"_"},{"offset":768,"type":"Cf","name":"x"},{"offset":896,"type":"Cm","name":"wwww"}]
+EOF
+RUN
+
+NAME=Cs ascii/latin1
+FILE=bins/pe/testapp-msvc64.exe
+CMDS=<<EOF
+Csa @ 0x1400160a0
+Cs~gate
+Cs~ANSI
+EOF
+EXPECT=<<EOF
+0x1400160a0 latin1[18] "latin1 gate: \xce\xbb\xab\xce"
+0x1400160b8 ascii[50] "  -- in ConEmu, run `chcp 28591` to see the gate."
+0x140016000 ascii[19] "\tANSI\\esc: \e[33m\r\n"
+EOF
+RUN
+
+NAME=Csj ascii/latin1
+FILE=bins/pe/testapp-msvc64.exe
+ARGS=-z
+CMDS=<<EOF
+Csa @ 0x1400160a0
+Csg @ 0x1400160b8
+Csj
+EOF
+EXPECT=<<EOF
+[{"offset":5368799392,"type":"Cs","name":"bGF0aW4xIGdhdGU6IM67q84=","enc":"latin1","ascii":false},{"offset":5368799416,"type":"Cs","name":"ICAtLSBpbiBDb25FbXUsIHJ1biBgY2hjcCAyODU5MWAgdG8gc2VlIHRoZSBnYXRlLg==","enc":"latin1","ascii":true}]
+EOF
+RUN
+
+NAME=Csg, Csa, Cs. and Cs..
+FILE=bins/pe/testapp-msvc64.exe
+CMDS=<<EOF
+e str.escbslash=true
+s 0x140016018
+Csa
+Cs*~`s:`
+Cs.
+Cs..
+pd 1
+Csg
+Cs*~`s:`
+Cs.
+Cs..
+pd 1
+Csa 4
+Cs..
+Cs.. @ 0x14001601c  # should print nothing
+Csg 4
+Cs..
+Cs.. @ 0x14001601c  # should print nothing
+EOF
+EXPECT=<<EOF
+Csa 2 @ 0x140016018 # \t
+"\t"
+ascii[2] "\t"
+            ;-- str._twideesc:_e_0m:
+            0x140016018     .string "\t" ; len=2
+Cs 19 @ 0x140016018 # \twide\\esc: \x1b[0m\xa1\r\n
+"\twide\\esc: \x1b[0m\xa1\r\n"
+latin1[19] "\twide\\esc: \x1b[0m\xa1\r\n"
+            ;-- str._twideesc:_e_0m:
+            0x140016018     .string "\twide\\esc: \x1b[0m\xa1\r\n" ; len=19
+ascii[4] "\t"
+ascii[4] "\twid"
+EOF
+RUN
+
+NAME=Csg, Csa and Csj
+FILE=bins/pe/testapp-msvc64.exe
+ARGS=-e bin.str.purge=all,!0x140016018
+CMDS=<<EOF
+s 0x140016018
+Csj
+Csa
+Csj
+Csg
+Csj
+EOF
+EXPECT=<<EOF
+[{"offset":5368799256,"type":"Cs","name":"XHR3aWRlXFxlc2M6IFxlWzBt","enc":"iz","ascii":true}]
+[{"offset":5368799256,"type":"Cs","name":"CQ==","enc":"latin1","ascii":true}]
+[{"offset":5368799256,"type":"Cs","name":"CXdpZGVcZXNjOiAbWzBtoQ0K","enc":"latin1","ascii":false}]
+EOF
+RUN
+
+NAME=Cs8
+FILE=bins/elf/strenc
+CMDS=<<EOF
+e str.escbslash=true
+s 0x004021ff
+Cs*~`s:`
+Cs.
+Cs..
+pd 1
+Cs8
+Cs*~`s:`
+Cs.
+Cs..
+pd 1
+EOF
+EXPECT=<<EOF
+Cs 61 @ 0x004021ff # utf8> \\u00a2\\u20ac\\U00010348 in yellow:\e[33m \xc2\xa2\xe2\x82\xac\xf0\x90\x8d\x88 \e[0m\n
+"utf8> \\u00a2\\u20ac\\U00010348 in yellow:\e[33m \xc2\xa2\xe2\x82\xac\xf0\x90\x8d\x88 \e[0m\n"
+latin1[61] "utf8> \\u00a2\\u20ac\\U00010348 in yellow:\e[33m \xc2\xa2\xe2\x82\xac\xf0\x90\x8d\x88 \e[0m\n"
+            ;-- str.utf8__u00a2u20acU00010348_in_yellow:e_33m__e_0m_n:
+            0x004021ff     .string "utf8> \\u00a2\\u20ac\\U00010348 in yellow:\e[33m \xc2\xa2\xe2\x82\xac\xf0\x90\x8d\x88 \e[0m\n" ; len=61
+Cs8 61 @ 0x004021ff # utf8> \\u00a2\\u20ac\\U00010348 in yellow:\x1b[33m \u00a2\u20ac\U00010348 \x1b[0m\n
+"utf8> \\u00a2\\u20ac\\U00010348 in yellow:\x1b[33m \u00a2\u20ac\U00010348 \x1b[0m\n"
+utf8[61] "utf8> \\u00a2\\u20ac\\U00010348 in yellow:\x1b[33m \u00a2\u20ac\U00010348 \x1b[0m\n"
+            ;-- str.utf8__u00a2u20acU00010348_in_yellow:e_33m__e_0m_n:
+            0x004021ff     .string "utf8> \\u00a2\\u20ac\\U00010348 in yellow:\x1b[33m \u00a2\u20ac\U00010348 \x1b[0m\n" ; len=61
+EOF
+RUN
+
+NAME=Cs8 and Csj
+FILE=bins/elf/strenc
+ARGS=-e bin.str.purge=all,!0x004021ff
+CMDS=<<EOF
+s 0x004021ff
+Csj
+Cs8
+Csj
+EOF
+EXPECT=<<EOF
+[{"offset":4196209,"type":"Cs","name":"bGlic3RkYysrLnNvLjY=","enc":"iz","ascii":true},{"offset":4196224,"type":"Cs","name":"X19nbW9uX3N0YXJ0X18=","enc":"iz","ascii":true},{"offset":4196239,"type":"Cs","name":"X1pOU3Q4aW9zX2Jhc2U0SW5pdEQxRXY=","enc":"iz","ascii":true},{"offset":4196263,"type":"Cs","name":"X1pOS1N0MjVfX2NvZGVjdnRfdXRmOF91dGYxNl9iYXNlSURzRTZkb19vdXRFUjExX19tYnN0YXRlX3RQS0RzUzRfUlM0X1BjUzZfUlM2Xw==","enc":"iz","ascii":true},{"offset":4196343,"type":"Cs","name":"X1pTdDV3Y291dA==","enc":"iz","ascii":true},{"offset":4196354,"type":"Cs","name":"X19neHhfcGVyc29uYWxpdHlfdjA=","enc":"iz","ascii":true},{"offset":4196375,"type":"Cs","name":"X1pOS1N0MjVfX2NvZGVjdnRfdXRmOF91dGYxNl9iYXNlSURzRTE2ZG9fYWx3YXlzX25vY29udkV2","enc":"iz","ascii":true},{"offset":4196433,"type":"Cs","name":"X1pUVk4xMF9fY3h4YWJpdjEyMF9fc2lfY2xhc3NfdHlwZV9pbmZvRQ==","enc":"iz","ascii":true},{"offset":4196474,"type":"Cs","name":"X1pOU3Q3Y29kZWN2dElEaWMxMV9fbWJzdGF0ZV90RUQyRXY=","enc":"iz","ascii":true},{"offset":4196510,"type":"Cs","name":"X1pOS1N0MjVfX2NvZGVjdnRfdXRmOF91dGYxNl9iYXNlSURzRTEzZG9fbWF4X2xlbmd0aEV2","enc":"iz","ascii":true},{"offset":4196565,"type":"Cs","name":"X1pkbFB2","enc":"iz","ascii":true},{"offset":4196572,"type":"Cs","name":"X1pOS1N0N2NvZGVjdnRJRGljMTFfX21ic3RhdGVfdEUxM2RvX21heF9sZW5ndGhFdg==","enc":"iz","ascii":true},{"offset":4196622,"type":"Cs","name":"X1pOS1N0N2NvZGVjdnRJRGljMTFfX21ic3RhdGVfdEUxMWRvX2VuY29kaW5nRXY=","enc":"iz","ascii":true},{"offset":4196670,"type":"Cs","name":"X1pTdGxzSXdTdDExY2hhcl90cmFpdHNJd0VFUlN0MTNiYXNpY19vc3RyZWFtSVRfVDBfRVM2X1BLYw==","enc":"iz","ascii":true},{"offset":4196729,"type":"Cs","name":"X1pkbFB2bQ==","enc":"iz","ascii":true},{"offset":4196737,"type":"Cs","name":"X1pOS1N0N2NvZGVjdnRJRGljMTFfX21ic3RhdGVfdEU2ZG9fb3V0RVJTMF9QS0RpUzRfUlM0X1BjUzZfUlM2Xw==","enc":"iz","ascii":true},{"offset":4196802,"type":"Cs","name":"X1pOU3Q3X19jeHgxMTEyYmFzaWNfc3RyaW5nSWNTdDExY2hhcl90cmFpdHNJY0VTYUljRUVDMUVSS1M0Xw==","enc":"iz","ascii":true},{"offset":4196864,"type":"Cs","name":"X1pOS1N0N2NvZGVjdnRJRGljMTFfX21ic3RhdGVfdEUxMGRvX3Vuc2hpZnRFUlMwX1BjUzNfUlMzXw==","enc":"iz","ascii":true},{"offset":4196923,"type":"Cs","name":"X1pOS1N0MjVfX2NvZGVjdnRfdXRmOF91dGYxNl9iYXNlSURzRTEwZG9fdW5zaGlmdEVSMTFfX21ic3RhdGVfdFBjUzNfUlMzXw==","enc":"iz","ascii":true},{"offset":4196997,"type":"Cs","name":"X1pTdDE3X190aHJvd19iYWRfYWxsb2N2","enc":"iz","ascii":true},{"offset":4197022,"type":"Cs","name":"X1pOU3Q4aW9zX2Jhc2U0SW5pdEMxRXY=","enc":"iz","ascii":true},{"offset":4197046,"type":"Cs","name":"X1pOS1N0N2NvZGVjdnRJRGljMTFfX21ic3RhdGVfdEU1ZG9faW5FUlMwX1BLY1M0X1JTNF9QRGlTNl9SUzZf","enc":"iz","ascii":true},{"offset":4197110,"type":"Cs","name":"X1pUSVN0N2NvZGVjdnRJRGljMTFfX21ic3RhdGVfdEU=","enc":"iz","ascii":true},{"offset":4197143,"type":"Cs","name":"X1pTdGxzSXdTdDExY2hhcl90cmFpdHNJd0VFUlN0MTNiYXNpY19vc3RyZWFtSVRfVDBfRVM2X1BLUzNf","enc":"iz","ascii":true},{"offset":4197204,"type":"Cs","name":"X1pTdDE5X190aHJvd19yYW5nZV9lcnJvclBLYw==","enc":"iz","ascii":true},{"offset":4197233,"type":"Cs","name":"X1pOU3Q3X19jeHgxMTEyYmFzaWNfc3RyaW5nSWNTdDExY2hhcl90cmFpdHNJY0VTYUljRUVDMUVPUzRf","enc":"iz","ascii":true},{"offset":4197294,"type":"Cs","name":"X1pUSVN0MjVfX2NvZGVjdnRfdXRmOF91dGYxNl9iYXNlSURzRQ==","enc":"iz","ascii":true},{"offset":4197332,"type":"Cs","name":"X1pOU3Q3X19jeHgxMTEyYmFzaWNfc3RyaW5nSWNTdDExY2hhcl90cmFpdHNJY0VTYUljRUUxMF9NX3JlcGxhY2VFbW1QS2Nt","enc":"iz","ascii":true},{"offset":4197405,"type":"Cs","name":"X1pud20=","enc":"iz","ascii":true},{"offset":4197411,"type":"Cs","name":"X1pOS1N0MjVfX2NvZGVjdnRfdXRmOF91dGYxNl9iYXNlSURzRTExZG9fZW5jb2RpbmdFdg==","enc":"iz","ascii":true},{"offset":4197464,"type":"Cs","name":"X1pOU3Q3X19jeHgxMTEyYmFzaWNfc3RyaW5nSWNTdDExY2hhcl90cmFpdHNJY0VTYUljRUU2cmVzaXplRW0=","enc":"iz","ascii":true},{"offset":4197527,"type":"Cs","name":"X1pOS1N0N2NvZGVjdnRJRGljMTFfX21ic3RhdGVfdEUxNmRvX2Fsd2F5c19ub2NvbnZFdg==","enc":"iz","ascii":true},{"offset":4197580,"type":"Cs","name":"X1pTdDE5X190aHJvd19sb2dpY19lcnJvclBLYw==","enc":"iz","ascii":true},{"offset":4197609,"type":"Cs","name":"X1pOS1N0MjVfX2NvZGVjdnRfdXRmOF91dGYxNl9iYXNlSURzRTlkb19sZW5ndGhFUjExX19tYnN0YXRlX3RQS2NTNF9t","enc":"iz","ascii":true},{"offset":4197679,"type":"Cs","name":"X1pOU3QyNV9fY29kZWN2dF91dGY4X3V0ZjE2X2Jhc2VJRHNFRDJFdg==","enc":"iz","ascii":true},{"offset":4197720,"type":"Cs","name":"X1pOU3Q3X19jeHgxMTEyYmFzaWNfc3RyaW5nSWNTdDExY2hhcl90cmFpdHNJY0VTYUljRUU5X01fY3JlYXRlRVJtbQ==","enc":"iz","ascii":true},{"offset":4197788,"type":"Cs","name":"X1pOU3Q3X19jeHgxMTEyYmFzaWNfc3RyaW5nSWNTdDExY2hhcl90cmFpdHNJY0VTYUljRUUxMF9NX2Rpc3Bvc2VFdg==","enc":"iz","ascii":true},{"offset":4197856,"type":"Cs","name":"X1pOS1N0N2NvZGVjdnRJRGljMTFfX21ic3RhdGVfdEU5ZG9fbGVuZ3RoRVJTMF9QS2NTNF9t","enc":"iz","ascii":true},{"offset":4197911,"type":"Cs","name":"X1pOS1N0MjVfX2NvZGVjdnRfdXRmOF91dGYxNl9iYXNlSURzRTVkb19pbkVSMTFfX21ic3RhdGVfdFBLY1M0X1JTNF9QRHNTNl9SUzZf","enc":"iz","ascii":true},{"offset":4197990,"type":"Cs","name":"bGlibS5zby42","enc":"iz","ascii":true},{"offset":4198000,"type":"Cs","name":"bGliZ2NjX3Muc28uMQ==","enc":"iz","ascii":true},{"offset":4198014,"type":"Cs","name":"X1Vud2luZF9SZXN1bWU=","enc":"iz","ascii":true},{"offset":4198029,"type":"Cs","name":"bGliYy5zby42","enc":"iz","ascii":true},{"offset":4198039,"type":"Cs","name":"c2V0bG9jYWxl","enc":"iz","ascii":true},{"offset":4198049,"type":"Cs","name":"bWJzcnRvd2Nz","enc":"iz","ascii":true},{"offset":4198059,"type":"Cs","name":"X19jeGFfYXRleGl0","enc":"iz","ascii":true},{"offset":4198072,"type":"Cs","name":"X19saWJjX3N0YXJ0X21haW4=","enc":"iz","ascii":true},{"offset":4198090,"type":"Cs","name":"R0NDXzMuMA==","enc":"iz","ascii":true},{"offset":4198098,"type":"Cs","name":"R0xJQkNfMi4yLjU=","enc":"iz","ascii":true},{"offset":4198110,"type":"Cs","name":"Q1hYQUJJXzEuMw==","enc":"iz","ascii":true},{"offset":4198121,"type":"Cs","name":"Q1hYQUJJXzEuMy45","enc":"iz","ascii":true},{"offset":4198134,"type":"Cs","name":"R0xJQkNYWF8zLjQ=","enc":"iz","ascii":true},{"offset":4198146,"type":"Cs","name":"R0xJQkNYWF8zLjQuMjE=","enc":"iz","ascii":true},{"offset":4203007,"type":"Cs","name":"dXRmOD4gXFx1MDBhMlxcdTIwYWNcXFUwMDAxMDM0OCBpbiB5ZWxsb3c6XGVbMzNtIMKi4oKs8JCNiCBcZVswbVxu","enc":"iz","ascii":false}]
+[{"offset":4196209,"type":"Cs","name":"bGlic3RkYysrLnNvLjY=","enc":"iz","ascii":true},{"offset":4196224,"type":"Cs","name":"X19nbW9uX3N0YXJ0X18=","enc":"iz","ascii":true},{"offset":4196239,"type":"Cs","name":"X1pOU3Q4aW9zX2Jhc2U0SW5pdEQxRXY=","enc":"iz","ascii":true},{"offset":4196263,"type":"Cs","name":"X1pOS1N0MjVfX2NvZGVjdnRfdXRmOF91dGYxNl9iYXNlSURzRTZkb19vdXRFUjExX19tYnN0YXRlX3RQS0RzUzRfUlM0X1BjUzZfUlM2Xw==","enc":"iz","ascii":true},{"offset":4196343,"type":"Cs","name":"X1pTdDV3Y291dA==","enc":"iz","ascii":true},{"offset":4196354,"type":"Cs","name":"X19neHhfcGVyc29uYWxpdHlfdjA=","enc":"iz","ascii":true},{"offset":4196375,"type":"Cs","name":"X1pOS1N0MjVfX2NvZGVjdnRfdXRmOF91dGYxNl9iYXNlSURzRTE2ZG9fYWx3YXlzX25vY29udkV2","enc":"iz","ascii":true},{"offset":4196433,"type":"Cs","name":"X1pUVk4xMF9fY3h4YWJpdjEyMF9fc2lfY2xhc3NfdHlwZV9pbmZvRQ==","enc":"iz","ascii":true},{"offset":4196474,"type":"Cs","name":"X1pOU3Q3Y29kZWN2dElEaWMxMV9fbWJzdGF0ZV90RUQyRXY=","enc":"iz","ascii":true},{"offset":4196510,"type":"Cs","name":"X1pOS1N0MjVfX2NvZGVjdnRfdXRmOF91dGYxNl9iYXNlSURzRTEzZG9fbWF4X2xlbmd0aEV2","enc":"iz","ascii":true},{"offset":4196565,"type":"Cs","name":"X1pkbFB2","enc":"iz","ascii":true},{"offset":4196572,"type":"Cs","name":"X1pOS1N0N2NvZGVjdnRJRGljMTFfX21ic3RhdGVfdEUxM2RvX21heF9sZW5ndGhFdg==","enc":"iz","ascii":true},{"offset":4196622,"type":"Cs","name":"X1pOS1N0N2NvZGVjdnRJRGljMTFfX21ic3RhdGVfdEUxMWRvX2VuY29kaW5nRXY=","enc":"iz","ascii":true},{"offset":4196670,"type":"Cs","name":"X1pTdGxzSXdTdDExY2hhcl90cmFpdHNJd0VFUlN0MTNiYXNpY19vc3RyZWFtSVRfVDBfRVM2X1BLYw==","enc":"iz","ascii":true},{"offset":4196729,"type":"Cs","name":"X1pkbFB2bQ==","enc":"iz","ascii":true},{"offset":4196737,"type":"Cs","name":"X1pOS1N0N2NvZGVjdnRJRGljMTFfX21ic3RhdGVfdEU2ZG9fb3V0RVJTMF9QS0RpUzRfUlM0X1BjUzZfUlM2Xw==","enc":"iz","ascii":true},{"offset":4196802,"type":"Cs","name":"X1pOU3Q3X19jeHgxMTEyYmFzaWNfc3RyaW5nSWNTdDExY2hhcl90cmFpdHNJY0VTYUljRUVDMUVSS1M0Xw==","enc":"iz","ascii":true},{"offset":4196864,"type":"Cs","name":"X1pOS1N0N2NvZGVjdnRJRGljMTFfX21ic3RhdGVfdEUxMGRvX3Vuc2hpZnRFUlMwX1BjUzNfUlMzXw==","enc":"iz","ascii":true},{"offset":4196923,"type":"Cs","name":"X1pOS1N0MjVfX2NvZGVjdnRfdXRmOF91dGYxNl9iYXNlSURzRTEwZG9fdW5zaGlmdEVSMTFfX21ic3RhdGVfdFBjUzNfUlMzXw==","enc":"iz","ascii":true},{"offset":4196997,"type":"Cs","name":"X1pTdDE3X190aHJvd19iYWRfYWxsb2N2","enc":"iz","ascii":true},{"offset":4197022,"type":"Cs","name":"X1pOU3Q4aW9zX2Jhc2U0SW5pdEMxRXY=","enc":"iz","ascii":true},{"offset":4197046,"type":"Cs","name":"X1pOS1N0N2NvZGVjdnRJRGljMTFfX21ic3RhdGVfdEU1ZG9faW5FUlMwX1BLY1M0X1JTNF9QRGlTNl9SUzZf","enc":"iz","ascii":true},{"offset":4197110,"type":"Cs","name":"X1pUSVN0N2NvZGVjdnRJRGljMTFfX21ic3RhdGVfdEU=","enc":"iz","ascii":true},{"offset":4197143,"type":"Cs","name":"X1pTdGxzSXdTdDExY2hhcl90cmFpdHNJd0VFUlN0MTNiYXNpY19vc3RyZWFtSVRfVDBfRVM2X1BLUzNf","enc":"iz","ascii":true},{"offset":4197204,"type":"Cs","name":"X1pTdDE5X190aHJvd19yYW5nZV9lcnJvclBLYw==","enc":"iz","ascii":true},{"offset":4197233,"type":"Cs","name":"X1pOU3Q3X19jeHgxMTEyYmFzaWNfc3RyaW5nSWNTdDExY2hhcl90cmFpdHNJY0VTYUljRUVDMUVPUzRf","enc":"iz","ascii":true},{"offset":4197294,"type":"Cs","name":"X1pUSVN0MjVfX2NvZGVjdnRfdXRmOF91dGYxNl9iYXNlSURzRQ==","enc":"iz","ascii":true},{"offset":4197332,"type":"Cs","name":"X1pOU3Q3X19jeHgxMTEyYmFzaWNfc3RyaW5nSWNTdDExY2hhcl90cmFpdHNJY0VTYUljRUUxMF9NX3JlcGxhY2VFbW1QS2Nt","enc":"iz","ascii":true},{"offset":4197405,"type":"Cs","name":"X1pud20=","enc":"iz","ascii":true},{"offset":4197411,"type":"Cs","name":"X1pOS1N0MjVfX2NvZGVjdnRfdXRmOF91dGYxNl9iYXNlSURzRTExZG9fZW5jb2RpbmdFdg==","enc":"iz","ascii":true},{"offset":4197464,"type":"Cs","name":"X1pOU3Q3X19jeHgxMTEyYmFzaWNfc3RyaW5nSWNTdDExY2hhcl90cmFpdHNJY0VTYUljRUU2cmVzaXplRW0=","enc":"iz","ascii":true},{"offset":4197527,"type":"Cs","name":"X1pOS1N0N2NvZGVjdnRJRGljMTFfX21ic3RhdGVfdEUxNmRvX2Fsd2F5c19ub2NvbnZFdg==","enc":"iz","ascii":true},{"offset":4197580,"type":"Cs","name":"X1pTdDE5X190aHJvd19sb2dpY19lcnJvclBLYw==","enc":"iz","ascii":true},{"offset":4197609,"type":"Cs","name":"X1pOS1N0MjVfX2NvZGVjdnRfdXRmOF91dGYxNl9iYXNlSURzRTlkb19sZW5ndGhFUjExX19tYnN0YXRlX3RQS2NTNF9t","enc":"iz","ascii":true},{"offset":4197679,"type":"Cs","name":"X1pOU3QyNV9fY29kZWN2dF91dGY4X3V0ZjE2X2Jhc2VJRHNFRDJFdg==","enc":"iz","ascii":true},{"offset":4197720,"type":"Cs","name":"X1pOU3Q3X19jeHgxMTEyYmFzaWNfc3RyaW5nSWNTdDExY2hhcl90cmFpdHNJY0VTYUljRUU5X01fY3JlYXRlRVJtbQ==","enc":"iz","ascii":true},{"offset":4197788,"type":"Cs","name":"X1pOU3Q3X19jeHgxMTEyYmFzaWNfc3RyaW5nSWNTdDExY2hhcl90cmFpdHNJY0VTYUljRUUxMF9NX2Rpc3Bvc2VFdg==","enc":"iz","ascii":true},{"offset":4197856,"type":"Cs","name":"X1pOS1N0N2NvZGVjdnRJRGljMTFfX21ic3RhdGVfdEU5ZG9fbGVuZ3RoRVJTMF9QS2NTNF9t","enc":"iz","ascii":true},{"offset":4197911,"type":"Cs","name":"X1pOS1N0MjVfX2NvZGVjdnRfdXRmOF91dGYxNl9iYXNlSURzRTVkb19pbkVSMTFfX21ic3RhdGVfdFBLY1M0X1JTNF9QRHNTNl9SUzZf","enc":"iz","ascii":true},{"offset":4197990,"type":"Cs","name":"bGlibS5zby42","enc":"iz","ascii":true},{"offset":4198000,"type":"Cs","name":"bGliZ2NjX3Muc28uMQ==","enc":"iz","ascii":true},{"offset":4198014,"type":"Cs","name":"X1Vud2luZF9SZXN1bWU=","enc":"iz","ascii":true},{"offset":4198029,"type":"Cs","name":"bGliYy5zby42","enc":"iz","ascii":true},{"offset":4198039,"type":"Cs","name":"c2V0bG9jYWxl","enc":"iz","ascii":true},{"offset":4198049,"type":"Cs","name":"bWJzcnRvd2Nz","enc":"iz","ascii":true},{"offset":4198059,"type":"Cs","name":"X19jeGFfYXRleGl0","enc":"iz","ascii":true},{"offset":4198072,"type":"Cs","name":"X19saWJjX3N0YXJ0X21haW4=","enc":"iz","ascii":true},{"offset":4198090,"type":"Cs","name":"R0NDXzMuMA==","enc":"iz","ascii":true},{"offset":4198098,"type":"Cs","name":"R0xJQkNfMi4yLjU=","enc":"iz","ascii":true},{"offset":4198110,"type":"Cs","name":"Q1hYQUJJXzEuMw==","enc":"iz","ascii":true},{"offset":4198121,"type":"Cs","name":"Q1hYQUJJXzEuMy45","enc":"iz","ascii":true},{"offset":4198134,"type":"Cs","name":"R0xJQkNYWF8zLjQ=","enc":"iz","ascii":true},{"offset":4198146,"type":"Cs","name":"R0xJQkNYWF8zLjQuMjE=","enc":"iz","ascii":true},{"offset":4203007,"type":"Cs","name":"dXRmOD4gXHUwMGEyXHUyMGFjXFUwMDAxMDM0OCBpbiB5ZWxsb3c6G1szM20gwqLigqzwkI2IIBtbMG0K","enc":"utf8","ascii":false}]
+EOF
+RUN
+
+NAME=str.escbslash and Cs
+FILE=bins/pe/testapp-msvc64.exe
+CMDS=<<EOF
+s 0x140016000
+Csa
+e str.escbslash=true
+Cs.
+Cs..
+pd 1
+e str.escbslash=false
+Cs.
+Cs..
+pd 1
+EOF
+EXPECT=<<EOF
+"\tANSI\\esc: \x1b[33m\r\n"
+ascii[19] "\tANSI\\esc: \x1b[33m\r\n"
+            ;-- section..data:
+            ;-- str._tANSIesc:_e_33m_r_n:
+            0x140016000     .string "\tANSI\\esc: \x1b[33m\r\n" ; len=19 ; [02] -rw- section size 8192 named .data
+"\tANSI\esc: \x1b[33m\r\n"
+ascii[19] "\tANSI\esc: \x1b[33m\r\n"
+            ;-- section..data:
+            ;-- str._tANSIesc:_e_33m_r_n:
+            0x140016000     .string "\tANSI\esc: \x1b[33m\r\n" ; len=19 ; [02] -rw- section size 8192 named .data
+EOF
+RUN
+
+NAME=Cd- <size> <repeat>
+FILE=-
+CMDS=<<EOF
+s 0x100
+Cd 4 5
+Cd
+?e ----
+Cd- 4 3
+Cd
+?e ----
+s 0x10c
+Cd- 0 2
+Cd
+EOF
+EXPECT=<<EOF
+0x00000100 data Cd 4
+0x00000104 data Cd 4
+0x00000108 data Cd 4
+0x0000010c data Cd 4
+0x00000110 data Cd 4
+----
+0x0000010c data Cd 4
+0x00000110 data Cd 4
+----
+0x0000010c data Cd 4
+0x00000110 data Cd 4
+EOF
+RUN
+
+NAME=delete specific type of metadata from addr
+FILE=-
+CMDS=<<EOF
+s 0x100
+w abcd
+Csa 4
+Cf 8 xx
+C
+?e ----
+Cs-
+C
+?e ----
+Cf-
+C
+EOF
+EXPECT=<<EOF
+0x00000100 ascii[4] "abcd"
+0x00000100 format 8 xx
+----
+0x00000100 format 8 xx
+----
+EOF
+RUN
+
+NAME=C-
+FILE=-
+CMDS=<<EOF
+s 0x100
+w abcd
+Csa 4
+Cf 8 xx
+CCu a string
+C
+?e ----
+C-
+C
+EOF
+EXPECT=<<EOF
+0x00000100 ascii[4] "abcd"
+0x00000100 format 8 xx
+0x00000100 CCu "a string"
+----
+EOF
+RUN
+
+NAME=Cd- and C- in issue #8648
+FILE=-
+CMDS=<<EOF
+s 0x100
+Cd 4 1
+C*~Cd
+?e --1--
+Cd- 4 1
+C*~Cd
+?e --2--
+Cd 4 1
+Cd-
+C*~Cd
+?e --3--
+Cd 4 1
+C-
+C*~Cd
+?e --4--
+Cd 4 1
+C- 4
+C*~Cd
+EOF
+EXPECT=<<EOF
+Cd 4 @ 0x00000100
+--1--
+--2--
+--3--
+--4--
+EOF
+RUN
+
+NAME=Cd. (#10856)
+FILE=-
+CMDS=<<EOF
+s 0x50
+Cd 4 2
+Cd.
+s 0x100
+Cd. @ 0x50
+EOF
+EXPECT=<<EOF
+4
+4
+EOF
+RUN
+
+NAME=C.
+FILE=bins/elf/arm1.bin
+CMDS=<<EOF
+s 0x0007a23c
+C.
+s 0x00083fc4 
+C.
+EOF
+EXPECT=<<EOF
+0x0007a23c ascii[13] "match_symbol"
+0x00083fc4 data Cd 4
+0x00083fc4 CCu "[14] -rw- section size 4 named .init_array"
+EOF
+RUN
+
+NAME=Cd4
+FILE=-
+CMDS=<<EOF
+e asm.arch=x86
+e asm.bits=64
+s+4
+pd+1
+Cd4
+pd+1
+e asm.meta=0
+pd+1
+EOF
+EXPECT=<<EOF
+            0x00000004      0000           add byte [rax], al
+            0x00000004      .dword 0x00000000
+            0x00000004      00000000       .dword 0x00000000
+EOF
+RUN
+
+NAME=Cb test
+FILE=bins/mach0/ls-m1
+ARGS=-a arm -b 64
+CMDS=<<EOF
+s main
+Cb 0x100003aa0
+pd 6
+EOF
+EXPECT=<<EOF
+            ;-- main:
+            ;-- entry0:
+            ;-- func.100003a90:
+        ,=< 0x100003a90 [1]     7f2303d5       pacibsp
+        !   0x100003a94      fc6fbaa9       stp x28, x27, [sp, -0x60]!
+        !   0x100003a98      fa6701a9       stp x26, x25, [sp, 0x10]
+        !   0x100003a9c      f85f02a9       stp x24, x23, [sp, 0x20]
+        `-> 0x100003aa0      f65703a9       stp x22, x21, [sp, 0x30]
+            0x100003aa4      f44f04a9       stp x20, x19, [sp, 0x40]
+EOF
+RUN

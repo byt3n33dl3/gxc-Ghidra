@@ -1,0 +1,259 @@
+/* ###
+ * IP: GHIDRA
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package ghidra.framework.model;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+
+import javax.swing.Icon;
+
+import generic.theme.GIcon;
+import ghidra.framework.store.FolderNotEmptyException;
+import ghidra.util.InvalidNameException;
+import ghidra.util.exception.*;
+import ghidra.util.task.TaskMonitor;
+
+/**
+ * <code>DomainFolder</code> provides a storage interface for project folders.  A 
+ * <code>DomainFolder</code> is an immutable reference to a folder contained within a project.  The 
+ * state of a <code>DomainFolder</code> object does not track name/parent changes made to the 
+ * referenced project folder.
+ */
+public interface DomainFolder extends Comparable<DomainFolder> {
+
+	public static final Icon OPEN_FOLDER_ICON = new GIcon("icon.datatree.node.domain.folder.open");
+
+	public static final Icon CLOSED_FOLDER_ICON =
+		new GIcon("icon.datatree.node.domain.folder.closed");
+
+	/**
+	 * Character used to separate folder and item names within a path string.
+	 */
+	public static final String SEPARATOR = "/";
+
+	/**
+	 * Name extension to add when attempting to avoid a duplicate name.
+	 */
+	public static final String COPY_SUFFIX = ".copy";
+
+	/**
+	 * Return this folder's name.
+	 * @return the name
+	 */
+	public String getName();
+
+	/**
+	 * Set the name on this domain folder.
+	 * @param newName domain folder name
+	 * @return renamed domain file (the original DomainFolder object becomes invalid since it is 
+	 * immutable)
+	 * @throws InvalidNameException if newName contains illegal characters
+	 * @throws DuplicateFileException if a folder named newName 
+	 * already exists in this files domain folder.
+	 * @throws FileInUseException if any file within this folder or its descendants is 
+	 * in-use / checked-out.
+	 * @throws IOException thrown if an IO or access error occurs.
+	 */
+	public DomainFolder setName(String newName) throws InvalidNameException, IOException;
+
+	/**
+	 * Returns the local storage location for the project that this DomainFolder belongs to.
+	 * @return the locator
+	 */
+	public ProjectLocator getProjectLocator();
+
+	/**
+	 * Returns the project data
+	 * @return the project data
+	 */
+	public ProjectData getProjectData();
+
+	/**
+	 * Returns the full path name to this folder
+	 * @return the path name
+	 */
+	public String getPathname();
+
+	/**
+	 * Get a remote Ghidra URL for this domain folder if available within an associated shared
+	 * project repository.  URL path will end with "/".  A null value will be returned if shared 
+	 * folder does not exist and may also be returned if shared repository is not connected or a 
+	 * connection error occurs.
+	 * @return remote Ghidra URL for this folder or null
+	 */
+	public URL getSharedProjectURL();
+
+	/**
+	 * Get a local Ghidra URL for this domain file if available within the associated non-transient
+	 * local project.  A null value will be returned if project is transient.
+	 * @return local Ghidra URL for this folder or null if transient or not applicable
+	 */
+	public URL getLocalProjectURL();
+
+	/**
+	 * Returns true if this file is in a writable project.
+	 * @return true if writable
+	 */
+	public boolean isInWritableProject();
+
+	/**
+	 * Return parent folder or null if this DomainFolder is the root folder.
+	 * @return the parent
+	 */
+	public DomainFolder getParent();
+
+	/**
+	 * Get DomainFolders in this folder.
+	 * This may return cached information and does not force a full refresh.
+	 * @return list of sub-folders
+	 */
+	public DomainFolder[] getFolders();
+
+	/**
+	 * Return the folder for the given name.
+	 * @param name of folder to retrieve
+	 * @return folder or null if there is no folder by the given name.
+	 */
+	public DomainFolder getFolder(String name);
+
+	/**
+	 * Get the domain file in this folder with the given name.
+	 * @param name name of file in this folder to retrieve
+	 * @return domain file or null if there is no domain file in this folder with the given name.
+	 */
+	public DomainFile getFile(String name);
+
+	/**
+	 * Determine if this folder contains any sub-folders or domain files.
+	 * @return true if this folder is empty.
+	 */
+	public boolean isEmpty();
+
+	/**
+	 * Get all domain files in this folder.
+	 * This may return cached information and does not force a full refresh.
+	 * @return list of domain files
+	 */
+	public DomainFile[] getFiles();
+
+	/**
+	 * Add a domain object to this folder.
+	 * @param name domain file name
+	 * @param obj domain object to be stored
+	 * @param monitor progress monitor
+	 * @return domain file created as a result of adding
+	 * the domain object to this folder
+	 * @throws DuplicateFileException thrown if the file name already exists
+	 * @throws InvalidNameException if name is an empty string
+	 * or if it contains characters other than alphanumerics.
+	 * @throws IOException if IO or access error occurs
+	 * @throws CancelledException if the user cancels the create.
+	 */
+	public DomainFile createFile(String name, DomainObject obj, TaskMonitor monitor)
+			throws InvalidNameException, IOException, CancelledException;
+
+	/**
+	 * Add a new domain file to this folder.
+	 * @param name domain file name
+	 * @param packFile packed file containing domain file data
+	 * @param monitor progress monitor
+	 * @return domain file created as a result of adding
+	 * the domain object to this folder
+	 * @throws DuplicateFileException thrown if the file name already exists
+	 * @throws InvalidNameException if name is an empty string
+	 * or if it contains characters other than alphanumerics.
+	 * @throws IOException if IO or access error occurs
+	 * @throws CancelledException if the user cancels the create.
+	 */
+	public DomainFile createFile(String name, File packFile, TaskMonitor monitor)
+			throws InvalidNameException, IOException, CancelledException;
+
+	/**
+	 * Create a subfolder within this folder.
+	 * @param folderName sub-folder name
+	 * @return the new folder
+	 * @throws DuplicateFileException if a folder by this name already exists
+	 * @throws InvalidNameException if name is an empty string of if it contains characters other 
+	 * than alphanumerics.
+	 * @throws IOException if IO or access error occurs
+	 */
+	public DomainFolder createFolder(String folderName) throws InvalidNameException, IOException;
+
+	/**
+	 * Deletes this folder, if empty, from the local filesystem
+	 * @throws IOException if IO or access error occurs
+	 * @throws FolderNotEmptyException Thrown if this folder is not empty.
+	 */
+	public void delete() throws IOException;
+
+	/**
+	 * Move this folder into the newParent folder.  If connected to a repository
+	 * this moves both private and repository folders/files.  If not
+	 * connected, only private folders/files are moved.
+	 * @param newParent new parent folder within the same project
+	 * @return the newly relocated folder (the original DomainFolder object becomes invalid since 
+	 * it is immutable)
+	 * @throws DuplicateFileException if a folder with the same name 
+	 * already exists in newParent folder.
+	 * @throws FileInUseException if this folder or one of its descendants 
+	 * contains a file which is in-use / checked-out.
+	 * @throws IOException thrown if an IO or access error occurs.
+	 */
+	public DomainFolder moveTo(DomainFolder newParent) throws IOException;
+
+	/**
+	 * Copy this folder into the newParent folder.
+	 * @param newParent new parent folder
+	 * @param monitor the task monitor
+	 * @return the new copied folder
+	 * @throws DuplicateFileException if a folder or file by
+	 * this name already exists in the newParent folder
+	 * @throws IOException thrown if an IO or access error occurs.
+	 * @throws CancelledException if task monitor cancelled operation.
+	 */
+	public DomainFolder copyTo(DomainFolder newParent, TaskMonitor monitor)
+			throws IOException, CancelledException;
+
+	/**
+	 * Create a new link-file in the specified newParent which will reference this folder 
+	 * (i.e., linked-folder). Restrictions:
+	 * <ul>
+	 * <li>Specified newParent must reside within a different project since internal linking is
+	 * not currently supported.</li>
+	 * </ul>
+	 * If this folder is associated with a temporary transient project (i.e., not a locally 
+	 * managed project) the generated link will refer to the remote folder with a remote
+	 * Ghidra URL, otherwise a local project storage path will be used.
+	 * @param newParent new parent folder where link-file is to be created
+	 * @return newly created domain file (i.e., link-file) or null if link use not supported.
+	 * @throws IOException if an IO or access error occurs.
+	 */
+	public DomainFile copyToAsLink(DomainFolder newParent) throws IOException;
+
+	/**
+	 * Allows the framework to react to a request to make this folder the "active" one.
+	 */
+	public void setActive();
+
+	/**
+	 * Determine if this folder corresponds to a linked-folder.
+	 * @return true if folder corresponds to a linked-folder, else false.
+	 */
+	public default boolean isLinked() {
+		return false;
+	}
+}

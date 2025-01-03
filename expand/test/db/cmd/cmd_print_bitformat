@@ -1,0 +1,154 @@
+NAME=pfb
+FILE=bins/other/cows128.data
+CMDS=<<EOF
+pfb 3b4b1b foo bar cow
+s+1
+pfb 3b4b1b foo bar cow
+pfb 2b5b4b2b3b foo bar cow low mow
+EOF
+EXPECT=<<EOF
+00110111     0x00000037
+\_/\__/V
+ |   | `-----      cow =    1o     1   0x01 @ 7 + 1
+ |   `-------      bar =   13o    11   0x0b @ 3 + 4
+ `-----------      foo =    1o     1   0x01 @ 0 + 3
+01011000     0x00000058
+\_/\__/V
+ |   | `-----      cow =    0o     0   0x00 @ 7 + 1
+ |   `-------      bar =   14o    12   0x0c @ 3 + 4
+ `-----------      foo =    2o     2   0x02 @ 0 + 3
+0101100010000110     0x00005886
+\/\___/\__/\/\_/
+ |  |    |  | `-----      mow =    6o     6   0x06 @ 13 + 3
+ |  |    |  `-------      low =    0o     0   0x00 @ 11 + 2
+ |  |    `----------      cow =    4o     4   0x04 @ 7 + 4
+ |  `---------------      bar =   14o    12   0x0c @ 2 + 5
+ `------------------      foo =    1o     1   0x01 @ 0 + 2
+EOF
+RUN
+
+NAME=pfb 64
+FILE=bins/other/cows128.data
+CMDS=<<EOF
+pfb 1b4b64b
+EOF
+EXPECT=<<EOF
+001101110101100010000110001101000101010110000110001011000100111110000     0xfffffffffbd5cffe
+V\__/\______________________________________________________________/
+|  |                                 `-----          = 0xeb10c68ab0c589f0 @ 5 + 64
+|  `---------------------------------------          =    6o     6   0x06 @ 1 + 4
+`------------------------------------------          =    0o     0   0x00 @ 0 + 1
+EOF
+RUN
+
+NAME=pbwb
+FILE=-
+CMDS=<<EOF
+pb 8
+wb 110
+pb 8
+wb 0001
+pb 8
+wb 1010001
+pb 8
+EOF
+EXPECT=<<EOF
+00000000
+11000000
+00010000
+10100010
+EOF
+RUN
+
+NAME=pbwb least significant bit
+FILE=-
+CMDS=<<EOF
+pb 8
+wb 00000001
+pb 8
+wb 00000000
+pb 8
+EOF
+EXPECT=<<EOF
+00000000
+00000001
+00000000
+EOF
+RUN
+
+NAME=pbwb most significant bit
+FILE=-
+CMDS=<<EOF
+pb 8
+wb 11111111
+pb 8
+wb 0
+pb 8
+EOF
+EXPECT=<<EOF
+00000000
+11111111
+01111111
+EOF
+RUN
+
+NAME=pbwb two bytes
+FILE=-
+CMDS=<<EOF
+pb 16
+wb 1111111111111111
+pb 16
+wb 0 @ 1
+pb 16
+EOF
+EXPECT=<<EOF
+0000000000000000
+1111111111111111
+1111111101111111
+EOF
+RUN
+
+NAME=pbwb 3.5 bytes
+FILE=-
+CMDS=<<EOF
+pb 28
+wb 1111111111111111111111111111
+pb 28
+wb 1010101010101010101010101010
+pb 28
+wb 0 @ 3
+pb 28
+EOF
+EXPECT=<<EOF
+0000000000000000000000000000
+1111111111111111111111111111
+1010101010101010101010101010
+1010101010101010101010100010
+EOF
+RUN
+
+NAME=pbwb space
+FILE=-
+CMDS=<<EOF
+pb 16
+wb 11111111 11111111
+pb 16
+wb 0 @ 1
+pb 16
+EOF
+EXPECT=<<EOF
+0000000000000000
+1111111111111111
+1111111101111111
+EOF
+RUN
+
+NAME=pbwb invalid chars
+FILE=-
+CMDS=<<EOF
+wb 0xff
+EOF
+EXPECT_ERR=<<EOF
+ERROR: wb operates only on binary data
+EOF
+RUN

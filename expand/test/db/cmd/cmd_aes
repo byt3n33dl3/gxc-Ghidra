@@ -1,0 +1,158 @@
+NAME=aes help changing seek
+FILE=-
+CMDS=<<EOF
+wx 55
+e asm.arch=x86
+e asm.bits=32
+aes
+sr PC
+s
+EOF
+EXPECT=<<EOF
+0x1
+EOF
+RUN
+
+NAME=cmd.esil.intr unset
+FILE=-
+CMDS=<<EOF
+wx b8010000000f34b801000000cd80ebfe
+10aes
+EOF
+EXPECT=<<EOF
+EOF
+RUN
+
+NAME=aes without initialize
+FILE=-
+CMDS=<<EOF
+e asm.arch=x86
+e asm.bits=32
+wx bb10000000 # mov ebx, 10
+aes
+ar~ebx
+EOF
+EXPECT=<<EOF
+ebx = 0x00000010
+EOF
+RUN
+
+NAME=aes with pin
+FILE=-
+CMDS=<<EOF
+wx bb10000000bb10000000bb10000000 
+aeim
+e asm.arch=x86
+e asm.bits=32
+e cmd.esil.pin=?e
+aepc $$
+aep test @ 5
+aep
+aes
+EOF
+EXPECT_ERR=<<EOF
+EOF
+RUN
+
+NAME=aes with pin after aeim
+FILE=-
+CMDS=<<EOF
+wx bb10000000bb10000000bb10000000 
+e asm.arch=x86
+e asm.bits=32
+e cmd.esil.pin=?e
+aeim
+aepc $$
+aep test @ 5
+aep
+aes
+aes
+EOF
+EXPECT=<<EOF
+"aep ret0=dr R0=0;aexa ret"
+aep test @ 0x5
+"aep memcpy=wf `dr?A1` `dr?A2` @ `dr?A0`;aexa ret"
+"aep strlen=dr R0=`pszl@r:A0`;aexa ret"
+"aep puts=psz@r:A0; aexa ret"
+test
+EOF
+EXPECT_ERR=<<EOF
+ERROR: Missing file argument. Use 'test -fdx [file]'
+EOF
+RUN
+
+NAME=emulate imports
+FILE=bins/mach0/hello-puts
+CMDS=<<EOF
+s main
+aepc $$
+aeim
+aaep
+aep
+aecs
+EOF
+EXPECT=<<EOF
+"aep ret0=dr R0=0;aexa ret"
+"aep memcpy=wf `dr?A1` `dr?A2` @ `dr?A0`;aexa ret"
+"aep strlen=dr R0=`pszl@r:A0`;aexa ret"
+"aep puts=psz@r:A0; aexa ret"
+aep puts @ 0x1050
+Hello World
+EOF
+RUN
+
+NAME=esil plugins
+FILE=malloc://128
+CMDS=<<EOF
+aeim
+aeL
+?e --
+aeL dummy
+?e --
+ae dummy_op
+EOF
+EXPECT=<<EOF
+dummy
+forth
+null
+--
+--
+EOF
+EXPECT_ERR=<<EOF
+INFO: esil.dummy: Activated
+INFO: Dummy: Operation executed
+EOF
+RUN
+
+NAME=esil soft pins
+FILE=bins/elf/ls
+ARGS=-e bin.relocs.apply=true -e asm.lines=0 -e asm.bytes=0 -e asm.cmt.col=40
+CMDS=<<EOF
+'aep soft.dr9=dr?r9
+aep hard.rbp=dr?rbp
+pd 3
+aep hard.rbp @ 0x5ae4
+aep soft.dr9 @ 0x5ae6
+e emu.str=1
+dr r9=0x666
+pd 3
+aeim
+dr PC=$$
+3ds
+dr?rbp
+EOF
+EXPECT=<<EOF
+;-- entry0:
+0x00005ae0      endbr64
+0x00005ae4      xor ebp, ebp
+0x00005ae6      mov r9, rdx
+;-- entry0:
+0x00005ae0      endbr64
+0x00005ae4      xor ebp, ebp            ; [aep: hard.rbp]
+0x00005ae6      mov r9, rdx             ; [aep: soft.dr9]
+0x00000666
+
+0x00178000
+0x00178000
+EOF
+RUN

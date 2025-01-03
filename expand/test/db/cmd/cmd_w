@@ -1,0 +1,515 @@
+NAME=wa+
+FILE=-
+ARGS=-a arm -b64
+CMDS=<<EOF
+3wa+nop
+s
+pd 4 @ 0
+EOF
+EXPECT=<<EOF
+0xc
+            0x00000000      1f2003d5       nop
+            0x00000004      1f2003d5       nop
+            0x00000008      1f2003d5       nop
+            0x0000000c      00000000       invalid
+EOF
+RUN
+
+NAME=wv4
+FILE=-
+CMDS=<<EOF
+wv4 1 2 3 4
+p8 16
+wv2 1 2 3 4 5 6 7 8
+p8 16
+wv1 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16
+p8 16
+EOF
+EXPECT=<<EOF
+01000000020000000300000004000000
+01000200030004000500060007000800
+0102030405060708090a0b0c0d0e0f10
+EOF
+RUN
+
+NAME=wan
+FILE=-
+CMDS=<<EOF
+wx 554889e54157415641554154534881ec180600004989f74189fe488d85c0fdff
+e asm.arch=x86
+e asm.bits=64
+wan mov rax,33
+pi 5
+EOF
+EXPECT=<<EOF
+mov rax, 0x21
+nop
+push r13
+push r12
+push rbx
+EOF
+RUN
+
+NAME=wai
+FILE=-
+CMDS=<<EOF
+wx 554889e54157415641554154534881ec180600004989f74189fe488d85c0fdff
+e asm.arch=x86
+e asm.bits=64
+wai mov rax,33
+pi 5
+EOF
+EXPECT=<<EOF
+push rbp
+mov rbp, rsp
+push r15
+push r14
+push r13
+EOF
+RUN
+
+NAME=wa
+FILE=-
+CMDS=<<EOF
+wx 554889e54157415641554154534881ec180600004989f74189fe488d85c0fdff
+e asm.arch=x86
+e asm.bits=64
+wa mov rax,33
+pi 5
+EOF
+EXPECT=<<EOF
+mov rax, 0x21
+push rsi
+push r13
+push r12
+push rbx
+EOF
+RUN
+
+NAME=wB
+FILE=-
+CMDS=<<EOF
+wB 0x55
+pv1
+wB 0x55
+pv1
+wB 0x28
+pv1
+wB- 0x55
+pv1
+EOF
+EXPECT=<<EOF
+0x55
+0x55
+0x7d
+0x28
+EOF
+RUN
+
+NAME=w0
+FILE=-
+CMDS=<<EOF
+wx 0x112233
+p8 3
+w0 2
+p8 3
+w0 4
+p8 3
+EOF
+EXPECT=<<EOF
+112233
+000033
+000000
+EOF
+RUN
+
+NAME=w[1234]
+FILE=-
+ARGS=-e cfg.bigendian=false
+CMDS=<<EOF
+wx 0022
+w1+ 1
+pv2
+w2- 1
+w2- 1
+pv2
+EOF
+EXPECT=<<EOF
+0x2201
+0x21ff
+EOF
+RUN
+
+NAME=w6x
+FILE=-
+CMDS=<<EOF
+w6d ESIz
+p8 3
+w6x 112233
+ps
+EOF
+EXPECT=<<EOF
+112233
+ESIz
+EOF
+RUN
+
+NAME=w6e
+FILE=-
+CMDS=<<EOF
+w6d ESIz
+p8 3
+w6x 112233
+psz
+p6e 3
+EOF
+EXPECT=<<EOF
+112233
+ESIz
+RVNJ
+EOF
+RUN
+
+NAME=wh
+FILE=-
+CMDS=<<EOF
+wh radare2~?
+EOF
+EXPECT=<<EOF
+1
+EOF
+RUN
+
+NAME=we
+FILE=-
+CMDS=<<EOF
+i~size[1]
+wen 10
+i~size[1]
+EOF
+EXPECT=<<EOF
+0x200
+0x20a
+EOF
+RUN
+
+NAME=wp
+FILE=-
+CMDS=<<EOF
+echo 0x10 "hello" > .r2-wp.test
+echo 0x20 01020304 >> .r2-wp.test
+cat .r2-wp.test
+wp .r2-wp.test
+rm .r2-wp.test
+ps @ 0x10
+p8 3 @ 0x20
+EOF
+EXPECT=<<EOF
+0x10 "hello"
+0x20 01020304
+hello
+010203
+EOF
+RUN
+
+NAME=wu
+FILE=-
+CMDS=<<EOF
+EOF
+EXPECT=<<EOF
+EOF
+RUN
+
+NAME=wr
+FILE=-
+CMDS=<<EOF
+wr 4
+pv4~0x00000000
+EOF
+EXPECT=<<EOF
+EOF
+RUN
+
+NAME=wA
+FILE=-
+CMDS=<<EOF
+EOF
+EXPECT=<<EOF
+EOF
+RUN
+
+NAME=wc
+FILE=-
+ARGS=-e io.cache=true
+CMDS=<<EOF
+wx 010203
+wc
+wx 555555 @ 2
+wc
+wc*
+wci
+wc
+EOF
+EXPECT=<<EOF
+idx=0 addr=0x00000000 size=3 000000 -> 010203 (not written)
+idx=0 addr=0x00000000 size=3 000000 -> 010203 (not written)
+idx=1 addr=0x00000002 size=3 030000 -> 555555 (not written)
+wx 010203 @ 0x00000000 # replaces: 000000
+wx 555555 @ 0x00000002 # replaces: 030000
+idx=0 addr=0x00000000 size=3 000000 -> 010203 (written)
+idx=1 addr=0x00000002 size=3 030000 -> 555555 (written)
+EOF
+RUN
+
+NAME=w
+FILE=-
+CMDS=<<EOF
+wx 555555555555
+w hello
+ps
+p8 6
+EOF
+EXPECT=<<EOF
+helloU
+68656c6c6f55
+EOF
+RUN
+
+NAME=wz
+FILE=-
+CMDS=<<EOF
+wx 555555555555
+wz hello
+ps
+p8 6
+EOF
+EXPECT=<<EOF
+hello
+68656c6c6f00
+EOF
+RUN
+
+NAME=wt
+FILE=-
+CMDS=<<EOF
+wx 01020304
+wt .r2-wt.test 4
+p8 4 @ 4
+wff .r2-wt.test @ 4
+rm .r2-wt.test
+p8 4 @ 4
+EOF
+EXPECT=<<EOF
+00000000
+01020304
+EOF
+RUN
+
+NAME=wtf base64
+CMDS=<<EOF
+wx 01020304
+wtf base64:dGVzdGZpbGU== 4
+wx 00000000
+wff testfile
+p8 4
+rm testfile
+EOF
+EXPECT=<<EOF
+01020304
+EOF
+EXPECT_ERR=<<EOF
+INFO: Dumped 4 bytes from 0x00000000 into testfile
+EOF
+RUN
+
+NAME=wtf base64 with alias
+CMDS=<<EOF
+wx 01020304
+wtf base64:JGQ= 4
+wx 00000000
+wff $d
+p8 4
+EOF
+EXPECT=<<EOF
+01020304
+EOF
+EXPECT_ERR=<<EOF
+INFO: Dumped 4 bytes from 0x00000000 into $d
+EOF
+RUN
+
+NAME=wf
+FILE=-
+CMDS=<<EOF
+wx 0102030405060708
+wfx 4 2
+p8 8
+EOF
+EXPECT=<<EOF
+0506030401020708
+EOF
+RUN
+
+NAME=ww
+FILE=-
+CMDS=<<EOF
+ww hello
+psw
+EOF
+EXPECT=<<EOF
+hello
+EOF
+RUN
+
+NAME=wx
+FILE=-
+CMDS=<<EOF
+wx 553344
+p8 3
+s
+wx+1111
+s
+p8 2 @ -2
+EOF
+EXPECT=<<EOF
+553344
+0x0
+0x2
+1111
+EOF
+RUN
+
+NAME=wa
+FILE=-
+CMDS=<<EOF
+e asm.arch=x86
+e asm.bits=64
+wa nop
+pi 1
+p8 1
+EOF
+EXPECT=<<EOF
+nop
+90
+EOF
+RUN
+
+NAME=wX
+FILE=-
+CMDS=<<EOF
+wX 0102 @!20
+p8 20
+EOF
+EXPECT=<<EOF
+0102010201020102010201020102010201020102
+EOF
+RUN
+
+NAME=wm
+FILE=-
+CMDS=<<EOF
+wm f0ff
+wX 010203 @!20
+p8 20
+EOF
+EXPECT=<<EOF
+0002000100030002000100030002000100030002
+EOF
+RUN
+
+NAME=wv
+FILE=-
+CMDS=<<EOF
+wv1 0x55
+pv4
+wv2 0x7733
+pv4
+wv4 0xdeadbeef
+pv4
+EOF
+EXPECT=<<EOF
+0x00000055
+0x00007733
+0xdeadbeef
+EOF
+RUN
+
+NAME=wo
+FILE=-
+CMDS=<<EOF
+b 10
+woo 0x55
+p8 10
+woA 0x66
+p8 10
+EOF
+EXPECT=<<EOF
+55555555555555555555
+44444444444444444444
+EOF
+RUN
+
+NAME=wd
+FILE=-
+CMDS=<<EOF
+wx 010203 @ 0x10
+p8 2
+wd 0x10 2
+p8 2
+EOF
+EXPECT=<<EOF
+0000
+0102
+EOF
+RUN
+
+NAME=ws
+FILE=-
+CMDS=<<EOF
+ws hello
+p8 6
+ws all
+p8 4
+EOF
+EXPECT=<<EOF
+0568656c6c6f
+03616c6c
+EOF
+RUN
+
+NAME=ws2
+FILE=-
+CMDS=<<EOF
+ws hello
+p8 16
+ws2 hello
+p8 16
+ws hello
+p8 16
+ws4 hello
+p8 16
+EOF
+EXPECT=<<EOF
+0568656c6c6f00000000000000000000
+050068656c6c6f000000000000000000
+0568656c6c6f6f000000000000000000
+0500000068656c6c6f00000000000000
+EOF
+RUN
+
+NAME=w+
+FILE=-
+CMDS=<<EOF
+e hex.header=false
+w+hello
+w+world
+px 16
+px 16 @ 0
+p8 16
+EOF
+EXPECT=<<EOF
+0x0000000a  0000 0000 0000 0000 0000 0000 0000 0000  ................
+0x00000000  6865 6c6c 6f77 6f72 6c64 0000 0000 0000  helloworld......
+00000000000000000000000000000000
+EOF
+RUN

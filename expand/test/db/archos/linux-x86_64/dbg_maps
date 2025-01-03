@@ -1,0 +1,190 @@
+NAME=dbg.maps.count/
+FILE=bins/elf/analysis/elf-nx
+ARGS=-d
+CMDS=<<EOF
+dm~?/
+dk 9
+EOF
+EXPECT=<<EOF
+6
+EOF
+RUN
+
+NAME=dbg.maps.count
+FILE=bins/elf/analysis/elf-nx
+ARGS=-d
+CMDS=<<EOF
+dm~?
+dk 9
+EOF
+EXPECT=<<EOF
+9
+EOF
+RUN
+
+NAME=dbg.maps.count.after.map
+FILE=bins/elf/analysis/x86-helloworld-gcc
+ARGS=-d
+CMDS=<<EOF
+dm~?
+db sym.imp.puts
+dc~?
+dm~map.?
+dc
+EOF
+EXPECT=<<EOF
+9
+0
+8
+Hello world!
+EOF
+RUN
+
+NAME=dbg.modules.count
+FILE=bins/elf/analysis/elf-nx
+ARGS=-d
+CMDS=dmm~?
+EXPECT=<<EOF
+2
+EOF
+RUN
+
+NAME=dbg.curmod.count
+BROKEN=1
+FILE=bins/elf/analysis/elf-nx
+ARGS=-d
+CMDS=dmm.~?
+EXPECT=<<EOF
+1
+EOF
+RUN
+
+NAME=db.maps.symbols.after.map.complete
+FILE=bins/elf/analysis/x86-helloworld-gcc
+ARGS=-d
+BROKEN=1
+CMDS=<<EOF
+dm~?
+db sym.imp.puts
+dc~?
+dmi libc~?
+dmi libc~libc~?
+EOF
+EXPECT=<<EOF
+7
+0
+2392
+45
+Hello world!
+EOF
+RUN
+
+NAME=dbg.maps.sections.after.map.only_filtered
+FILE=bins/elf/analysis/x86-helloworld-gcc
+ARGS=-d
+BROKEN=1
+CMDS=<<EOF
+dm~?
+db sym.imp.puts
+dc~?
+dmS libc~?
+dmS libc~libc~?
+dmS* libc~?
+dmS* libc~libc~?
+EOF
+EXPECT=<<EOF
+7
+0
+80
+78
+314
+312
+Hello world!
+EOF
+RUN
+
+
+NAME=dbg.maps.sections.after.map.complete
+FILE=bins/elf/analysis/x86-helloworld-gcc
+ARGS=-d
+BROKEN=1
+CMDS=<<EOF
+dm~?
+db sym.imp.puts
+dc~?
+dmS libc~?
+dmS libc~libc~?
+dmS* libc~?
+dmS* libc~libc~?
+dmS~?
+dmS*~?
+dmS~libc~?
+dmS*~libc~?
+EOF
+EXPECT=<<EOF
+7
+0
+80
+78
+314
+312
+154
+598
+78
+312
+Hello world!
+EOF
+RUN
+
+NAME=db.maps.sections.are.singletons
+FILE=bins/elf/analysis/x86-helloworld-gcc
+ARGS=-d
+BROKEN=1
+CMDS=<<EOF
+dmm~?
+db sym.imp.puts
+dc~?
+dmm~?
+S~.text~?
+dmS hello~.text~?
+dmS~x86-helloworld-gcc..text~?
+dmS~libc-2.19.so..text~?
+dmS~ld-2.19.so..text~?
+EOF
+EXPECT=<<EOF
+2
+0
+3
+1
+1
+1
+1
+1
+Hello world!
+EOF
+RUN
+
+NAME=db.maps.current.section.after.dmS
+FILE=bins/elf/analysis/x86-helloworld-gcc
+ARGS=-d
+BROKEN=1
+CMDS=<<EOF
+dmm~?
+db sym.imp.puts
+dc~?
+dmm~?
+s map._lib_i386_linux_gnu_ld_2.19.so._r_x
+S.~?
+.dmS*~?
+S.~libc-2.19.so..text~?
+EOF
+EXPECT=<<EOF
+2
+0
+3
+0
+3
+1
+Hello world!
+EOF
+RUN

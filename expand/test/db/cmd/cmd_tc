@@ -1,0 +1,837 @@
+NAME=tc
+FILE=bins/mach0/objc-employee
+CMDS=.ic*;ts
+EXPECT=<<EOF
+Employee
+NSString
+EOF
+RUN
+
+NAME=tc2
+FILE=bins/mach0/objc-employee
+CMDS=icc*
+EXPECT=<<EOF
+@interface Employee : NSObject
+{
+  struct objc_class * Employee::(var)isa
+  s Employee::(var)_shortWord
+  @"NSString" Employee::(var)_username
+  @"NSString" Employee::(var)_firstName
+  Q Employee::(var)_wideWord
+  isa Employee::(property)username
+  isa Employee::(property)firstName
+  isa Employee::(property)shortWord
+  isa Employee::(property)wideWord
+}
++ (void) helloWorld
++ (id) sayHello
++ (unknown) p0
++ (unknown) p1
++ (unknown) p2
++ (unknown) p3
++ (unknown) base
++ (id) username
++ (void) setUsername:
++ (id) firstName
++ (void) setFirstName:
++ (short) shortWord
++ (unsigned long long) wideWord
+- (id) sayHello
+@end
+EOF
+RUN
+
+NAME=tc3
+FILE=bins/mach0/objc-employee
+ARGS=-e bin.types=true
+CMDS=ic*
+EXPECT=<<EOF
+fs classes
+'f class.Employee = 0x100001ae0
+'f super.Employee.NSObject = 0
+'f method.Employee.helloWorld = 0x100001ae0
+'f method.Employee.sayHello = 0x100001b10
+'f method.Employee.p0 = 0x100001b40
+'f method.Employee.p1 = 0x100001b60
+'f method.Employee.p2 = 0x100001b80
+'f method.Employee.p3 = 0x100001ba0
+'f method.Employee.base = 0x100001bc0
+'f method.Employee.username = 0x100001c10
+'f method.Employee.setUsername: = 0x100001c40
+'f method.Employee.firstName = 0x100001c80
+'f method.Employee.setFirstName: = 0x100001cb0
+'f method.Employee.shortWord = 0x100001cf0
+'f method.Employee.wideWord = 0x100001d10
+'f method.Employee.class.sayHello = 0x100001be0
+'f field.Employee.var.isa = 0x00000000
+'f field.Employee.var._shortWord = 0x100003328
+'f field.Employee.var._username = 0x100003330
+'f field.Employee.var._firstName = 0x100003338
+'f field.Employee.var._wideWord = 0x100003340
+'f field.Employee.property.username = 0x00000000
+'f field.Employee.property.firstName = 0x00000000
+'f field.Employee.property.shortWord = 0x00000000
+'f field.Employee.property.wideWord = 0x00000000
+'td struct Employee { struct objc_class * isa; short _shortWord; struct NSString* _username; struct NSString* _firstName; uint64_t _wideWord; void* username; void* firstName; void* shortWord; void* wideWord;};
+EOF
+RUN
+
+NAME=tc4
+FILE=bins/mach0/objc-employee
+ARGS=-e bin.types=true
+CMDS=.ic*;tc
+EXPECT=<<EOF
+struct Employee {
+  struct objc_class *isa;
+  int16_t _shortWord;
+  struct NSString *_username;
+  struct NSString *_firstName;
+  uint64_t _wideWord;
+  void *username;
+  void *firstName;
+  void *shortWord;
+  void *wideWord;
+};
+struct NSString {
+  void *p0;
+  size_t p1;
+  char *str;
+  int len;
+};
+enum CCAlgorithm {
+	kCCAlgorithmAES = 0,
+	kCCAlgorithmDES = 1,
+	kCCAlgorithm3DES = 2,
+	kCCAlgorithmCAST = 3,
+	kCCAlgorithmRC4 = 4,
+	kCCAlgorithmRC2 = 5
+};
+enum CCCryptorStatus {
+	kCCSuccess = 0,
+	kCCParamError = 1,
+	kCCBufferTooSmall = 2,
+	kCCMemoryFailure = 3,
+	kCCAlignmentError = 4,
+	kCCDecodeError = 5,
+	kCCUnimplemented = 6
+};
+enum CCOperation {
+	kCCEncrypt = 0,
+	kCCDecrypt = 1
+};
+enum mach0_build_platform {
+	MACOS = 1,
+	IOS = 2,
+	TVOS = 3,
+	WATCHOS = 4,
+	BRIDGEOS = 5,
+	IOSMAC = 6,
+	IOSSIMULATOR = 7,
+	TVOSSIMULATOR = 8,
+	WATCHOSSIMULATOR = 9
+};
+enum mach0_build_tool {
+	CLANG = 1,
+	SWIFT = 2,
+	LD = 3
+};
+enum mach0_header_filetype {
+	MH_OBJECT = 1,
+	MH_EXECUTE = 2,
+	MH_FVMLIB = 3,
+	MH_CORE = 4,
+	MH_PRELOAD = 5,
+	MH_DYLIB = 6,
+	MH_DYLINKER = 7,
+	MH_BUNDLE = 8,
+	MH_DYLIB_STUB = 9,
+	MH_DSYM = 10,
+	MH_KEXT_BUNDLE = 11
+};
+enum mach0_header_flags {
+	MH_NOUNDEFS = 1,
+	MH_INCRLINK = 2,
+	MH_DYLDLINK = 4,
+	MH_BINDATLOAD = 8,
+	MH_PREBOUND = 16,
+	MH_SPLIT_SEGS = 32,
+	MH_LAZY_INIT = 64,
+	MH_TWOLEVEL = 128,
+	MH_FORCE_FLAT = 256,
+	MH_NOMULTIDEFS = 512,
+	MH_NOFIXPREBINDING = 1024,
+	MH_PREBINDABLE = 2048,
+	MH_ALLMODSBOUND = 4096,
+	MH_SUBSECTIONS_VIA_SYMBOLS = 8192,
+	MH_CANONICAL = 16384,
+	MH_WEAK_DEFINES = 32768,
+	MH_BINDS_TO_WEAK = 65536,
+	MH_ALLOW_STACK_EXECUTION = 131072,
+	MH_ROOT_SAFE = 262144,
+	MH_SETUID_SAFE = 524288,
+	MH_NO_REEXPORTED_DYLIBS = 1048576,
+	MH_PIE = 2097152,
+	MH_DEAD_STRIPPABLE_DYLIB = 4194304,
+	MH_HAS_TLV_DESCRIPTORS = 8388608,
+	MH_NO_HEAP_EXECUTION = 16777216
+};
+enum mach0_load_command_type {
+	LC_SEGMENT = 1,
+	LC_SYMTAB = 2,
+	LC_SYMSEG = 3,
+	LC_THREAD = 4,
+	LC_UNIXTHREAD = 5,
+	LC_LOADFVMLIB = 6,
+	LC_IDFVMLIB = 7,
+	LC_IDENT = 8,
+	LC_FVMFILE = 9,
+	LC_PREPAGE = 10,
+	LC_DYSYMTAB = 11,
+	LC_LOAD_DYLIB = 12,
+	LC_ID_DYLIB = 13,
+	LC_LOAD_DYLINKER = 14,
+	LC_ID_DYLINKER = 15,
+	LC_PREBOUND_DYLIB = 16,
+	LC_ROUTINES = 17,
+	LC_SUB_FRAMEWORK = 18,
+	LC_SUB_UMBRELLA = 19,
+	LC_SUB_CLIENT = 20,
+	LC_SUB_LIBRARY = 21,
+	LC_TWOLEVEL_HINTS = 22,
+	LC_PREBIND_CKSUM = 23,
+	LC_LOAD_WEAK_DYLIB = 2147483672,
+	LC_SEGMENT_64 = 25,
+	LC_ROUTINES_64 = 26,
+	LC_UUID = 27,
+	LC_RPATH = 2147483676,
+	LC_CODE_SIGNATURE = 29,
+	LC_SEGMENT_SPLIT_INFO = 30,
+	LC_REEXPORT_DYLIB = 2147483679,
+	LC_LAZY_LOAD_DYLIB = 32,
+	LC_ENCRYPTION_INFO = 33,
+	LC_DYLD_INFO = 34,
+	LC_DYLD_INFO_ONLY = 2147483682,
+	LC_LOAD_UPWARD_DYLIB = 2147483683,
+	LC_VERSION_MIN_MACOSX = 36,
+	LC_VERSION_MIN_IPHONEOS = 37,
+	LC_FUNCTION_STARTS = 38,
+	LC_DYLD_ENVIRONMENT = 39,
+	LC_MAIN = 2147483688,
+	LC_DATA_IN_CODE = 41,
+	LC_SOURCE_VERSION = 42,
+	LC_DYLIB_CODE_SIGN_DRS = 43,
+	LC_ENCRYPTION_INFO_64 = 44,
+	LC_LINKER_OPTION = 45,
+	LC_LINKER_OPTIMIZATION_HINT = 46,
+	LC_VERSION_MIN_TVOS = 47,
+	LC_VERSION_MIN_WATCHOS = 48,
+	LC_NOTE = 49,
+	LC_BUILD_VERSION = 50
+};
+enum mach0_section_attrs {
+	S_ATTR_PURE_INSTRUCTIONS = 8388608,
+	S_ATTR_NO_TOC = 4194304,
+	S_ATTR_STRIP_STATIC_SYMS = 2097152,
+	S_ATTR_NO_DEAD_STRIP = 1048576,
+	S_ATTR_LIVE_SUPPORT = 524288,
+	S_ATTR_SELF_MODIFYING_CODE = 262144,
+	S_ATTR_DEBUG = 131072,
+	S_ATTR_SOME_INSTRUCTIONS = 4,
+	S_ATTR_EXT_RELOC = 2,
+	S_ATTR_LOC_RELOC = 1
+};
+enum mach0_section_types {
+	S_REGULAR = 0,
+	S_ZEROFILL = 1,
+	S_CSTRING_LITERALS = 2,
+	S_4BYTE_LITERALS = 3,
+	S_8BYTE_LITERALS = 4,
+	S_LITERAL_POINTERS = 5,
+	S_NON_LAZY_SYMBOL_POINTERS = 6,
+	S_LAZY_SYMBOL_POINTERS = 7,
+	S_SYMBOL_STUBS = 8,
+	S_MOD_INIT_FUNC_POINTERS = 9,
+	S_MOD_TERM_FUNC_POINTERS = 10,
+	S_COALESCED = 11,
+	S_GB_ZEROFILL = 12,
+	S_INTERPOSING = 13,
+	S_16BYTE_LITERALS = 14,
+	S_DTRACE_DOF = 15,
+	S_LAZY_DYLIB_SYMBOL_POINTERS = 16,
+	S_THREAD_LOCAL_REGULAR = 17,
+	S_THREAD_LOCAL_ZEROFILL = 18,
+	S_THREAD_LOCAL_VARIABLES = 19,
+	S_THREAD_LOCAL_VARIABLE_POINTERS = 20,
+	S_THREAD_LOCAL_INIT_FUNCTION_POINTERS = 21,
+	S_INIT_FUNC_OFFSETS = 22
+};
+EOF
+RUN
+
+NAME=tc iOS14 arm64
+FILE=bins/mach0/objc-employee-ios14-arm64
+CMDS=.ic*;ts
+EXPECT=<<EOF
+Employee
+NSString
+EOF
+RUN
+
+NAME=tc2 iOS14 arm64
+FILE=bins/mach0/objc-employee-ios14-arm64
+CMDS=icc*
+EXPECT=<<EOF
+@interface Employee : NSObject
+{
+  struct objc_class * Employee::(var)isa
+  s Employee::(var)_shortWord
+  @"NSString" Employee::(var)_username
+  @"NSString" Employee::(var)_firstName
+  Q Employee::(var)_wideWord
+  isa Employee::(property)username
+  isa Employee::(property)firstName
+  isa Employee::(property)shortWord
+  isa Employee::(property)wideWord
+}
++ (void) sayHello
++ (void) helloWorld
++ (unknown) p0
++ (unknown) p1
++ (unknown) p2
++ (unknown) p3
++ (unknown) base
++ (id) username
++ (void) setUsername:
++ (id) firstName
++ (void) setFirstName:
++ (short) shortWord
++ (unsigned long long) wideWord
++ (void) .cxx_destruct
+- (void) sayHello
+@end
+EOF
+RUN
+
+NAME=tc3 iOS14 arm64
+FILE=bins/mach0/objc-employee-ios14-arm64
+CMDS=ic*
+EXPECT=<<EOF
+fs classes
+'f class.Employee = 0x100007958
+'f super.Employee.NSObject = 0
+'f method.Employee.sayHello = 0x100007984
+'f method.Employee.helloWorld = 0x1000079b0
+'f method.Employee.p0 = 0x1000079dc
+'f method.Employee.p1 = 0x1000079f8
+'f method.Employee.p2 = 0x100007a14
+'f method.Employee.p3 = 0x100007a30
+'f method.Employee.base = 0x100007a4c
+'f method.Employee.username = 0x100007a64
+'f method.Employee.setUsername: = 0x100007a8c
+'f method.Employee.firstName = 0x100007ac4
+'f method.Employee.setFirstName: = 0x100007aec
+'f method.Employee.shortWord = 0x100007b24
+'f method.Employee.wideWord = 0x100007b44
+'f method.Employee..cxx_destruct = 0x100007b60
+'f method.Employee.class.sayHello = 0x100007958
+'f field.Employee.var.isa = 0x00000000
+'f field.Employee.var._shortWord = 0x10000c228
+'f field.Employee.var._username = 0x10000c22c
+'f field.Employee.var._firstName = 0x10000c230
+'f field.Employee.var._wideWord = 0x10000c234
+'f field.Employee.property.username = 0x00000000
+'f field.Employee.property.firstName = 0x00000000
+'f field.Employee.property.shortWord = 0x00000000
+'f field.Employee.property.wideWord = 0x00000000
+'td struct Employee { struct objc_class * isa; short _shortWord; struct NSString* _username; struct NSString* _firstName; uint64_t _wideWord; void* username; void* firstName; void* shortWord; void* wideWord;};
+EOF
+RUN
+
+NAME=tc4 iOS14 arm64
+FILE=bins/mach0/objc-employee-ios14-arm64
+ARGS=-e bin.types=true
+CMDS=<<EOF
+.ic*;tc
+EOF
+EXPECT=<<EOF
+struct Employee {
+  struct objc_class *isa;
+  int16_t _shortWord;
+  struct NSString *_username;
+  struct NSString *_firstName;
+  uint64_t _wideWord;
+  void *username;
+  void *firstName;
+  void *shortWord;
+  void *wideWord;
+};
+struct NSString {
+  void *p0;
+  size_t p1;
+  char *str;
+  int len;
+};
+enum CCAlgorithm {
+	kCCAlgorithmAES = 0,
+	kCCAlgorithmDES = 1,
+	kCCAlgorithm3DES = 2,
+	kCCAlgorithmCAST = 3,
+	kCCAlgorithmRC4 = 4,
+	kCCAlgorithmRC2 = 5
+};
+enum CCCryptorStatus {
+	kCCSuccess = 0,
+	kCCParamError = 1,
+	kCCBufferTooSmall = 2,
+	kCCMemoryFailure = 3,
+	kCCAlignmentError = 4,
+	kCCDecodeError = 5,
+	kCCUnimplemented = 6
+};
+enum CCOperation {
+	kCCEncrypt = 0,
+	kCCDecrypt = 1
+};
+enum mach0_build_platform {
+	MACOS = 1,
+	IOS = 2,
+	TVOS = 3,
+	WATCHOS = 4,
+	BRIDGEOS = 5,
+	IOSMAC = 6,
+	IOSSIMULATOR = 7,
+	TVOSSIMULATOR = 8,
+	WATCHOSSIMULATOR = 9
+};
+enum mach0_build_tool {
+	CLANG = 1,
+	SWIFT = 2,
+	LD = 3
+};
+enum mach0_header_filetype {
+	MH_OBJECT = 1,
+	MH_EXECUTE = 2,
+	MH_FVMLIB = 3,
+	MH_CORE = 4,
+	MH_PRELOAD = 5,
+	MH_DYLIB = 6,
+	MH_DYLINKER = 7,
+	MH_BUNDLE = 8,
+	MH_DYLIB_STUB = 9,
+	MH_DSYM = 10,
+	MH_KEXT_BUNDLE = 11
+};
+enum mach0_header_flags {
+	MH_NOUNDEFS = 1,
+	MH_INCRLINK = 2,
+	MH_DYLDLINK = 4,
+	MH_BINDATLOAD = 8,
+	MH_PREBOUND = 16,
+	MH_SPLIT_SEGS = 32,
+	MH_LAZY_INIT = 64,
+	MH_TWOLEVEL = 128,
+	MH_FORCE_FLAT = 256,
+	MH_NOMULTIDEFS = 512,
+	MH_NOFIXPREBINDING = 1024,
+	MH_PREBINDABLE = 2048,
+	MH_ALLMODSBOUND = 4096,
+	MH_SUBSECTIONS_VIA_SYMBOLS = 8192,
+	MH_CANONICAL = 16384,
+	MH_WEAK_DEFINES = 32768,
+	MH_BINDS_TO_WEAK = 65536,
+	MH_ALLOW_STACK_EXECUTION = 131072,
+	MH_ROOT_SAFE = 262144,
+	MH_SETUID_SAFE = 524288,
+	MH_NO_REEXPORTED_DYLIBS = 1048576,
+	MH_PIE = 2097152,
+	MH_DEAD_STRIPPABLE_DYLIB = 4194304,
+	MH_HAS_TLV_DESCRIPTORS = 8388608,
+	MH_NO_HEAP_EXECUTION = 16777216
+};
+enum mach0_load_command_type {
+	LC_SEGMENT = 1,
+	LC_SYMTAB = 2,
+	LC_SYMSEG = 3,
+	LC_THREAD = 4,
+	LC_UNIXTHREAD = 5,
+	LC_LOADFVMLIB = 6,
+	LC_IDFVMLIB = 7,
+	LC_IDENT = 8,
+	LC_FVMFILE = 9,
+	LC_PREPAGE = 10,
+	LC_DYSYMTAB = 11,
+	LC_LOAD_DYLIB = 12,
+	LC_ID_DYLIB = 13,
+	LC_LOAD_DYLINKER = 14,
+	LC_ID_DYLINKER = 15,
+	LC_PREBOUND_DYLIB = 16,
+	LC_ROUTINES = 17,
+	LC_SUB_FRAMEWORK = 18,
+	LC_SUB_UMBRELLA = 19,
+	LC_SUB_CLIENT = 20,
+	LC_SUB_LIBRARY = 21,
+	LC_TWOLEVEL_HINTS = 22,
+	LC_PREBIND_CKSUM = 23,
+	LC_LOAD_WEAK_DYLIB = 2147483672,
+	LC_SEGMENT_64 = 25,
+	LC_ROUTINES_64 = 26,
+	LC_UUID = 27,
+	LC_RPATH = 2147483676,
+	LC_CODE_SIGNATURE = 29,
+	LC_SEGMENT_SPLIT_INFO = 30,
+	LC_REEXPORT_DYLIB = 2147483679,
+	LC_LAZY_LOAD_DYLIB = 32,
+	LC_ENCRYPTION_INFO = 33,
+	LC_DYLD_INFO = 34,
+	LC_DYLD_INFO_ONLY = 2147483682,
+	LC_LOAD_UPWARD_DYLIB = 2147483683,
+	LC_VERSION_MIN_MACOSX = 36,
+	LC_VERSION_MIN_IPHONEOS = 37,
+	LC_FUNCTION_STARTS = 38,
+	LC_DYLD_ENVIRONMENT = 39,
+	LC_MAIN = 2147483688,
+	LC_DATA_IN_CODE = 41,
+	LC_SOURCE_VERSION = 42,
+	LC_DYLIB_CODE_SIGN_DRS = 43,
+	LC_ENCRYPTION_INFO_64 = 44,
+	LC_LINKER_OPTION = 45,
+	LC_LINKER_OPTIMIZATION_HINT = 46,
+	LC_VERSION_MIN_TVOS = 47,
+	LC_VERSION_MIN_WATCHOS = 48,
+	LC_NOTE = 49,
+	LC_BUILD_VERSION = 50
+};
+enum mach0_section_attrs {
+	S_ATTR_PURE_INSTRUCTIONS = 8388608,
+	S_ATTR_NO_TOC = 4194304,
+	S_ATTR_STRIP_STATIC_SYMS = 2097152,
+	S_ATTR_NO_DEAD_STRIP = 1048576,
+	S_ATTR_LIVE_SUPPORT = 524288,
+	S_ATTR_SELF_MODIFYING_CODE = 262144,
+	S_ATTR_DEBUG = 131072,
+	S_ATTR_SOME_INSTRUCTIONS = 4,
+	S_ATTR_EXT_RELOC = 2,
+	S_ATTR_LOC_RELOC = 1
+};
+enum mach0_section_types {
+	S_REGULAR = 0,
+	S_ZEROFILL = 1,
+	S_CSTRING_LITERALS = 2,
+	S_4BYTE_LITERALS = 3,
+	S_8BYTE_LITERALS = 4,
+	S_LITERAL_POINTERS = 5,
+	S_NON_LAZY_SYMBOL_POINTERS = 6,
+	S_LAZY_SYMBOL_POINTERS = 7,
+	S_SYMBOL_STUBS = 8,
+	S_MOD_INIT_FUNC_POINTERS = 9,
+	S_MOD_TERM_FUNC_POINTERS = 10,
+	S_COALESCED = 11,
+	S_GB_ZEROFILL = 12,
+	S_INTERPOSING = 13,
+	S_16BYTE_LITERALS = 14,
+	S_DTRACE_DOF = 15,
+	S_LAZY_DYLIB_SYMBOL_POINTERS = 16,
+	S_THREAD_LOCAL_REGULAR = 17,
+	S_THREAD_LOCAL_ZEROFILL = 18,
+	S_THREAD_LOCAL_VARIABLES = 19,
+	S_THREAD_LOCAL_VARIABLE_POINTERS = 20,
+	S_THREAD_LOCAL_INIT_FUNCTION_POINTERS = 21,
+	S_INIT_FUNC_OFFSETS = 22
+};
+EOF
+RUN
+
+NAME=tc iOS14 arm64e
+FILE=bins/mach0/objc-employee-ios14-arm64e
+CMDS=.ic*;ts
+EXPECT=<<EOF
+Employee
+NSString
+EOF
+RUN
+
+NAME=tc2 iOS14 arm64e
+FILE=bins/mach0/objc-employee-ios14-arm64e
+CMDS=icc*
+EXPECT=<<EOF
+@interface Employee : NSObject
+{
+  struct objc_class * Employee::(var)isa
+  s Employee::(var)_shortWord
+  @"NSString" Employee::(var)_username
+  @"NSString" Employee::(var)_firstName
+  Q Employee::(var)_wideWord
+  isa Employee::(property)username
+  isa Employee::(property)firstName
+  isa Employee::(property)shortWord
+  isa Employee::(property)wideWord
+}
++ (void) sayHello
++ (void) helloWorld
++ (unknown) p0
++ (unknown) p1
++ (unknown) p2
++ (unknown) p3
++ (unknown) base
++ (id) username
++ (void) setUsername:
++ (id) firstName
++ (void) setFirstName:
++ (short) shortWord
++ (unsigned long long) wideWord
++ (void) .cxx_destruct
+- (void) sayHello
+@end
+EOF
+RUN
+
+NAME=tc3 iOS14 arm64e
+FILE=bins/mach0/objc-employee-ios14-arm64e
+CMDS=ic*
+EXPECT=<<EOF
+fs classes
+'f class.Employee = 0x1000079a8
+'f super.Employee.NSObject = 0
+'f method.Employee.sayHello = 0x1000079d8
+'f method.Employee.helloWorld = 0x100007a08
+'f method.Employee.p0 = 0x100007a38
+'f method.Employee.p1 = 0x100007a54
+'f method.Employee.p2 = 0x100007a70
+'f method.Employee.p3 = 0x100007a8c
+'f method.Employee.base = 0x100007aa8
+'f method.Employee.username = 0x100007ac0
+'f method.Employee.setUsername: = 0x100007ae8
+'f method.Employee.firstName = 0x100007b24
+'f method.Employee.setFirstName: = 0x100007b4c
+'f method.Employee.shortWord = 0x100007b88
+'f method.Employee.wideWord = 0x100007ba8
+'f method.Employee..cxx_destruct = 0x100007bc4
+'f method.Employee.class.sayHello = 0x1000079a8
+'f field.Employee.var.isa = 0x00000000
+'f field.Employee.var._shortWord = 0x10000c1d8
+'f field.Employee.var._username = 0x10000c1dc
+'f field.Employee.var._firstName = 0x10000c1e0
+'f field.Employee.var._wideWord = 0x10000c1e4
+'f field.Employee.property.username = 0x00000000
+'f field.Employee.property.firstName = 0x00000000
+'f field.Employee.property.shortWord = 0x00000000
+'f field.Employee.property.wideWord = 0x00000000
+'td struct Employee { struct objc_class * isa; short _shortWord; struct NSString* _username; struct NSString* _firstName; uint64_t _wideWord; void* username; void* firstName; void* shortWord; void* wideWord;};
+EOF
+RUN
+
+NAME=tc4 iOS14 arm64e
+FILE=bins/mach0/objc-employee-ios14-arm64e
+ARGS=-e bin.types=true
+CMDS=<<EOF
+.ic*;tc
+EOF
+EXPECT=<<EOF
+struct Employee {
+  struct objc_class *isa;
+  int16_t _shortWord;
+  struct NSString *_username;
+  struct NSString *_firstName;
+  uint64_t _wideWord;
+  void *username;
+  void *firstName;
+  void *shortWord;
+  void *wideWord;
+};
+struct NSString {
+  void *p0;
+  size_t p1;
+  char *str;
+  int len;
+};
+enum CCAlgorithm {
+	kCCAlgorithmAES = 0,
+	kCCAlgorithmDES = 1,
+	kCCAlgorithm3DES = 2,
+	kCCAlgorithmCAST = 3,
+	kCCAlgorithmRC4 = 4,
+	kCCAlgorithmRC2 = 5
+};
+enum CCCryptorStatus {
+	kCCSuccess = 0,
+	kCCParamError = 1,
+	kCCBufferTooSmall = 2,
+	kCCMemoryFailure = 3,
+	kCCAlignmentError = 4,
+	kCCDecodeError = 5,
+	kCCUnimplemented = 6
+};
+enum CCOperation {
+	kCCEncrypt = 0,
+	kCCDecrypt = 1
+};
+enum mach0_build_platform {
+	MACOS = 1,
+	IOS = 2,
+	TVOS = 3,
+	WATCHOS = 4,
+	BRIDGEOS = 5,
+	IOSMAC = 6,
+	IOSSIMULATOR = 7,
+	TVOSSIMULATOR = 8,
+	WATCHOSSIMULATOR = 9
+};
+enum mach0_build_tool {
+	CLANG = 1,
+	SWIFT = 2,
+	LD = 3
+};
+enum mach0_header_filetype {
+	MH_OBJECT = 1,
+	MH_EXECUTE = 2,
+	MH_FVMLIB = 3,
+	MH_CORE = 4,
+	MH_PRELOAD = 5,
+	MH_DYLIB = 6,
+	MH_DYLINKER = 7,
+	MH_BUNDLE = 8,
+	MH_DYLIB_STUB = 9,
+	MH_DSYM = 10,
+	MH_KEXT_BUNDLE = 11
+};
+enum mach0_header_flags {
+	MH_NOUNDEFS = 1,
+	MH_INCRLINK = 2,
+	MH_DYLDLINK = 4,
+	MH_BINDATLOAD = 8,
+	MH_PREBOUND = 16,
+	MH_SPLIT_SEGS = 32,
+	MH_LAZY_INIT = 64,
+	MH_TWOLEVEL = 128,
+	MH_FORCE_FLAT = 256,
+	MH_NOMULTIDEFS = 512,
+	MH_NOFIXPREBINDING = 1024,
+	MH_PREBINDABLE = 2048,
+	MH_ALLMODSBOUND = 4096,
+	MH_SUBSECTIONS_VIA_SYMBOLS = 8192,
+	MH_CANONICAL = 16384,
+	MH_WEAK_DEFINES = 32768,
+	MH_BINDS_TO_WEAK = 65536,
+	MH_ALLOW_STACK_EXECUTION = 131072,
+	MH_ROOT_SAFE = 262144,
+	MH_SETUID_SAFE = 524288,
+	MH_NO_REEXPORTED_DYLIBS = 1048576,
+	MH_PIE = 2097152,
+	MH_DEAD_STRIPPABLE_DYLIB = 4194304,
+	MH_HAS_TLV_DESCRIPTORS = 8388608,
+	MH_NO_HEAP_EXECUTION = 16777216
+};
+enum mach0_load_command_type {
+	LC_SEGMENT = 1,
+	LC_SYMTAB = 2,
+	LC_SYMSEG = 3,
+	LC_THREAD = 4,
+	LC_UNIXTHREAD = 5,
+	LC_LOADFVMLIB = 6,
+	LC_IDFVMLIB = 7,
+	LC_IDENT = 8,
+	LC_FVMFILE = 9,
+	LC_PREPAGE = 10,
+	LC_DYSYMTAB = 11,
+	LC_LOAD_DYLIB = 12,
+	LC_ID_DYLIB = 13,
+	LC_LOAD_DYLINKER = 14,
+	LC_ID_DYLINKER = 15,
+	LC_PREBOUND_DYLIB = 16,
+	LC_ROUTINES = 17,
+	LC_SUB_FRAMEWORK = 18,
+	LC_SUB_UMBRELLA = 19,
+	LC_SUB_CLIENT = 20,
+	LC_SUB_LIBRARY = 21,
+	LC_TWOLEVEL_HINTS = 22,
+	LC_PREBIND_CKSUM = 23,
+	LC_LOAD_WEAK_DYLIB = 2147483672,
+	LC_SEGMENT_64 = 25,
+	LC_ROUTINES_64 = 26,
+	LC_UUID = 27,
+	LC_RPATH = 2147483676,
+	LC_CODE_SIGNATURE = 29,
+	LC_SEGMENT_SPLIT_INFO = 30,
+	LC_REEXPORT_DYLIB = 2147483679,
+	LC_LAZY_LOAD_DYLIB = 32,
+	LC_ENCRYPTION_INFO = 33,
+	LC_DYLD_INFO = 34,
+	LC_DYLD_INFO_ONLY = 2147483682,
+	LC_LOAD_UPWARD_DYLIB = 2147483683,
+	LC_VERSION_MIN_MACOSX = 36,
+	LC_VERSION_MIN_IPHONEOS = 37,
+	LC_FUNCTION_STARTS = 38,
+	LC_DYLD_ENVIRONMENT = 39,
+	LC_MAIN = 2147483688,
+	LC_DATA_IN_CODE = 41,
+	LC_SOURCE_VERSION = 42,
+	LC_DYLIB_CODE_SIGN_DRS = 43,
+	LC_ENCRYPTION_INFO_64 = 44,
+	LC_LINKER_OPTION = 45,
+	LC_LINKER_OPTIMIZATION_HINT = 46,
+	LC_VERSION_MIN_TVOS = 47,
+	LC_VERSION_MIN_WATCHOS = 48,
+	LC_NOTE = 49,
+	LC_BUILD_VERSION = 50
+};
+enum mach0_section_attrs {
+	S_ATTR_PURE_INSTRUCTIONS = 8388608,
+	S_ATTR_NO_TOC = 4194304,
+	S_ATTR_STRIP_STATIC_SYMS = 2097152,
+	S_ATTR_NO_DEAD_STRIP = 1048576,
+	S_ATTR_LIVE_SUPPORT = 524288,
+	S_ATTR_SELF_MODIFYING_CODE = 262144,
+	S_ATTR_DEBUG = 131072,
+	S_ATTR_SOME_INSTRUCTIONS = 4,
+	S_ATTR_EXT_RELOC = 2,
+	S_ATTR_LOC_RELOC = 1
+};
+enum mach0_section_types {
+	S_REGULAR = 0,
+	S_ZEROFILL = 1,
+	S_CSTRING_LITERALS = 2,
+	S_4BYTE_LITERALS = 3,
+	S_8BYTE_LITERALS = 4,
+	S_LITERAL_POINTERS = 5,
+	S_NON_LAZY_SYMBOL_POINTERS = 6,
+	S_LAZY_SYMBOL_POINTERS = 7,
+	S_SYMBOL_STUBS = 8,
+	S_MOD_INIT_FUNC_POINTERS = 9,
+	S_MOD_TERM_FUNC_POINTERS = 10,
+	S_COALESCED = 11,
+	S_GB_ZEROFILL = 12,
+	S_INTERPOSING = 13,
+	S_16BYTE_LITERALS = 14,
+	S_DTRACE_DOF = 15,
+	S_LAZY_DYLIB_SYMBOL_POINTERS = 16,
+	S_THREAD_LOCAL_REGULAR = 17,
+	S_THREAD_LOCAL_ZEROFILL = 18,
+	S_THREAD_LOCAL_VARIABLES = 19,
+	S_THREAD_LOCAL_VARIABLE_POINTERS = 20,
+	S_THREAD_LOCAL_INIT_FUNCTION_POINTERS = 21,
+	S_INIT_FUNC_OFFSETS = 22
+};
+EOF
+RUN
+
+NAME=tc typedef
+FILE=-
+CMDS=<<EOF
+"td typedef char *string;"
+ttc string
+EOF
+EXPECT=<<EOF
+typedef char * string;
+EOF
+RUN
+
+NAME=dwarf declaration dont overwrite type
+FILE=bins/elf/dwarf_typedecl
+CMDS=tsc
+EXPECT=<<EOF
+struct Foo {
+  int bar;
+  int baz;
+};
+EOF
+RUN

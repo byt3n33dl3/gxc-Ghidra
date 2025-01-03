@@ -1,0 +1,21 @@
+# V35ARM64_HOME=$(SPRJ2)/v35arm64
+V35ARM64_SRCDIR=$(shell realpath $(V35ARM64_HOME))/
+
+V35ARM64_CFLAGS=-I$(V35ARM64_SRCDIR)
+V35ARM64_OBJS+=decode.o
+V35ARM64_OBJS+=decode0.o
+V35ARM64_OBJS+=decode1.o
+V35ARM64_OBJS+=decode2.o
+V35ARM64_OBJS+=decode_fields32.o
+V35ARM64_OBJS+=decode_scratchpad.o
+V35ARM64_OBJS+=encodings_dec.o
+V35ARM64_OBJS+=encodings_fmt.o
+V35ARM64_OBJS+=format.o
+V35ARM64_OBJS+=gofer.o
+V35ARM64_OBJS+=operations.o
+V35ARM64_OBJS+=pcode.o
+V35ARM64_OBJS+=regs.o
+V35ARM64_OBJS+=sysregs.o
+
+V35ARM64_LINK=$(addprefix $(V35ARM64_SRCDIR),$(V35ARM64_OBJS))
+# V35ARM64_LIBS=$(V35ARM64_HOME)/v35arm64.a

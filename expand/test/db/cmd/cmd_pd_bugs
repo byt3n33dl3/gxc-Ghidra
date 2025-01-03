@@ -1,0 +1,343 @@
+NAME=pd asmdescribe on string
+FILE=bins/mach0/mac-ls4
+ARGS=-a arm -b64
+CMDS=<<EOF
+s 0x100003ac0
+Cz
+e asm.describe=1
+pd 2
+EOF
+EXPECT=<<EOF
+            0x100003ac0     .string "\xbf\n" ; len=3
+            0x100003ac3      f9             unaligned
+EOF
+RUN
+
+NAME=pd call sym bug
+FILE=bins/mach0/hello-objc-arm
+CMDS=<<EOF
+e asm.lines.jmp=0
+e asm.bytes=0
+e asm.comments=0
+s sym.static_int_Test::callMeNot__
+pd 20~?NSLog
+af
+pd 20~?NSLog
+EOF
+EXPECT=<<EOF
+1
+1
+EOF
+RUN
+
+NAME=pd+reloff+colors
+FILE=bins/elf/analysis/ls-alxchk
+CMDS=<<EOF
+af
+e asm.var.summary=0
+e asm.offset.relto=func
+pd 10
+e scr.color=1
+pd 10
+EOF
+EXPECT=<<EOF
+/ 41: entry0 (int64_t arg3, void *stack_end);
+|           ; arg int64_t arg3 @ rdx
+|           ; arg void *stack_end @ xmm0
+|           entry0                         31ed           xor ebp, ebp
+|           entry0+0x2                     4989d1         mov r9, rdx  ; arg3
+|           entry0+0x5                     5e             pop rsi
+|           entry0+0x6                     4889e2         mov rdx, rsp
+|           entry0+0x9                     4883e4f0       and rsp, 0xfffffffffffffff0
+|           entry0+0xd                     50             push rax
+|           entry0+0xe                     54             push rsp
+|           entry0+0xf                     4c8b05e693..   mov r8, qword [section..got] ; [0x1f220:8]=0x16ee0
+|           entry0+0x16                    488b0de793..   mov rcx, qword [0x0001f228] ; [0x1f228:8]=0x16e60
+|           entry0+0x1d                    488b3de893..   mov rdi, qword [0x0001f230] ; [0x1f230:8]=0x3bd0 main
+[36m/[0m 41: [31mentry0[0m (int64_t arg3, void *stack_end);
+[36m|[0m           [37m; [37marg [36mint64_t [33marg3 [32m@ rdx[0m
+[36m|[0m           [37m; [37marg [36mvoid *[33mstack_end [32m@ xmm0[0m
+[36m|[0m           [32mentry0[0m                          [33m31[36med[0m           [33mxor[36m ebp[0m,[36m ebp[0m[0m[0m
+[36m|[0m           [32mentry0[0m+0x2                      [33m49[36m89[36md1[0m         [36mmov[36m r9[0m,[36m rdx[0m[0m[0m [37m; arg3[0m
+[36m|[0m           [32mentry0[0m+0x5                      [33m5e[0m             [35mpop[36m rsi[0m[0m[0m
+[36m|[0m           [32mentry0[0m+0x6                      [33m48[36m89[36me2[0m         [36mmov[36m rdx[0m,[36m rsp[0m[0m[0m
+[36m|[0m           [32mentry0[0m+0x9                      [33m48[36m83[36me4[36mf0[0m       [33mand[36m rsp[0m,[36m[36m [33m0xfffffffffffffff0[0m[0m[0m
+[36m|[0m           [32mentry0[0m+0xd                      [33m50[0m             [35mpush[36m rax[0m[0m[0m
+[36m|[0m           [32mentry0[0m+0xe                      [33m54[0m             [35mpush[36m rsp[0m[0m[0m
+[36m|[0m           [32mentry0[0m+0xf                      [33m4c[36m8b[36m05[36me6[36m93[36m..   [36mmov[36m r8[0m,[36m qword[36m [0m[[36msection..got[0m][36m[0m[0m[31m [31m; [[31m0x1f220[31m:8]=0x16ee0[0m
+[36m|[0m           [32mentry0[0m+0x16                     [33m48[36m8b[36m0d[36me7[36m93[36m..   [36mmov[36m rcx[0m,[36m qword[36m [0m[[33m0x0001f228[0m][36m[0m[0m[31m [31m; [[31m0x1f228[31m:8]=0x16e60[0m
+[36m|[0m           [32mentry0[0m+0x1d                     [33m48[36m8b[33m3d[36me8[36m93[36m..   [36mmov[36m rdi[0m,[36m qword[36m [0m[[33m0x0001f230[0m][36m[0m[0m[31m [31m; [[31m0x1f230[31m:8]=0x3bd0 main[0m
+EOF
+RUN
+
+NAME=pd arm cortex 0
+FILE=-
+ARGS=-a arm -b 16
+CMDS=wx 80f30988; pi 1
+EXPECT=<<EOF
+invalid
+EOF
+RUN
+
+NAME=pd arm cortex 1
+FILE=-
+ARGS=-a arm -b 16 -e asm.cpu=cortex
+CMDS=wx 80f30988;pi 1
+EXPECT=<<EOF
+msr psp, r0
+EOF
+RUN
+
+NAME=pd arm cortex 2
+FILE=-
+ARGS=-a arm -b 16
+CMDS=e asm.cpu=cortex;wx 80f30988;pi 1
+EXPECT=<<EOF
+msr psp, r0
+EOF
+RUN
+
+NAME=pd call sym bug
+FILE=bins/mach0/hello-objc-arm
+CMDS=<<EOF
+e asm.lines.jmp=0
+e asm.bytes=0
+e asm.comments=0
+s sym.static_int_Test::callMeNot
+# s+2
+pi 2
+EOF
+EXPECT=<<EOF
+push {r7, lr}
+mov r7, sp
+EOF
+RUN
+
+NAME=call fcn eip 32bit
+FILE=bins/elf/analysis/ls-alxchk
+CMDS=<<EOF
+s 0x5e50
+e asm.bits=32
+af; afn eip
+pd 1 @ 0x5f16~:0
+e asm.lines.jmp=0
+e asm.bytes=0
+e asm.comments=0
+EOF
+EXPECT=<<EOF
+            0x00005f16      e835ffffff     call fcn.00005e50
+EOF
+RUN
+
+NAME=call fcn eip 64bit
+FILE=bins/elf/analysis/ls-alxchk
+BROKEN=1
+CMDS=<<EOF
+s 0x5e50
+e asm.bits=64
+af; afn eip
+pd 1 @ 0x5f16~:0
+e asm.lines.jmp=0
+e asm.bytes=0
+e asm.comments=0
+EOF
+EXPECT=<<EOF
+|           0x00005f16      e835ffffff     call fcn.eip
+EOF
+RUN
+
+NAME=call fcn rip 64bit
+FILE=bins/elf/analysis/ls-alxchk
+CMDS=<<EOF
+s 0x5e50
+e asm.bits=64
+af; afn rip
+pd 1 @ 0x5f16~:0
+e asm.lines.jmp=0
+e asm.bytes=0
+e asm.comments=0
+EOF
+EXPECT=<<EOF
+            0x00005f16      e835ffffff     call fcn.00005e50
+EOF
+RUN
+
+NAME=lea edx bug segfault for x86 32bit #5710@radare2
+FILE=malloc://128
+CMDS=<<EOF
+e asm.arch=x86
+e asm.bits=32
+e asm.lines.jmp=false
+e asm.comments=false
+pD@x:8d15d0830408
+EOF
+EXPECT=<<EOF
+  0x00000000      8d15d0830408   lea edx, [0x80483d0]
+EOF
+RUN
+
+NAME=p8@x
+FILE=malloc://128
+CMDS=<<EOF
+e asm.comments=false
+p8@x:8d15d0830408
+EOF
+EXPECT=<<EOF
+8d15d0830408
+EOF
+RUN
+
+NAME=px@x
+FILE=malloc://128
+CMDS=<<EOF
+e asm.comments=false
+e hex.header=false
+px@x:8d15d0830408
+EOF
+EXPECT=<<EOF
+0x00000000  8d15 d083 0408                           ......
+EOF
+RUN
+
+NAME=size of function in elf x64 stub
+FILE=bins/other/radiff2/hellocxx-osx-fat-intel_1
+ARGS=-ax86 -b64
+CMDS=<<EOF
+s 0x100000dae
+af
+afi~^size[1]
+EOF
+EXPECT=<<EOF
+6
+EOF
+RUN
+
+NAME=crackme test
+FILE=bins/elf/crackme
+CMDS=<<EOF
+pd 2
+pi 2
+EOF
+EXPECT=<<EOF
+            ;-- section..text:
+            ;-- entry0:
+            ;-- _start:
+            0x004005c0      31ed           xor ebp, ebp                ; [14] -r-x section size 584 named .text
+            0x004005c2      4989d1         mov r9, rdx
+xor ebp, ebp
+mov r9, rdx
+EOF
+RUN
+
+NAME=indent asm.lines.fcn=0, asm.lines.jmp=1 for issue 9316
+FILE=-
+CMDS=<<EOF
+e asm.arch=x86
+e asm.bits=64
+af+ 0 test
+e asm.lines.fcn=0
+e asm.lines.jmp=1
+pd 2
+EOF
+EXPECT=<<EOF
+0: test ();
+          0x00000000      0000           add byte [rax], al
+          0x00000002      0000           add byte [rax], al
+EOF
+RUN
+
+NAME=indent asm.lines.fcn=1, asm.lines.jmp=0 for issue 9316
+FILE=-
+CMDS=<<EOF
+e asm.arch=x86
+e asm.bits=64
+af+ 0 test
+e asm.lines.fcn=1
+e asm.lines.jmp=0
+pd 2
+EOF
+EXPECT=<<EOF
+/ 0: test ();
+  0x00000000      0000           add byte [rax], al
+  0x00000002      0000           add byte [rax], al
+EOF
+RUN
+
+NAME=asm.flgoff indent
+FILE=bins/elf/crackme0x05
+CMDS=<<EOF
+e asm.flags.offset=1
+s sym.check
+pd 1
+EOF
+EXPECT=<<EOF
+            0x080484c8  ;-- check:
+            0x080484c8      55             push ebp
+EOF
+RUN
+
+NAME=invalid pid and pdi
+FILE=bins/mach0/ls-osx-x86_64
+# BROKEN=1
+CMDS=<<EOF
+pdi 270~invalid
+?e ----
+pid 270~invalid
+pd 1
+EOF
+EXPECT=<<EOF
+----
+            ;-- main:
+            ;-- entry0:
+            ;-- func.1000013d8:
+            0x1000013d8      55             push rbp
+EOF
+RUN
+
+NAME=asm.tabs.once
+FILE=bins/mach0/ls-osx-x86_64
+CMDS=<<EOF
+e asm.tabs=8
+e asm.tabs.once=true
+e asm.bytes=false
+e asm.lines=false
+pd 5
+pdJ 3~{}
+EOF
+EXPECT=<<EOF
+;-- main:
+;-- entry0:
+;-- func.1000013d8:
+0x1000013d8      push     rbp
+0x1000013d9      mov      rbp, rsp
+0x1000013dc      push     r15
+0x1000013de      push     r14
+0x1000013e0      push     r13
+[
+  {
+    "offset": 4294972376,
+    "text": ";-- main:"
+  },
+  {
+    "offset": 4294972376,
+    "text": ";-- entry0:"
+  },
+  {
+    "offset": 4294972376,
+    "text": ";-- func.1000013d8:"
+  },
+  {
+    "offset": 4294972376,
+    "text": "0x1000013d8      push     rbp"
+  },
+  {
+    "offset": 4294972377,
+    "text": "0x1000013d9      mov      rbp, rsp"
+  },
+  {
+    "offset": 4294972380,
+    "text": "0x1000013dc      push     r15"
+  }
+]
+EOF
+RUN

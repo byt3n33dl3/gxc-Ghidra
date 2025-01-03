@@ -1,0 +1,168 @@
+NAME=afcf ls
+FILE=bins/mach0/ls-osx-x86_64
+CMDS=<<EOF
+aa
+afn aaa @ 0x100001245
+?e afls
+afls;afl~:0..10
+?e aflsn
+aflsn;afl~:0..10
+?e aflsb
+aflsb;afl~:0..10
+?e aflss
+aflss;afl~:0..10
+EOF
+EXPECT=<<EOF
+afls
+0x1000010f8    1     18 sym.func.1000010f8
+0x10000110a    1     21 sym.func.10000110a
+0x10000111f    7     69 sym.func.10000111f
+0x100001164    7     78 sym.func.100001164
+0x1000011b2    7     69 sym.func.1000011b2
+0x1000011f7    7     78 sym.func.1000011f7
+0x100001245    7     69 aaa
+0x10000128a    7     78 sym.func.10000128a
+0x1000012d8    4     50 sym.func.1000012d8
+0x10000130a    4     59 sym.func.10000130a
+aflsn
+0x100001245    7     69 aaa
+0x1000013d8  120   2269 main
+0x1000010f8    1     18 sym.func.1000010f8
+0x10000110a    1     21 sym.func.10000110a
+0x10000111f    7     69 sym.func.10000111f
+0x100001164    7     78 sym.func.100001164
+0x1000011b2    7     69 sym.func.1000011b2
+0x1000011f7    7     78 sym.func.1000011f7
+0x10000128a    7     78 sym.func.10000128a
+0x1000012d8    4     50 sym.func.1000012d8
+aflsb
+0x1000013d8  120   2269 main
+0x100002ad5  110   2463 sym.func.100002ad5
+0x1000020fd  105   2024 sym.func.1000020fd
+0x100001dd8   41    669 sym.func.100001dd8
+0x10000389f   38    690 sym.func.10000389f
+0x10000425c   33    609 sym.func.10000425c
+0x100003620   27    214 sym.func.100003620
+0x100003b51   20    385 sym.func.100003b51
+0x10000372c   19    152 sym.func.10000372c
+0x100003e17   19    391 sym.func.100003e17
+aflss
+0x100002ad5  110   2463 sym.func.100002ad5
+0x1000013d8  120   2269 main
+0x1000020fd  105   2024 sym.func.1000020fd
+0x10000389f   38    690 sym.func.10000389f
+0x100001dd8   41    669 sym.func.100001dd8
+0x10000425c   33    609 sym.func.10000425c
+0x100003e17   19    391 sym.func.100003e17
+0x100003b51   20    385 sym.func.100003b51
+0x100003f9e   18    371 sym.func.100003f9e
+0x100004111   18    331 sym.func.100004111
+EOF
+RUN
+
+NAME=afltables
+FILE=bins/mach0/ls-osx-x86_64
+CMDS=<<EOF
+aa
+afl,xref/sort/dec,any/head/10
+EOF
+EXPECT=<<EOF
+addr        size name                     noret nbbs nins refs xref axref calls cc file
+---------------------------------------------------------------------------------------
+0x100004630 6    sym.imp.putchar          0     1    1    1    24   24    0     1
+0x10000462a 6    sym.imp.printf           0     1    1    1    22   22    0     1
+0x100004678 6    sym.imp.strlen           0     1    1    1    12   12    0     1
+0x10000456a 6    sym.imp.compat_mode      0     1    1    1    11   11    0     1
+0x10000451c 6    sym.imp.__snprintf_chk   0     1    1    1    9    9     0     1
+0x100004504 6    sym.imp.tputs            0     1    1    1    8    8     0     1
+0x1000045be 6    sym.imp.getenv           0     1    1    1    7    7     0     1
+0x100004522 6    sym.imp.__stack_chk_fail 1     1    1    1    7    7     0     1
+0x100003de3 13   sym.func.100003de3       0     1    6    1    6    6     1     1
+0x1000044f8 6    sym.imp.tgetstr          0     1    1    1    6    6     0     1
+
+EOF
+RUN
+
+NAME=afijcallrefs
+FILE=bins/mach0/twocalls
+CMDS=<<EOF
+af
+afij~{.callrefs}
+?e --
+afixj~{.callrefs}
+EOF
+EXPECT=<<EOF
+{"offset":4294983524,"name":"main","size":52,"is-pure":"false","realsz":52,"noreturn":false,"recursive":false,"stackframe":32,"calltype":"arm64","cost":5,"cc":1,"bits":64,"type":"fcn","nbbs":1,"tracecov":0,"is-lineal":true,"ninstrs":13,"edges":0,"ebbs":1,"signature":"int main (int argc);","minbound":4294983524,"maxbound":4294983576,"maxbbins":13,"midbbins":13.000,"ratbbins":1.000,"indegree":0,"outdegree":2,"nlocals":2,"nargs":1,"difftype":"new"}
+--
+[{"addr":4294983576,"type":"CALL","at":4294983548},{"addr":4294983588,"type":"CALL","at":4294983556}]
+EOF
+RUN
+
+NAME=afla infinite loop
+FILE=bins/elf/android/car
+CMDS=<<EOF
+aa
+afla
+EOF
+EXPECT=<<EOF
+0x000029b0
+0x000029e0
+0x00002a10
+0x00002a40
+0x00002a70
+0x00002aa0
+0x00002ad0
+0x00002b00
+0x000029f0
+0x00002a20
+0x000022c8
+0x00002a50
+0x00002a80
+0x00002ab0
+0x00001e64
+0x00002ae0
+0x00002b10
+0x00001cf0
+0x00001d54
+0x00002a00
+0x00002a30
+0x00002a60
+0x00002a90
+0x00002ac0
+0x00002af0
+0x0000201c
+0x00001c6c
+0x00001f64
+0x000029c0
+0x000029d0
+0x00001c58
+0x00001cb0
+0x00001cc4
+0x00001ce0
+0x0000286c
+0x00002114
+0x000022cc
+EOF
+RUN
+
+NAME=recursive main
+ARGS=-A
+FILE=bins/mach0/recursive-main
+CMDS=<<EOF
+afi~^recursive
+EOF
+EXPECT=<<EOF
+recursive: true
+EOF
+RUN
+
+NAME=recursive main via aflmr
+ARGS=-A
+FILE=bins/mach0/recursive-main
+CMDS=<<EOF
+aflmr
+EOF
+EXPECT=<<EOF
+main
+EOF
+RUN

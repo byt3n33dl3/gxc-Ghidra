@@ -1,0 +1,229 @@
+NAME=num vars blocksize
+FILE=malloc://0x4000
+CMDS=<<EOF
+b
+?vi $b
+b 32
+?vi $b
+?e must be zero
+?vi $b-`b`
+EOF
+EXPECT=<<EOF
+0x100
+256
+32
+must be zero
+0
+EOF
+RUN
+
+NAME=num vars here
+FILE=malloc://0x4000
+CMDS=<<EOF
+?vi $$
+s 32
+?vi $$
+?vi $$ @ 64
+?vi $$$ @ 64
+EOF
+EXPECT=<<EOF
+0
+32
+64
+32
+EOF
+RUN
+
+NAME=num vars invalid
+FILE=malloc://0x4000
+ARGS=-1
+CMDS=<<EOF
+?vi $$rrr
+EOF
+EXPECT=<<EOF
+ERROR: $$rrr
+0
+EOF
+RUN
+
+NAME=num vars keys
+FILE=malloc://0x4000
+ARGS=-1
+CMDS=<<EOF
+?e unknown foo key
+?vi $k{foo}
+?vi $k:foo
+?e foo five
+k foo=5
+?vi $k{foo}
+?vi $k:foo
+?e plus one
+?vi 1+$k{foo}
+?vi 1+$k:foo
+?e invalid $k
+?vi $kaka
+EOF
+EXPECT=<<EOF
+unknown foo key
+ERROR: unknown $k{key}
+0
+ERROR: unknown $k{key}
+0
+foo five
+5
+5
+plus one
+6
+6
+invalid 0x0
+ERROR: Expected '{' or ':' after 'k'
+0
+EOF
+RUN
+
+NAME=num vars keys error
+FILE=malloc://0x4000
+ARGS=-1
+CMDS=<<EOF
+k foo=5
+?vi $k{foo}
+?vi $k:foo
+?e plus one
+?vi $k{foo}+1
+?vi $k:foo+1
+EOF
+EXPECT=<<EOF
+5
+5
+plus one
+6
+6
+EOF
+RUN
+
+NAME=num instruction vars
+FILE=malloc://0x4000
+ARGS=-1 -a x86 -b32
+CMDS=<<EOF
+'wa call 32;nop;mov eax,33;int 0x33;ret
+?e jump call 32
+?vi $ij
+?e fail call 32
+?vi $if
+?e instr pos 1 2 3
+?vi $in
+?vi $in:1
+?vi $in:2
+?vi $in:3
+?e instr size 1 2 3
+?vi $is
+?vi $is{-1}
+?vi $is:1
+?vi $is:2
+?vi $is:3
+2so
+?e mov33
+?vi $iv
+EOF
+EXPECT=<<EOF
+INFO: Written 14 byte(s) (call 32;nop;mov eax,33;int 0x33;ret) = wx e81b00000090b821000000cd33c3 @ 0x00000000
+jump call 32
+32
+fail call 32
+5
+instr pos 1 2 3
+5
+5
+6
+11
+instr size 1 2 3
+5
+-1
+5
+6
+11
+mov33
+33
+EOF
+RUN
+
+NAME=num vars flags
+FILE=bins/elf/analysis/arm-ls
+CMDS=<<EOF
+s main
+?vi $f:main
+?vi $fs:main
+s+1
+?vi $fd:main
+?vi $fe{main}
+EOF
+EXPECT=<<EOF
+73360
+256
+1
+73616
+EOF
+RUN
+
+NAME=num vars sections
+FILE=bins/elf/analysis/arm-ls
+CMDS=<<EOF
+?v $S
+?v $SS
+?v $SE
+?e distance
+?v $SD
+s+32
+?v $SD
+?e invalid name
+?v $S{const}
+?e byname
+?v $S{rodata}
+?v $SE{rodata}
+s $S{rodata}
+iS.
+EOF
+EXPECT=<<EOF
+0x11e90
+0x10728
+0x225b8
+distance
+0x24b8
+0x24d8
+invalid name
+0x0
+byname
+0x225c0
+0x26ba0
+Current section
+nth paddr         size vaddr        vsize perm flags type     name
+------------------------------------------------------------------
+0   0x000125c0  0x45e0 0x000225c0  0x45e0 -r-- 0x2   PROGBITS .rodata
+EOF
+RUN
+
+NAME=num vars fcn bbs
+FILE=bins/elf/analysis/arm-ls
+CMDS=<<EOF
+s main
+af
+afl
+?vi $Fs
+?vi $FS
+?vi $FE-$FB
+?e bbs
+?vi $BS
+?vi $Bj
+?vi $BF
+EOF
+EXPECT=<<EOF
+0x00011e90  285   7152 main
+9320
+7152
+9320
+bbs
+148
+76628
+73508
+EOF
+RUN

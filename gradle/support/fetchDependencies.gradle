@@ -1,0 +1,567 @@
+/* ###
+ * IP: GHIDRA
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+/*******************************************************************************
+ * fetchDependencies.gradle                                                    *
+ *                                                                             *
+ * Fetches/downloads required dependencies that aren't available in the        *
+ * standard online repositories (eg: maven) and configures a flat              *
+ * directory-style respository that points to them. This should be run         *
+ * immediately after cloning the Ghidra repository before any other gradle     *
+ * tasks are run.                                                              *
+ *                                                                             *
+ * usage: from the command line in the main ghidra repository directory, run   *
+ *        the following:                                                       *
+ *                                                                             *
+ *        gradle -I gradle/support/fetchDependencies.gradle init               *
+ *                                                                             *
+ * Note: When running the script, files will only be downloaded if             *
+ *       necessary (eg: they are not already in the dependencies/downloads/    *
+ *       directory).                                                           *
+ *                                                                             *
+ *******************************************************************************/
+
+import java.util.zip.*;
+import java.nio.file.*;
+import java.security.MessageDigest;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.WildcardFileFilter;
+
+initscript {
+	repositories { mavenCentral() }
+	dependencies { classpath 'commons-io:commons-io:2.11.0' }
+}
+
+ext.NUM_RETRIES = 3 // # of times to try to download a file before failing
+ext.REPO_DIR = ((Script)this).buildscript.getSourceFile().getParentFile().getParentFile().getParentFile()
+ext.DEPS_DIR = file("${REPO_DIR}/dependencies")
+ext.DOWNLOADS_DIR = file("${DEPS_DIR}/downloads")
+ext.FID_DIR = file("${DEPS_DIR}/fidb")
+ext.FLAT_REPO_DIR = file("${DEPS_DIR}/flatRepo")
+ext.OFFLINE = System.properties["offline"] != null
+ext.HIDE_DOWNLOAD_PROGRESS = System.properties["hideDownloadProgress"] != null
+ext.createdDirs = [] as Set
+
+file("${REPO_DIR}/Ghidra/application.properties").withReader { reader ->
+	def ghidraProps = new Properties()
+	ghidraProps.load(reader)
+	ext.RELEASE_VERSION = ghidraProps.getProperty('application.version')
+}
+
+ext.deps = [
+	[
+		name: "java-sarif-2.1-modified.jar",
+		url: "https://github.com/NationalSecurityAgency/ghidra-data/raw/Ghidra_${RELEASE_VERSION}/lib/java-sarif-2.1-modified.jar",
+		sha256: "7f736566494756d271aa5e4b1af6c89dc50d074ab1c6374a47df822264226b01",
+		destination: FLAT_REPO_DIR
+	],
+	[
+		name: "AXMLPrinter2.jar",
+		url: "https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/android4me/AXMLPrinter2.jar",
+		sha256: "00ed038eb6abaf6ddec8d202a3ed7a81b521458f4cd459948115cfd02ff59d6d",
+		destination: FLAT_REPO_DIR
+	],
+	[
+		name: "yajsw-stable-13.12.zip",
+		url: "https://sourceforge.net/projects/yajsw/files/yajsw/yajsw-stable-13.12/yajsw-stable-13.12.zip",
+		sha256: "c6fc59815d3800d14ec977926a8afd3f606a0ebd74d2cfd60601677466edeaa2",
+		destination: file("${DEPS_DIR}/GhidraServer")
+	],
+	[
+		name: "postgresql-15.10.tar.gz",
+		url: "https://ftp.postgresql.org/pub/source/v15.10/postgresql-15.10.tar.gz",
+		sha256: "173366605259a83dc189c4327ff4c37254afed65b4f866cbd8a5ef2ea449e8f3",
+		destination: file("${DEPS_DIR}/BSim")
+	],
+	[
+		name: "PyDev 9.3.0.zip",
+		url: "https://sourceforge.net/projects/pydev/files/pydev/PyDev%209.3.0/PyDev%209.3.0.zip",
+		sha256: "45398edf2adb56078a80bc88a919941578f0c0b363efbdd011bfd158a99b112e",
+		destination: file("${DEPS_DIR}/GhidraDev")
+	],
+	[
+		name: "cdt-8.6.0.zip",
+		url: "https://archive.eclipse.org/tools/cdt/releases/8.6/cdt-8.6.0.zip",
+		sha256: "81b7d19d57c4a3009f4761699a72e8d642b5e1d9251d2bb98df438b1e28f8ba9",
+		destination: file("${DEPS_DIR}/GhidraDev")
+	],
+	[
+		name: "vs2012_x64.fidb",
+		url: "https://github.com/NationalSecurityAgency/ghidra-data/raw/Ghidra_${RELEASE_VERSION}/FunctionID/vs2012_x64.fidb",
+		sha256: "d4e98ab3f790b831793218430bba0d8b24a5fbf4da65b0c1ffa8cb0cfbeb0cdc",
+		destination: FID_DIR
+	],
+	[
+		name: "vs2012_x86.fidb",
+		url: "https://github.com/NationalSecurityAgency/ghidra-data/raw/Ghidra_${RELEASE_VERSION}/FunctionID/vs2012_x86.fidb",
+		sha256: "a490ed7e2ed21e587459feaeace7036b7ede4ce84e72e10dfd8c57434a6918b6",
+		destination: FID_DIR
+	],
+	[
+		name: "vs2015_x64.fidb",
+		url: "https://github.com/NationalSecurityAgency/ghidra-data/raw/Ghidra_${RELEASE_VERSION}/FunctionID/vs2015_x64.fidb",
+		sha256: "e04e9e40f9ecb601c85f4d84ed9bf66b45363be1d1e82c162e4c9902b8cb508f",
+		destination: FID_DIR
+	],
+	[
+		name: "vs2015_x86.fidb",
+		url: "https://github.com/NationalSecurityAgency/ghidra-data/raw/Ghidra_${RELEASE_VERSION}/FunctionID/vs2015_x86.fidb",
+		sha256: "b66ee696653e2ed365919deaaef885103120c792e22e79af70d1209d7e1d8644",
+		destination: FID_DIR
+	],
+	[
+		name: "vs2017_x64.fidb",
+		url: "https://github.com/NationalSecurityAgency/ghidra-data/raw/Ghidra_${RELEASE_VERSION}/FunctionID/vs2017_x64.fidb",
+		sha256: "d5fa5f697298174fa53d247d3599e6a12884605ad181c7b954e2380ec1f0bd89",
+		destination: FID_DIR
+	],
+	[
+		name: "vs2017_x86.fidb",
+		url: "https://github.com/NationalSecurityAgency/ghidra-data/raw/Ghidra_${RELEASE_VERSION}/FunctionID/vs2017_x86.fidb",
+		sha256: "d389cb8d76ff4a59ca35f891b8521c72ad5f0df96e253973a2d21a8614a4cc81",
+		destination: FID_DIR
+	],
+	[
+		name: "vs2019_x64.fidb",
+		url: "https://github.com/NationalSecurityAgency/ghidra-data/raw/Ghidra_${RELEASE_VERSION}/FunctionID/vs2019_x64.fidb",
+		sha256: "150007796fc36a4069660ad62449aadaaf3dd11b3864a5ef21e79831c9ce9118",
+		destination: FID_DIR
+	],
+	[
+		name: "vs2019_x86.fidb",
+		url: "https://github.com/NationalSecurityAgency/ghidra-data/raw/Ghidra_${RELEASE_VERSION}/FunctionID/vs2019_x86.fidb",
+		sha256: "eb630a36faa586a371eb734dc0bbd8d13ccaef697f3db5872596358f3dd2432a",
+		destination: FID_DIR
+	],
+	[
+		name: "vsOlder_x64.fidb",
+		url: "https://github.com/NationalSecurityAgency/ghidra-data/raw/Ghidra_${RELEASE_VERSION}/FunctionID/vsOlder_x64.fidb",
+		sha256: "8c3b51f4660cd27e1a0d610a9f3f2d5fbc833a66ac9ee4393ee2f2481e855866",
+		destination: FID_DIR
+	],
+	[
+		name: "vsOlder_x86.fidb",
+		url: "https://github.com/NationalSecurityAgency/ghidra-data/raw/Ghidra_${RELEASE_VERSION}/FunctionID/vsOlder_x86.fidb",
+		sha256: "98605c6b6b9214a945d844e41c85860d54649a45bca7873ef6991c0e93720787",
+		destination: FID_DIR
+	],
+	[
+		name: "protobuf-3.20.3-py2.py3-none-any.whl",
+		url: "https://files.pythonhosted.org/packages/8d/14/619e24a4c70df2901e1f4dbc50a6291eb63a759172558df326347dce1f0d/protobuf-3.20.3-py2.py3-none-any.whl",
+		sha256: "a7ca6d488aa8ff7f329d4c545b2dbad8ac31464f1d8b1c87ad1346717731e4db",
+		destination: file("${DEPS_DIR}/Debugger-rmi-trace/")
+	],
+	[
+		name: "psutil-5.9.8.tar.gz",
+		url: "https://files.pythonhosted.org/packages/90/c7/6dc0a455d111f68ee43f27793971cf03fe29b6ef972042549db29eec39a2/psutil-5.9.8.tar.gz",
+		sha256: "6be126e3225486dff286a8fb9a06246a5253f4c7c53b475ea5f5ac934e64194c",
+		destination: file("${DEPS_DIR}/Debugger-rmi-trace/")
+	],
+	[
+		name: "setuptools-68.0.0-py3-none-any.whl",
+		url: "https://files.pythonhosted.org/packages/c7/42/be1c7bbdd83e1bfb160c94b9cafd8e25efc7400346cf7ccdbdb452c467fa/setuptools-68.0.0-py3-none-any.whl",
+		sha256: "11e52c67415a381d10d6b462ced9cfb97066179f0e871399e006c4ab101fc85f",
+		destination: [file("${DEPS_DIR}/Debugger-rmi-trace/"), file("${DEPS_DIR}/PyGhidra/")]
+	],
+	[
+		name: "wheel-0.37.1-py2.py3-none-any.whl",
+		url: "https://files.pythonhosted.org/packages/27/d6/003e593296a85fd6ed616ed962795b2f87709c3eee2bca4f6d0fe55c6d00/wheel-0.37.1-py2.py3-none-any.whl",
+		sha256: "4bdcd7d840138086126cd09254dc6195fb4fc6f01c050a1d7236f2630db1d22a",
+		destination: [file("${DEPS_DIR}/Debugger-rmi-trace/"), file("${DEPS_DIR}/PyGhidra/")]
+	],
+	[
+		name: "Pybag-2.2.12-py3-none-any.whl",
+		url: "https://files.pythonhosted.org/packages/ce/78/91db67e7fe1546dc8b02c38591b7732980373d2d252372f7358054031dd4/Pybag-2.2.12-py3-none-any.whl",
+		sha256: "eda5ee6c4e873902981b7f525b42a02428b87c7368df2c5bdfe1ded0e6884126",
+		destination: file("${DEPS_DIR}/Debugger-agent-dbgeng/")
+	],
+	[
+		name: "capstone-5.0.1-py3-none-win_amd64.whl",
+		url: "https://files.pythonhosted.org/packages/d0/dd/b28df50316ca193dd1275a4c47115a720796d9e1501c1888c4bfa5dc2260/capstone-5.0.1-py3-none-win_amd64.whl",
+		sha256: "1bfa5c81e6880caf41a31946cd6d2d069c048bcc22edf121254b501a048de675",
+		destination: file("${DEPS_DIR}/Debugger-agent-dbgeng/")
+	],
+	[
+		name: "comtypes-1.4.1-py3-none-any.whl",
+		url: "https://files.pythonhosted.org/packages/50/8f/518a37381e55a8857a638afa86143efa5508434613541402d20611a1b322/comtypes-1.4.1-py3-none-any.whl",
+		sha256: "a208a0e3ca1c0a5362735da0ff661822801dce87312b894d7d752add010a21b0",
+		destination: file("${DEPS_DIR}/Debugger-agent-dbgeng/")
+	],
+	[
+		name: "pywin32-306-cp312-cp312-win_amd64.whl",
+		url: "https://files.pythonhosted.org/packages/83/1c/25b79fc3ec99b19b0a0730cc47356f7e2959863bf9f3cd314332bddb4f68/pywin32-306-cp312-cp312-win_amd64.whl",
+		sha256: "37257794c1ad39ee9be652da0462dc2e394c8159dfd913a8a4e8eb6fd346da0e",
+		destination: file("${DEPS_DIR}/Debugger-agent-dbgeng/")
+	],
+	[
+		name: "packaging-23.2-py3-none-any.whl",
+		url: "https://files.pythonhosted.org/packages/ec/1a/610693ac4ee14fcdf2d9bf3c493370e4f2ef7ae2e19217d7a237ff42367d/packaging-23.2-py3-none-any.whl",
+		sha256: "8c491190033a9af7e1d931d0b5dacc2ef47509b34dd0de67ed209b5203fc88c7",
+		destination: file("${DEPS_DIR}/PyGhidra/")
+	], 
+	[
+		name: "jpype1-1.5.1-cp313-cp313-win_amd64.whl",
+		url: "https://files.pythonhosted.org/packages/5f/35/e88bc402f2e476449bb835e568c72e6dad6463ca30aa692df84afe5caa7d/jpype1-1.5.1-cp313-cp313-win_amd64.whl",
+		sha256: "39bf24e4a2f1001906d235b731a3fd573e89164a569be592485bb54f394ccd5b",
+		destination: file("${DEPS_DIR}/PyGhidra/")
+	],
+	[
+		name: "jpype1-1.5.1-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+		url: "https://files.pythonhosted.org/packages/53/09/c1d188d04fc308049163313419d3d606e2924005015174ba5e276a1b511c/jpype1-1.5.1-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+		sha256: "3bd441732ee864ddec56369d01b131aa851d43d6d722d9b236d09eda5c2c691a",
+		destination: file("${DEPS_DIR}/PyGhidra/")
+	],
+	[
+		name: "jpype1-1.5.1-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
+		url: "https://files.pythonhosted.org/packages/35/9c/3af1f95be832931d7a3e87de00913563b37daf78b9137da4e5b93ae99eda/jpype1-1.5.1-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
+		sha256: "d78dd96bd21e220f8be275393f20a64ec8e1ecf071fd2d7d44dac81653e8e78a",
+		destination: file("${DEPS_DIR}/PyGhidra/")
+	],
+	[
+		name: "jpype1-1.5.1-cp313-cp313-macosx_10_13_universal2.whl",
+		url: "https://files.pythonhosted.org/packages/74/5e/c10e9f68335fae39d0216c82fb31255cb1771b8f2a8899344dea57b735cb/jpype1-1.5.1-cp313-cp313-macosx_10_13_universal2.whl",
+		sha256: "6d17792936c36b475527217dc827f45d088c0de928f0021007e8216fb0008bf0",
+		destination: file("${DEPS_DIR}/PyGhidra/")
+	],
+	[
+		name: "jpype1-1.5.1-cp312-cp312-win_amd64.whl",
+		url: "https://files.pythonhosted.org/packages/fe/58/d376f5c50bad7cafbb4d93eab948ccfdea4a107dda28e016febd2be215a9/jpype1-1.5.1-cp312-cp312-win_amd64.whl",
+		sha256: "9a49463f5eadf4ed8b0bb51dffebe20171bbfc5e6dcc7c1ea9c6888582e4797d",
+		destination: file("${DEPS_DIR}/PyGhidra/")
+	],
+	[
+		name: "jpype1-1.5.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+		url: "https://files.pythonhosted.org/packages/42/d9/61f8477f874b1e98537498c97b7a2e411c5d03216cc05a28dfe51054655e/jpype1-1.5.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+		sha256: "b09f4a7c1cbfe56d7f706d7e0f9fa4cc4514c43e7ddb589de5a071115daaf20f",
+		destination: file("${DEPS_DIR}/PyGhidra/")
+	],
+	[
+		name: "jpype1-1.5.1-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
+		url: "https://files.pythonhosted.org/packages/b5/a2/b09d703658164b03c7a738a594cd1489a20947c83247ae0b1f276a7a3e8e/jpype1-1.5.1-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
+		sha256: "c7263724ba753e1e579b8905401d3a11cc7bf332f5aa6f5b5e93807ac0a4ebee",
+		destination: file("${DEPS_DIR}/PyGhidra/")
+	],
+	[
+		name: "jpype1-1.5.1-cp312-cp312-macosx_10_9_universal2.whl",
+		url: "https://files.pythonhosted.org/packages/9a/c7/1b1a3f1fd286cfdc3d1c39c496cef7e3535226ddd8c60c634a4960fabf71/jpype1-1.5.1-cp312-cp312-macosx_10_9_universal2.whl",
+		sha256: "2f970de32d147d3cb732e14c692bd67ed0b8cd0c02786098a25d26424ce9d053",
+		destination: file("${DEPS_DIR}/PyGhidra/")
+	],
+	[
+		name: "jpype1-1.5.1-cp311-cp311-win_amd64.whl",
+		url: "https://files.pythonhosted.org/packages/39/c9/594ef03273b97ad0e2cd9fadc0a4b774fbbac16d9b3974935f9810af32c3/jpype1-1.5.1-cp311-cp311-win_amd64.whl",
+		sha256: "53d007c1b01de8ec98adc9a6843c19a15df002c3d4c4e65bfb959ac4cb2a18ca",
+		destination: file("${DEPS_DIR}/PyGhidra/")
+	],
+	[
+		name: "jpype1-1.5.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+		url: "https://files.pythonhosted.org/packages/08/2e/277763811099480ccea91b1571901766466a08306eb2ca1469ddb13756c5/jpype1-1.5.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+		sha256: "bd331191fd62d4b3d5ac2eec46a0b0ef96ccb424d9f65e702a2ceac87c09df7a",
+		destination: file("${DEPS_DIR}/PyGhidra/")
+	],
+	[
+		name: "jpype1-1.5.1-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
+		url: "https://files.pythonhosted.org/packages/62/7c/cc341ad8d7cb49901e31c6b1c29cb6453720d8717b2dd2114dabfbdd1b6b/jpype1-1.5.1-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
+		sha256: "29a9929ac85fa166739c8fd3153a45c0668d485b06252dd8b6fb5939a57e4e4b",
+		destination: file("${DEPS_DIR}/PyGhidra/")
+	],
+	[
+		name: "jpype1-1.5.1-cp311-cp311-macosx_10_9_universal2.whl",
+		url: "https://files.pythonhosted.org/packages/03/de/2833ba955bfdcec52d86c4a98e3f957d0f7af1d4be8a89a26f666a6a4608/jpype1-1.5.1-cp311-cp311-macosx_10_9_universal2.whl",
+		sha256: "a225b2077b29aac1c9f306c7ca74987f4fb9c3bcfd2eb3f05f7511311a711d84",
+		destination: file("${DEPS_DIR}/PyGhidra/")
+	],
+	[
+		name: "jpype1-1.5.1-cp310-cp310-win_amd64.whl",
+		url: "https://files.pythonhosted.org/packages/f8/23/877a62da099e8aa46cf006a7b3d2bb593c7156a089e19054ccd44305260c/jpype1-1.5.1-cp310-cp310-win_amd64.whl",
+		sha256: "a1f5760a2b6aef859c6d824260f60bf14d1a7d81732815db61d8816c825b9756",
+		destination: file("${DEPS_DIR}/PyGhidra/")
+	],
+	[
+		name: "jpype1-1.5.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+		url: "https://files.pythonhosted.org/packages/65/3e/2038d1bac97e28f64ee49a89439c241b8ec6290b3e2a15dbb6e917ac04f4/jpype1-1.5.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+		sha256: "b7eae79ddb568084a6f62b4bb3fce6226d8eee99a847fde8896afaf2995be25b",
+		destination: file("${DEPS_DIR}/PyGhidra/")
+	],
+	[
+		name: "jpype1-1.5.1-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
+		url: "https://files.pythonhosted.org/packages/d8/e4/de57e2c1d671880b99ee6c9c4fa8bfd8869781ad68c2372755ea5eccdd17/jpype1-1.5.1-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
+		sha256: "8f576712be49855a4fd54ecceb8d451e255f2316bd66cb6d050aefebcc711ebb",
+		destination: file("${DEPS_DIR}/PyGhidra/")
+	],
+	[
+		name: "jpype1-1.5.1-cp310-cp310-macosx_10_9_universal2.whl",
+		url: "https://files.pythonhosted.org/packages/57/7d/2d4f166be9d5d04d7286b2d476371545272d363f2ab1a53747a92860d0f3/jpype1-1.5.1-cp310-cp310-macosx_10_9_universal2.whl",
+		sha256: "7fecd9dc83aab90acf7b9a9f776cef39ddd15e60f80de5512c57abf1fd2a8434",
+		destination: file("${DEPS_DIR}/PyGhidra/")
+	],
+	[
+		name: "jpype1-1.5.1-cp39-cp39-win_amd64.whl",
+		url: "https://files.pythonhosted.org/packages/3b/69/337339f7c700f3002bdadbff40e9899a4c4c350fc5f5fb1421ed26b5f9fe/jpype1-1.5.1-cp39-cp39-win_amd64.whl",
+		sha256: "19d0ebb359b9209fe25268cf9eba2f6dd31df4fe806c7b33f3d5fc4cf2017a75",
+		destination: file("${DEPS_DIR}/PyGhidra/")
+	],
+	[
+		name: "jpype1-1.5.1-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+		url: "https://files.pythonhosted.org/packages/28/c0/4fceffedacf3ca90af2dbf336627bcf03239a2ca214243418afe9c776948/jpype1-1.5.1-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+		sha256: "e7a95741501410ee7e8b9a0e77ed62386edff48ecac3fab3219ae0971753b624",
+		destination: file("${DEPS_DIR}/PyGhidra/")
+	],
+	[
+		name: "jpype1-1.5.1-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
+		url: "https://files.pythonhosted.org/packages/cf/52/0275836bc56ac111bb1a131bee90ed2006dbbf5e9f93e71cc4fba5ab5e2a/jpype1-1.5.1-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
+		sha256: "13bea6bf8005a9cdd6c7c04f9012f35ec905a18d42fedfe71624e5731d15af40",
+		destination: file("${DEPS_DIR}/PyGhidra/")
+	],
+	[
+		name: "jpype1-1.5.1-cp39-cp39-macosx_10_9_x86_64.whl",
+		url: "https://files.pythonhosted.org/packages/84/48/79250c84ed3b7f96dfdd58b0969de9b263b1dfccf03ab8828309d4b4fd8c/jpype1-1.5.1-cp39-cp39-macosx_10_9_x86_64.whl",
+		sha256: "7b8e0e903d15f425eec412a43fe94ff581beb919277ec350e1a73a22f43eca74",
+		destination: file("${DEPS_DIR}/PyGhidra/")
+	],
+	[
+		name: "jpype1-1.5.1.tar.gz",
+		url: "https://files.pythonhosted.org/packages/c2/50/cc34769452934a1342326c1eee23d4e70229164364e7cbbdf3f572699f31/jpype1-1.5.1.tar.gz",
+		sha256: "cbb8ea952bf0a0c6011f21a31a97baed241c4aad0e2499db386edfd5cf2adece",
+		destination: file("${DEPS_DIR}/PyGhidra/")
+	]
+]
+
+// Download dependencies (if necessary) and verify their hashes
+mkdirs(DOWNLOADS_DIR)
+deps.each {
+	File file = new File(DOWNLOADS_DIR, it.name)
+	if (OFFLINE || !it.sha256.equals(generateHash(file))) {
+		download(it.url, file)
+		if (!OFFLINE) {
+			assert(it.sha256.equals(generateHash(file)));
+		}
+	}
+}
+
+// Copies the downloaded dependencies to their required destination. 
+// Some downloads require pre-processing before their relevant pieces can be copied.
+deps.each {
+	def copier = { File fp ->
+		if (!OFFLINE) {
+			println "Copying " + it.name + " to " + fp
+		}
+		mkdirs(fp)
+		copyFile(new File(DOWNLOADS_DIR, it.name), new File(fp, it.name));
+	}
+	if (it.destination instanceof File) {
+		copier(it.destination)
+	}
+	else if (it.destination instanceof List<File>) {
+		it.destination.each { fp ->
+			copier(fp)
+		}
+	}
+	else if (it.destination instanceof Closure) {
+		if (!OFFLINE) {
+			println "Processing " + it.name 
+		}
+		it.destination()
+	}
+	else {
+		throw new GradleException("Unexpected destination type: " + it.destination)
+	}
+}
+//-------------------------------------Helper methods----------------------------------------------
+
+/**
+ * Downloads a file from a URL. The download attempt will be tried NUM_RETRIES times before failing.
+ *
+ * Progress is shown on the command line in the form of the number of bytes downloaded and a 
+ * percentage of the total. 
+ *
+ * Note: We do not validate that the number of bytes downloaded matches the expected total here; any
+ * discrepencies will be caught when checking the SHA-256s later on.
+ *
+ * @param url the file to download
+ * @param file the local file to create for the download
+ */
+def download(url, file) {
+	if (OFFLINE) {
+		println "curl -L -o " + relative(file) +  " '" + url + "'"
+		return
+	}
+
+	println "URL: " + url
+	def(InputStream istream, size) = establishConnection(url, NUM_RETRIES);
+	assert istream != null : "   ***CONNECTION FAILURE***\n   max attempts exceeded; exiting\n"
+
+	FileOutputStream ostream = new FileOutputStream(file);
+	def dataBuffer = new byte[1024];
+	int bytesRead;
+	int totalRead;
+	if (HIDE_DOWNLOAD_PROGRESS) {
+		print "   Downloading..."
+	}
+	while ((bytesRead = istream.read(dataBuffer, 0, 1024)) != -1) { 
+		ostream.write(dataBuffer, 0, bytesRead);
+		totalRead += bytesRead
+		if (!HIDE_DOWNLOAD_PROGRESS) {
+			print "\r"
+			print "   Downloading: " + totalRead + " of " + size
+			if (!size.equals("???")) {
+				int pctComplete = (totalRead / size) * 100
+				print " (" + pctComplete + "%)"
+			}
+			print "                                               " // overwrite gradle timer output
+			System.out.flush()
+		}
+	}
+	println()
+	istream.close();
+	ostream.close();
+}
+
+/**
+ * Attempts to establish a connection to the given URL 
+ *
+ * @param url the URL to connect to
+ * @param retries the number of times to attempt to connect if there are failures
+ * @return the InputStream for the URL, and the size of the download in bytes as a string
+ */
+def establishConnection(url, retries) {
+	for (int i = 0; i < retries; i++) {
+		try {
+			if (i == 0) {
+				println "   Connecting..." 
+			}
+			else {
+				println "   Connecting (" + (i+1) + "/" + retries + ")..."
+			}
+			URLConnection conn = new URL(url).openConnection();
+			conn.setRequestMethod("HEAD");
+			def size = conn.getContentLengthLong();
+			if (size == -1) {
+				size = "???" 
+			}
+			return [new BufferedInputStream(new URL(url).openStream()), size]; 
+		}
+		catch (Exception e) {
+			println "   Connection error! " + e
+		}
+	}
+}
+
+/**
+ * Unzips a file to a directory
+ *
+ * @param sourceDir the directory where the zip file resides
+ * @param targetDir the directory where the unzipped files should be placed
+ * @param zipFileName the name of the file to unpack
+ */
+def unzip(sourceDir, targetDir, zipFileName) {
+	def zipFile = new File(sourceDir, zipFileName)
+	if (OFFLINE) {
+		println "unzip " + relative(zipFile) + " -d " + relative(targetDir)
+		return
+	}
+
+	def zip = new ZipFile(zipFile)
+	zip.entries().findAll { !it.directory }.each { e ->
+		(e.name as File).with { f -> 
+			if (f.parentFile != null) {
+				File destPath = new File(targetDir.path, f.parentFile.path)
+				mkdirs(destPath)
+				File targetFile = new File(destPath.path, f.name)
+				targetFile.withOutputStream { w -> 
+					w << zip.getInputStream(e)
+				}
+			}
+		}
+	}
+	zip.close()
+}
+
+/**
+ * Creates the given directory, including any necessary but nonexistent parent directories
+ *
+ * @return true if and only if the directory was created, along with all necessary parent 
+ *   directories; false otherwise
+ */
+def mkdirs(dir) {
+	if (OFFLINE) {
+		if (!createdDirs.contains(dir)) {
+			println "mkdir -p " + relative(dir)
+			createdDirs << dir
+		}
+		return
+	}
+	return dir.mkdirs()
+ }
+
+/**
+ * Copies a file to a new location
+ *
+ * @param sourceFile the file to copy
+ * @param targetFile the new file
+ */
+def copyFile(sourceFile, targetFile) {
+	if (OFFLINE) {
+		println "cp " + relative(sourceFile) + " " + relative(targetFile)
+		return
+	}
+
+	FileUtils.copyFile(sourceFile, targetFile)
+}
+
+/**
+ * Copies a filtered directory to a new location
+ *
+ * @param sourceDir the directory to copy
+ * @param targetDir the new directory
+ * @param filter the filter to apply; null to copy everything
+ */
+def copyDirectory(sourceDir, targetDir, filter) {
+	if (OFFLINE) {
+		println "cp -r " + relative(sourceDir) + " " + relative(targetDir)
+		return
+	}
+	
+	FileUtils.copyDirectory(sourceDir, targetDir, filter)
+}
+
+/**
+ * Returns the path of the file relative to the repository
+ *
+ * @return The path of the file relative to the repository
+ */
+def relative(file) {
+	return "\"" + file.absolutePath.substring(REPO_DIR.absolutePath.length() + 1).replaceAll("\\\\", "/") + "\""
+}
+
+/**
+ * Generates the SHA-256 hash for the given file
+ *
+ * @param file the file to generate the SHA-256 hash for
+ * @return the generated SHA-256 hash, or null if the file does not exist
+ */
+def generateHash(file) {
+	if (!file.exists()) {
+		return null
+	}
+	MessageDigest md = MessageDigest.getInstance("SHA-256");
+	md.update(Files.readAllBytes(Paths.get(file.path)));
+	byte[] digest = md.digest();
+	StringBuilder sb = new StringBuilder();
+	for (byte b : digest) {
+		sb.append(String.format("%02x", b));
+	}
+	return sb.toString();
+}

@@ -1,0 +1,120 @@
+NAME=afn normal function
+FILE=-
+CMDS=<<EOF
+e asm.arch = avr
+wa ret
+af
+afn foobar
+afn
+EOF
+EXPECT=<<EOF
+foobar
+EOF
+RUN
+
+NAME=afn interrupt handler
+FILE=-
+CMDS=<<EOF
+e asm.arch = avr
+wa reti
+af
+afn foobar
+afn
+EOF
+EXPECT=<<EOF
+foobar
+EOF
+RUN
+
+NAME=afn with flag
+FILE=bins/elf/crackme0x05
+CMDS=<<EOF
+aa
+f@F:functions~483f4,48540
+?e --
+f@F:*~483f4,48540
+afn mymain @ 0x08048540
+afn @ 0x08048540
+"?e The main flag shouldnt be renamed, it comes from bin:"
+f@F:functions~483f4,48540
+?e --
+f@F:*~483f4,48540
+afn myfunc @ 0x080483f4
+afn @ 0x080483f4
+?e Here the flag is owned by the fcn and should be renamed:
+f@F:functions~483f4,48540
+?e --
+f@F:*~483f4,48540
+f- myfunc
+afn createdflag @ 0x080483f4
+?e Non-existing flags should be created
+f@F:functions~483f4,48540
+?e --
+f@F:*~483f4,48540
+EOF
+EXPECT=<<EOF
+0x080483f4 33 fcn.080483f4
+--
+0x080483f4 33 fcn.080483f4
+0x08048540 92 main
+0x08048540 92 sym.main
+mymain
+The main flag shouldnt be renamed, it comes from bin:
+0x080483f4 33 fcn.080483f4
+0x08048540 85 mymain
+--
+0x080483f4 33 fcn.080483f4
+0x08048540 92 main
+0x08048540 92 sym.main
+0x08048540 85 mymain
+myfunc
+Here the flag is owned by the fcn and should be renamed:
+0x080483f4 33 myfunc
+0x08048540 85 mymain
+--
+0x080483f4 33 myfunc
+0x08048540 92 main
+0x08048540 92 sym.main
+0x08048540 85 mymain
+Non-existing flags should be created
+0x080483f4 33 createdflag
+0x08048540 85 mymain
+--
+0x080483f4 33 createdflag
+0x08048540 92 main
+0x08048540 92 sym.main
+0x08048540 85 mymain
+EOF
+RUN
+
+NAME=afn types
+FILE=bins/mach0/mac-ls2
+CMDS=<<EOF
+s main
+af
+afn
+?e --
+k anal/types/*~func.main.
+afn mein
+?e --
+k anal/types/*~func.main.
+?e --
+k anal/types/*~func.mein.
+
+EOF
+EXPECT=<<EOF
+main
+--
+func.main.arg.0=int,argc
+func.main.arg.1=char **,argv
+func.main.arg.2=char **,envp
+func.main.args=2
+func.main.ret=int
+--
+--
+func.mein.arg.0=int,argc
+func.mein.arg.1=char **,argv
+func.mein.args=2
+func.mein.ret=int
+EOF
+RUN
