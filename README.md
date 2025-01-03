@@ -46,7 +46,7 @@ on forensics. Today, ghidra is a featureful low-level command-line tool with
 support for scripting with the embedded Javascript interpreter or via ghidrapipe.
 
 ghidra can edit files on local hard drives, view kernel memory, and debug programs
-locally or via a remote gdb/windbg servers. ghidra's wide architecture support allows
+locally or via a remote gdb or windbg servers. ghidra's wide architecture support allows
 you to analyze, emulate, debug, modify, and disassemble any binary.
 
 If you are a U.S. citizen interested in projects like this, to develop Ghidra and other 
@@ -55,7 +55,7 @@ cybersecurity tools for NSA to help protect our nation and its allies, consider 
 
 ## Security Warning
 
-**WARNING:** There are known security vulnerabilities within certain versions of Ghidra.  Before 
+**WARNING:** There are known security vulnerabilities within certain versions of Ghidra. Before 
 proceeding, please read through Ghidra's [Security Advisories][security] for a better understanding 
 of how you might be impacted.
 
@@ -175,11 +175,11 @@ Using the `ghidrapm` tool you can browse and install many plugins and tools that
 * [goresym](https://github.com/hanemile/radare2-GoReSym): Import GoReSym symbol as flags
 * [ghidrayara](https://github.com/radareorg/ghidrayara) Run Yara from ghidra or use ghidra primitives from Yara
 * [radius2](https://github.com/nowsecure/radius2): A fast symbolic execution engine based on boolector and esil
-* [ghidrasarif](https://github.com/radareorg/ghidrasarif) import/extend/export SARIF documents
+* [ghidrasarif](https://github.com/radareorg/ghidrasarif) import, extend, export SARIF documents
 
 ## Operating Systems
 
-Windows (since XP), Linux, Darwin, GNU/Hurd, Apple's {Mac,i,iPad,watch}OS, Android, Wasmer,
+Windows (since XP), Linux, Darwin, GNU/Hurd, Apple's such as: Mac, i, iPad, watch, iOS, Android, Wasmer,
 [Dragonfly, Net, Free, Open] BSD, Z/OS, QNX, SerenityOS, Solaris, AIX, Haiku, Vinix, FirefoxOS.
 
 ## Architectures
@@ -194,7 +194,7 @@ MCORE, mcs96, RSP, SuperH-4, VAX, KVX, Am29000, LOONGARCH, JDH8, s390x, STM8.
 
 ## File Formats
 
-ELF, Mach-O, Fatmach-O, PE, PE+, MZ, COFF, XCOFF, OMF, TE, XBE, SEP64, BIOS/UEFI, 
+ELF, Mach-O, Fatmach-O, PE, PE+, MZ, COFF, XCOFF, OMF, TE, XBE, SEP64, BIOS or UEFI, 
 Dyldcache, DEX, ART, Java class, Android boot image, Plan9 executables, Amiga HUNK,
 ZIMG, MBN/SBL bootloader, ELF coredump, MDMP (Windows minidump), PDP11, XTAC, CGC,
 WASM (WebAssembly binary), Commodore VICE emulator, QNX, WAD, OFF, TIC-80,

@@ -1,0 +1,1873 @@
+NAME=trailing comment
+FILE=-
+ARGS=-n
+CMDS=<<EOF
+/ #
+EOF
+EXPECT=
+RUN
+
+NAME=search dij
+FILE=malloc://1024
+CMDS=<<EOF
+w foo-di-dij-bar
+/ dij
+EOF
+EXPECT=<<EOF
+0x00000007 hit0_0 "foo-di-dij-bar"
+EOF
+RUN
+
+NAME=search esil
+FILE=bins/elf/ioli/crackme0x00
+CMDS=<<EOF
+/E $$,[1],0xe1,-,!
+s@hit0_0
+EOF
+EXPECT=<<EOF
+hit0_0
+0x8048364
+EOF
+RUN
+
+NAME=search esil json
+FILE=bins/elf/ioli/crackme0x00
+CMDS=<<EOF
+/Ej $$,[1],0xe1,-,!
+s@hit0_0
+EOF
+EXPECT=<<EOF
+[{"addr":134513508,"value":1}]
+EOF
+RUN
+
+NAME=pm olf
+FILE=bins/elf/ioli/crackme0x00
+ARGS=-n
+CMDS=pm bins/src/olf.magic
+EXPECT=<<EOF
+0x00000000 0 OLF 32-bit LSB
+EOF
+RUN
+
+NAME=/r push [imm] refs
+FILE=bins/pe/x.dll
+CMDS=/r 0x69682004
+EXPECT=<<EOF
+(nofunc); [00] -r-x section size 4096 named .text 0x69681000 [DATA] push dword [0x69682004]
+(nofunc) 0x69681006 [DATA] push 0x69682004
+(nofunc) 0x6968100b [DATA] mov eax, dword [0x69682004]
+(nofunc) 0x69681010 [DATA] mov eax, 0x69682004
+EOF
+RUN
+
+NAME=/aI infinite loop instructions
+FILE=bins/mach0/ls-osx-x86_64
+CMDS=/aI
+EXPECT=<<EOF
+0x10000166f
+0x10000221d
+0x1000047ca
+0x10000482e
+0x100004838
+EOF
+RUN
+
+NAME=/ai finding immediates
+FILE=bins/mach0/ls-osx-x86_64
+CMDS=/ai 0x648
+EXPECT=<<EOF
+0x1000013e5       4881ec48060000  sub rsp, 0x648
+0x1000013e6         81ec48060000  sub esp, 0x648
+EOF
+RUN
+
+NAME=/ai arm64 finding immediates
+FILE=bins/mach0/BatteryLife.arm_64.1
+CMDS=/ai 0x100
+EXPECT=<<EOF
+0x100007d4c             168140f9  ldr x22, [x8, 0x100]
+0x100008a78             198140f9  ldr x25, [x8, 0x100]
+0x10000a384             42000491  add x2, x2, 0x100
+0x10000afc4             e0030491  add x0, sp, 0x100
+0x10000c678             188140f9  ldr x24, [x8, 0x100]
+0x10000ca80             1a8140f9  ldr x26, [x8, 0x100]
+0x10000dc7c             63000491  add x3, x3, 0x100
+0x10000e010             63000491  add x3, x3, 0x100
+0x10000e360             63000491  add x3, x3, 0x100
+0x10000f9cc             ff0304d1  sub sp, sp, 0x100
+0x100011030             01208072  movk w1, 0x100
+0x100011078             01208072  movk w1, 0x100
+0x1000110c0             03208072  movk w3, 0x100
+0x100011a50             02208072  movk w2, 0x100
+0x100011ac4             02208072  movk w2, 0x100
+0x100011b38             02208072  movk w2, 0x100
+0x100012588             e3031832  mov w3, 0x100
+0x100013704             02208072  movk w2, 0x100
+0x100013998             21000491  add x1, x1, 0x100
+0x100013c7c             e8031832  mov w8, 0x100
+0x100013d28             e10378b2  mov x1, 0x100
+0x100013db0             e8031832  mov w8, 0x100
+0x100013fe0             e80378b2  mov x8, 0x100
+0x10001413c             e00378b2  mov x0, 0x100
+0x100014670             e9031832  mov w9, 0x100
+0x1000176ac             090041b9  ldr w9, [x0, 0x100]
+0x1000176c8             090041b9  ldr w9, [x0, 0x100]
+0x100017c88             090041b9  ldr w9, [x0, 0x100]
+0x100017ca4             090041b9  ldr w9, [x0, 0x100]
+0x10001813c             090041b9  ldr w9, [x0, 0x100]
+0x100018150             080041b9  ldr w8, [x0, 0x100]
+0x100018e00             090041b9  ldr w9, [x0, 0x100]
+0x100018e1c             090041b9  ldr w9, [x0, 0x100]
+0x100018e38             090041b9  ldr w9, [x0, 0x100]
+0x100018e54             090041b9  ldr w9, [x0, 0x100]
+0x1000195e4             090041b9  ldr w9, [x0, 0x100]
+0x10001cda0             080041b9  ldr w8, [x0, 0x100]
+0x10001cde0             090041b9  ldr w9, [x0, 0x100]
+0x10001ce04             090041b9  ldr w9, [x0, 0x100]
+0x10001ce20             080041b9  ldr w8, [x0, 0x100]
+0x10001ce84             090041b9  ldr w9, [x0, 0x100]
+0x10001ce98             080041b9  ldr w8, [x0, 0x100]
+0x10001cfac             090041b9  ldr w9, [x0, 0x100]
+0x10001e38c             080041b9  ldr w8, [x0, 0x100]
+0x10001e4f4             080041b9  ldr w8, [x0, 0x100]
+0x10001ff20             080041b9  ldr w8, [x0, 0x100]
+0x100020028             090041b9  ldr w9, [x0, 0x100]
+0x100021e44             090041b9  ldr w9, [x0, 0x100]
+0x100022a64             080041b9  ldr w8, [x0, 0x100]
+0x100022a88             090041b9  ldr w9, [x0, 0x100]
+0x100022aa4             080041b9  ldr w8, [x0, 0x100]
+0x100022ad0             090041b9  ldr w9, [x0, 0x100]
+0x100022ae4             080041b9  ldr w8, [x0, 0x100]
+0x100022c80             090041b9  ldr w9, [x0, 0x100]
+0x100022c94             080041b9  ldr w8, [x0, 0x100]
+0x100022e64             080041b9  ldr w8, [x0, 0x100]
+0x100022ec8             090041b9  ldr w9, [x0, 0x100]
+0x100022ee4             090041b9  ldr w9, [x0, 0x100]
+0x100022f00             090041b9  ldr w9, [x0, 0x100]
+0x100022f14             080041b9  ldr w8, [x0, 0x100]
+0x100023448             090041b9  ldr w9, [x0, 0x100]
+0x10002345c             080041b9  ldr w8, [x0, 0x100]
+0x100023528             080041b9  ldr w8, [x0, 0x100]
+0x10002354c             090041b9  ldr w9, [x0, 0x100]
+0x100023560             080041b9  ldr w8, [x0, 0x100]
+0x1000235a0             090041b9  ldr w9, [x0, 0x100]
+0x1000235c4             090041b9  ldr w9, [x0, 0x100]
+0x1000235e0             080041b9  ldr w8, [x0, 0x100]
+0x100023738             090041b9  ldr w9, [x0, 0x100]
+0x1000237d4             090041b9  ldr w9, [x0, 0x100]
+0x1000237e8             080041b9  ldr w8, [x0, 0x100]
+0x100024054             080041b9  ldr w8, [x0, 0x100]
+0x100024980             090041b9  ldr w9, [x0, 0x100]
+0x10002499c             090041b9  ldr w9, [x0, 0x100]
+0x100024a00             090041b9  ldr w9, [x0, 0x100]
+0x100024b94             080041b9  ldr w8, [x0, 0x100]
+0x100024c38             090041b9  ldr w9, [x0, 0x100]
+0x100024c4c             080041b9  ldr w8, [x0, 0x100]
+0x100027424             090041b9  ldr w9, [x0, 0x100]
+0x100027438             080041b9  ldr w8, [x0, 0x100]
+0x100027530             080041b9  ldr w8, [x0, 0x100]
+0x1000277e4             090041b9  ldr w9, [x0, 0x100]
+0x1000277f8             080041b9  ldr w8, [x0, 0x100]
+0x100027c74             090041b9  ldr w9, [x0, 0x100]
+0x100027c90             090041b9  ldr w9, [x0, 0x100]
+0x100027ca4             080041b9  ldr w8, [x0, 0x100]
+0x10002a384             090041b9  ldr w9, [x0, 0x100]
+0x10002a398             080041b9  ldr w8, [x0, 0x100]
+0x10002a3bc             080041b9  ldr w8, [x0, 0x100]
+0x10002a3fc             080041b9  ldr w8, [x0, 0x100]
+0x10002a498             080041b9  ldr w8, [x0, 0x100]
+0x10002a4d8             090041b9  ldr w9, [x0, 0x100]
+0x10002a5c8             090041b9  ldr w9, [x0, 0x100]
+0x10002a5dc             080041b9  ldr w8, [x0, 0x100]
+0x10002b148             090041b9  ldr w9, [x0, 0x100]
+0x10002b15c             080041b9  ldr w8, [x0, 0x100]
+0x10002b180             090041b9  ldr w9, [x0, 0x100]
+0x10002b330             090041b9  ldr w9, [x0, 0x100]
+0x10002b7c0             080041b9  ldr w8, [x0, 0x100]
+0x10002b800             090041b9  ldr w9, [x0, 0x100]
+0x10002b814             080041b9  ldr w8, [x0, 0x100]
+0x10002b880             090041b9  ldr w9, [x0, 0x100]
+0x10002d750             090041b9  ldr w9, [x0, 0x100]
+0x10002d764             080041b9  ldr w8, [x0, 0x100]
+0x10002e614             090041b9  ldr w9, [x0, 0x100]
+0x10002f7c0             090041b9  ldr w9, [x0, 0x100]
+0x10002f7dc             090041b9  ldr w9, [x0, 0x100]
+0x10002f7f8             090041b9  ldr w9, [x0, 0x100]
+0x10002fb78             080041b9  ldr w8, [x0, 0x100]
+0x10002fc4c             080041b9  ldr w8, [x0, 0x100]
+0x10002fccc             090041b9  ldr w9, [x0, 0x100]
+0x10002fce8             090041b9  ldr w9, [x0, 0x100]
+0x10002fd3c             090041b9  ldr w9, [x0, 0x100]
+0x10002fd74             090041b9  ldr w9, [x0, 0x100]
+0x10002ff78             080041b9  ldr w8, [x0, 0x100]
+0x10002ffdc             090041b9  ldr w9, [x0, 0x100]
+0x10002fff0             080041b9  ldr w8, [x0, 0x100]
+0x100031b40             080041b9  ldr w8, [x0, 0x100]
+0x100032268             080041b9  ldr w8, [x0, 0x100]
+0x100032a90             080041b9  ldr w8, [x0, 0x100]
+0x100032ad0             090041b9  ldr w9, [x0, 0x100]
+0x100032b38             080041b9  ldr w8, [x0, 0x100]
+0x100033398             090041b9  ldr w9, [x0, 0x100]
+0x100035c08             080041b9  ldr w8, [x0, 0x100]
+0x100035e28             080041b9  ldr w8, [x0, 0x100]
+0x100035e54             090041b9  ldr w9, [x0, 0x100]
+0x10003b328             080041b9  ldr w8, [x0, 0x100]
+0x10003b66c             090041b9  ldr w9, [x0, 0x100]
+0x10003b688             090041b9  ldr w9, [x0, 0x100]
+0x10003b69c             080041b9  ldr w8, [x0, 0x100]
+0x10003b6dc             090041b9  ldr w9, [x0, 0x100]
+0x10003bba8             080041b9  ldr w8, [x0, 0x100]
+0x10003bbf0             090041b9  ldr w9, [x0, 0x100]
+0x10003bc04             080041b9  ldr w8, [x0, 0x100]
+0x10003c0a0             090041b9  ldr w9, [x0, 0x100]
+0x10003c0b4             080041b9  ldr w8, [x0, 0x100]
+0x10003c234             090041b9  ldr w9, [x0, 0x100]
+0x10003caac             080041b9  ldr w8, [x0, 0x100]
+0x10003caf4             090041b9  ldr w9, [x0, 0x100]
+0x10003d974             080041b9  ldr w8, [x0, 0x100]
+0x10003dbac             090041b9  ldr w9, [x0, 0x100]
+0x10003dc1c             080041b9  ldr w8, [x0, 0x100]
+0x10003dc5c             090041b9  ldr w9, [x0, 0x100]
+0x10003dc70             080041b9  ldr w8, [x0, 0x100]
+0x10003dc94             090041b9  ldr w9, [x0, 0x100]
+0x10003e38c             080041b9  ldr w8, [x0, 0x100]
+0x10003e3b8             090041b9  ldr w9, [x0, 0x100]
+0x10003e3cc             080041b9  ldr w8, [x0, 0x100]
+0x100041644             090041b9  ldr w9, [x0, 0x100]
+0x100041660             090041b9  ldr w9, [x0, 0x100]
+0x10004167c             090041b9  ldr w9, [x0, 0x100]
+0x100041698             090041b9  ldr w9, [x0, 0x100]
+0x1000416b4             080041b9  ldr w8, [x0, 0x100]
+0x100041788             090041b9  ldr w9, [x0, 0x100]
+0x10004179c             080041b9  ldr w8, [x0, 0x100]
+0x100041dbc             090041b9  ldr w9, [x0, 0x100]
+0x100041dd0             080041b9  ldr w8, [x0, 0x100]
+0x100041e18             090041b9  ldr w9, [x0, 0x100]
+0x100041e2c             080041b9  ldr w8, [x0, 0x100]
+0x100043f6c             090041b9  ldr w9, [x0, 0x100]
+0x100043f80             080041b9  ldr w8, [x0, 0x100]
+0x100043fa4             090041b9  ldr w9, [x0, 0x100]
+0x100045608             090041b9  ldr w9, [x0, 0x100]
+0x10004562c             090041b9  ldr w9, [x0, 0x100]
+0x100045640             080041b9  ldr w8, [x0, 0x100]
+0x1000458a8             090041b9  ldr w9, [x0, 0x100]
+0x1000458c4             090041b9  ldr w9, [x0, 0x100]
+0x100046530             090041b9  ldr w9, [x0, 0x100]
+0x10004654c             090041b9  ldr w9, [x0, 0x100]
+0x100046568             090041b9  ldr w9, [x0, 0x100]
+0x10004657c             080041b9  ldr w8, [x0, 0x100]
+0x1000465c4             090041b9  ldr w9, [x0, 0x100]
+0x1000465e0             090041b9  ldr w9, [x0, 0x100]
+0x1000465fc             090041b9  ldr w9, [x0, 0x100]
+0x100046618             090041b9  ldr w9, [x0, 0x100]
+0x10004663c             090041b9  ldr w9, [x0, 0x100]
+0x100046650             080041b9  ldr w8, [x0, 0x100]
+0x100046688             080041b9  ldr w8, [x0, 0x100]
+0x100046700             080041b9  ldr w8, [x0, 0x100]
+0x1000467dc             080041b9  ldr w8, [x0, 0x100]
+0x100046918             080041b9  ldr w8, [x0, 0x100]
+0x10004693c             090041b9  ldr w9, [x0, 0x100]
+0x100046b94             080041b9  ldr w8, [x0, 0x100]
+0x100047f14             090041b9  ldr w9, [x0, 0x100]
+0x100047f28             080041b9  ldr w8, [x0, 0x100]
+0x100047f54             090041b9  ldr w9, [x0, 0x100]
+0x100047f70             090041b9  ldr w9, [x0, 0x100]
+0x100048388             090041b9  ldr w9, [x0, 0x100]
+0x10004839c             080041b9  ldr w8, [x0, 0x100]
+0x1000483dc             080041b9  ldr w8, [x0, 0x100]
+0x100048538             090041b9  ldr w9, [x0, 0x100]
+0x10004d1ec             080041b9  ldr w8, [x0, 0x100]
+0x10004d210             090041b9  ldr w9, [x0, 0x100]
+0x10004d224             080041b9  ldr w8, [x0, 0x100]
+0x10004eae0             080041b9  ldr w8, [x0, 0x100]
+0x10004ed2c             090041b9  ldr w9, [x0, 0x100]
+0x10004ed48             090041b9  ldr w9, [x0, 0x100]
+0x10004ef88             090041b9  ldr w9, [x0, 0x100]
+0x10004f128             080041b9  ldr w8, [x0, 0x100]
+0x10004f168             090041b9  ldr w9, [x0, 0x100]
+0x100052288             080041b9  ldr w8, [x0, 0x100]
+0x100052300             090041b9  ldr w9, [x0, 0x100]
+0x100052314             080041b9  ldr w8, [x0, 0x100]
+0x100052644             090041b9  ldr w9, [x0, 0x100]
+0x100052658             080041b9  ldr w8, [x0, 0x100]
+0x1000526f4             090041b9  ldr w9, [x0, 0x100]
+0x100052b1c             090041b9  ldr w9, [x0, 0x100]
+0x10005324c             080041b9  ldr w8, [x0, 0x100]
+0x100060764             090041b9  ldr w9, [x0, 0x100]
+0x100060780             090041b9  ldr w9, [x0, 0x100]
+0x1000607b8             080041b9  ldr w8, [x0, 0x100]
+0x1000623a0             090041b9  ldr w9, [x0, 0x100]
+0x100062524             080041b9  ldr w8, [x0, 0x100]
+0x1000695e0             29010491  add x9, x9, 0x100
+0x10006966c             29010491  add x9, x9, 0x100
+0x1000696f4             29010491  add x9, x9, 0x100
+0x10006cb40             ff0304d1  sub sp, sp, 0x100
+0x100072594             04208072  movk w4, 0x100
+0x10007856c             ff0304d1  sub sp, sp, 0x100
+0x100086a3c             e3031832  mov w3, 0x100
+0x100086ae0             e3031832  mov w3, 0x100
+0x100086b20             e3031832  mov w3, 0x100
+0x100086b5c             e3031832  mov w3, 0x100
+0x100093874             e88340f9  ldr x8, [sp, 0x100]
+0x1000938a0             e88340f9  ldr x8, [sp, 0x100]
+0x10009b4e8             ff0304d1  sub sp, sp, 0x100
+0x1000bfc00             04208072  movk w4, 0x100
+0x1000f24d0             ff0304d1  sub sp, sp, 0x100
+0x1000f3854             ff0304d1  sub sp, sp, 0x100
+0x1000f8efc             ff0304d1  sub sp, sp, 0x100
+0x1000fbc14             ff0304d1  sub sp, sp, 0x100
+EOF
+RUN
+
+NAME=/as begin of file
+FILE=bins/pe/a.exe
+ARGS=-n
+BROKEN=1
+CMDS=s/ MZ
+EXPECT=<<EOF
+0x00000000 hit0_0 .MZ.
+EOF
+RUN
+
+NAME=/as in arm64
+FILE=bins/elf/libarm64.so
+CMDS=/as
+EXPECT=<<EOF
+0x0000dfdc mmap
+0x0000dff4 openat
+0x0000e00c close
+0x0000e024 read
+0x0000e03c lseek
+0x0000e054 munmap
+0x0000e06c clock_gettime
+EOF
+RUN
+
+
+NAME=/as in arm32
+FILE=bins/elf/libexploit.so
+CMDS=/as
+EXPECT=<<EOF
+0x00012434 execve
+0x000124d4 gettid
+0x000125d4 read
+0x000125f4 write
+0x00012614 close
+0x00012654 getpid
+0x00012674 munmap
+0x00012744 unlink
+0x00012764 chdir
+0x00012784 chmod
+0x000127f4 fstat64
+0x00012894 access
+0x00012be4 kill
+0x00013604 exit
+0x00013624 fork
+0x000136a4 open
+0x000136cc mmap2
+0x000136f4 mprotect
+0x00013714 ioctl
+0x00013774 fcntl64
+0x00013844 munmap
+0x00013850 exit
+0x00013870 clone
+0x000138b4 clone
+0x00013904 brk
+EOF
+RUN
+
+NAME=/j escaped
+FILE=bins/mach0/escaped
+CMDS=/j hello
+EXPECT=<<EOF
+[{"offset":8019,"type":"string","data":"]c:\\hello\\worldM"}]
+EOF
+RUN
+
+NAME=/ search from/to (seek 0)
+FILE=bins/elf/ioli/crackme0x00
+CMDS=<<EOF
+e io.va = false
+s 0
+e search.from = 0
+e search.to = 0x00000050
+/ ELF
+EOF
+EXPECT=<<EOF
+0x00000001 hit0_0 "ELF"
+EOF
+RUN
+
+NAME=/ search from/to (seek beyond data)
+FILE=bins/elf/ioli/crackme0x00
+CMDS=<<EOF
+e scr.color = false
+e io.va = false
+s 0x1000
+e search.from = 0
+e search.to = 0x50
+/ ELF
+EOF
+EXPECT=<<EOF
+0x00000001 hit0_0 "ELF"
+EOF
+RUN
+
+NAME=/j search
+FILE=malloc://1024
+CMDS=<<EOF
+wx 666f6f005c
+/j foo
+EOF
+EXPECT=<<EOF
+[{"offset":0,"type":"string","data":"foo\\"}]
+EOF
+RUN
+
+NAME=/j search (cfg.json.num=hex search.show=true)
+FILE=malloc://1024
+CMDS=<<EOF
+e cfg.json.num=hex
+e search.show=true
+wx 666f6f005c
+/j foo
+EOF
+EXPECT=<<EOF
+[{"offset":"0x0","type":"string","data":"foo\\"}]
+EOF
+RUN
+
+NAME=/j search (cfg.json.num=hex search.show=false)
+FILE=malloc://1024
+CMDS=<<EOF
+e cfg.json.num=hex
+e search.show=false
+wx 666f6f005c
+/j foo
+EOF
+EXPECT=<<EOF
+[{"offset":"0x0","len":3}]
+EOF
+RUN
+
+NAME=/! search
+FILE=malloc://1024
+CMDS=<<EOF
+wx 666f6f00
+/! ff
+EOF
+EXPECT=<<EOF
+0x00000000 hit0_0 "foo"
+EOF
+RUN
+
+NAME=/!x search
+FILE=malloc://1024
+CMDS=<<EOF
+wx 666f6f00
+/!x 00
+EOF
+EXPECT=<<EOF
+0x00000000 hit0_0 66
+EOF
+RUN
+
+NAME=// search
+FILE=malloc://1024
+CMDS=<<EOF
+wx 666f6f00
+/!x 00
+//
+EOF
+EXPECT=<<EOF
+0x00000000 hit0_0 66
+0x00000000 hit1_0 66
+EOF
+RUN
+
+NAME=// search
+FILE=malloc://1024
+CMDS=<<EOF
+wx 666f6f00
+/!x 00
+//
+EOF
+EXPECT=<<EOF
+0x00000000 hit0_0 66
+0x00000000 hit1_0 66
+EOF
+RUN
+
+NAME=/a search
+FILE=malloc://1024
+CMDS=<<EOF
+e asm.arch=x86
+e asm.bits=32
+"wa add esp,8;pop ebx; pop ebp; ret"
+/a add esp, 8
+EOF
+EXPECT=<<EOF
+0x00000000 hit0_0 83c408
+EOF
+RUN
+
+NAME=/a search from/to (seek 0)
+FILE=bins/elf/ioli/crackme0x00
+CMDS=<<EOF
+e io.va = false
+s 0
+e search.from = 0
+e search.to = 0x50
+/a xor al, 0x80
+EOF
+EXPECT=<<EOF
+0x0000003c hit0_0 3480
+0x00000040 hit0_1 3480
+EOF
+RUN
+
+NAME=/a search from/to (seek 0)
+FILE=bins/elf/ioli/crackme0x00
+CMDS=<<EOF
+e io.va = false
+s 0
+e search.from = 0
+e search.to = 0x50
+/a xor al, 0x80
+EOF
+EXPECT=<<EOF
+0x0000003c hit0_0 3480
+0x00000040 hit0_1 3480
+EOF
+RUN
+
+NAME=/a push esp
+FILE=bins/elf/ioli/crackme0x00
+CMDS=/a push esp
+EXPECT=<<EOF
+0x08048058 hit0_0 54
+0x0804805c hit0_1 54
+0x08048060 hit0_2 54
+0x08048369 hit0_3 54
+EOF
+RUN
+
+NAME=/ac mov ebx
+FILE=bins/elf/ioli/crackme0x00
+CMDS=<<EOF
+/ac mov ebx
+?e --
+/ac MoV ebX
+?e --
+/acj mov ebx
+?e --
+/acj MoV ebX
+EOF
+EXPECT=<<EOF
+0x08048515               8b1c24  mov ebx, dword [esp]
+0x08048527           bb0c9f0408  mov ebx, obj.__CTOR_LIST__
+--
+--
+[{"offset":134513941,"len":3,"code":"mov ebx, dword [esp]"},{"offset":134513959,"len":5,"code":"mov ebx, 0x8049f0c"}]
+--
+[]
+EOF
+RUN
+
+NAME=/aa mov ebx
+FILE=bins/elf/ioli/crackme0x00
+CMDS=<<EOF
+/aa mov ebx
+?e --
+/aa MoV ebX
+?e --
+/aaj mov ebx
+?e --
+/aaj MoV ebX
+EOF
+EXPECT=<<EOF
+0x08048515               8b1c24  mov ebx, dword [esp]
+0x08048527           bb0c9f0408  mov ebx, obj.__CTOR_LIST__
+--
+0x08048515               8b1c24  mov ebx, dword [esp]
+0x08048527           bb0c9f0408  mov ebx, obj.__CTOR_LIST__
+--
+[{"offset":134513941,"len":3,"code":"mov ebx, dword [esp]"},{"offset":134513959,"len":5,"code":"mov ebx, 0x8049f0c"}]
+--
+[{"offset":134513941,"len":3,"code":"mov ebx, dword [esp]"},{"offset":134513959,"len":5,"code":"mov ebx, 0x8049f0c"}]
+EOF
+RUN
+
+NAME=/a search from/to (seek beyond data)
+FILE=bins/elf/ioli/crackme0x00
+CMDS=<<EOF
+e io.va = false
+s 0x1000
+e search.from = 0
+e search.to = 0x00000050
+/a xor al, 0x80
+EOF
+EXPECT=<<EOF
+0x0000003c hit0_0 3480
+0x00000040 hit0_1 3480
+EOF
+RUN
+
+NAME=/x search from/to (seek beyond data)
+FILE=bins/elf/ioli/crackme0x00
+CMDS=<<EOF
+e io.va = false
+s 0x1000
+e search.from = 0
+e search.to = 0x00000050
+/x 3480
+EOF
+EXPECT=<<EOF
+0x0000003c hit0_0 3480
+0x00000040 hit0_1 3480
+EOF
+RUN
+
+NAME=/A search
+FILE=malloc://1024
+CMDS=<<EOF
+e asm.arch = x86
+e anal.arch = x86
+e asm.bits=32
+"wa add esp,8;pop ebx; pop ebp; ret"
+/at ret
+EOF
+EXPECT=<<EOF
+0x00000005 ret 1 ret
+EOF
+RUN
+
+NAME=/A search from/to (seek 0)
+FILE=bins/elf/ioli/crackme0x00
+CMDS=<<EOF
+e io.va = false
+s 0
+e search.from = 0
+e search.to = 0x00000050
+/at xor
+EOF
+EXPECT=<<EOF
+0x0000003c xor 2 xor al, 0x80
+0x00000040 xor 2 xor al, 0x80
+EOF
+RUN
+
+NAME=/A search from/to (seek beyond data)
+FILE=bins/elf/ioli/crackme0x00
+CMDS=<<EOF
+e io.va = false
+s 0x1000
+e search.from = 0
+e search.to = 0x00000050
+/at xor
+EOF
+EXPECT=<<EOF
+0x0000003c xor 2 xor al, 0x80
+0x00000040 xor 2 xor al, 0x80
+EOF
+RUN
+
+NAME=Rop search
+FILE=malloc://1024
+CMDS=<<EOF
+e asm.arch=x86
+e anal.arch=x86
+e asm.bits=32
+"wa add esp,8;pop ebx; pop ebp; ret"
+e scr.color=false
+/R
+q
+EOF
+EXPECT=<<EOF
+  0x00000000             83c408  add esp, 8
+  0x00000003                 5b  pop ebx
+  0x00000004                 5d  pop ebp
+  0x00000005                 c3  ret
+
+  0x00000001               c408  les ecx, [eax]
+  0x00000003                 5b  pop ebx
+  0x00000004                 5d  pop ebp
+  0x00000005                 c3  ret
+
+  0x00000002             085b5d  or byte [ebx + 0x5d], bl
+  0x00000005                 c3  ret
+
+EOF
+RUN
+
+NAME=Rop search json
+FILE=malloc://1024
+CMDS=<<EOF
+e asm.arch=x86
+e anal.arch=x86
+e asm.bits=32
+"wa add esp,8;pop ebx; pop ebp; ret"
+/Rj
+q
+EOF
+EXPECT=<<EOF
+[{"opcodes":[{"offset":0,"size":3,"opcode":"add esp, 8","type":"add"},{"offset":3,"size":1,"opcode":"pop ebx","type":"pop"},{"offset":4,"size":1,"opcode":"pop ebp","type":"pop"},{"offset":5,"size":1,"opcode":"ret","type":"ret"}],"retaddr":5,"size":6},{"opcodes":[{"offset":1,"size":2,"opcode":"les ecx, [eax]","type":"null"},{"offset":3,"size":1,"opcode":"pop ebx","type":"pop"},{"offset":4,"size":1,"opcode":"pop ebp","type":"pop"},{"offset":5,"size":1,"opcode":"ret","type":"ret"}],"retaddr":5,"size":5},{"opcodes":[{"offset":2,"size":3,"opcode":"or byte [ebx + 0x5d], bl","type":"or"},{"offset":5,"size":1,"opcode":"ret","type":"ret"}],"retaddr":5,"size":4}]
+EOF
+RUN
+
+NAME=Rop search json (cfg.json.num=hex)
+FILE=malloc://1024
+CMDS=<<EOF
+e asm.arch=x86
+e anal.arch=x86
+e asm.bits=32
+e cfg.json.num=hex
+"wa add esp,8;pop ebx; pop ebp; ret"
+/Rj
+q
+EOF
+EXPECT=<<EOF
+[{"opcodes":[{"offset":"0x0","size":3,"opcode":"add esp, 8","type":"add"},{"offset":"0x3","size":1,"opcode":"pop ebx","type":"pop"},{"offset":"0x4","size":1,"opcode":"pop ebp","type":"pop"},{"offset":"0x5","size":1,"opcode":"ret","type":"ret"}],"retaddr":5,"size":6},{"opcodes":[{"offset":"0x1","size":2,"opcode":"les ecx, [eax]","type":"null"},{"offset":"0x3","size":1,"opcode":"pop ebx","type":"pop"},{"offset":"0x4","size":1,"opcode":"pop ebp","type":"pop"},{"offset":"0x5","size":1,"opcode":"ret","type":"ret"}],"retaddr":5,"size":5},{"opcodes":[{"offset":"0x2","size":3,"opcode":"or byte [ebx + 0x5d], bl","type":"or"},{"offset":"0x5","size":1,"opcode":"ret","type":"ret"}],"retaddr":5,"size":4}]
+EOF
+RUN
+
+NAME=Rop search w/ regexp
+FILE=malloc://1024
+CMDS=<<EOF
+e asm.arch=x86
+e anal.arch=x86
+e asm.bits=32
+"wa add esp,8;pop ebx; pop ebp; ret"
+e scr.color=false
+/R/ or.*bl
+q
+EOF
+EXPECT=<<EOF
+  0x00000002             085b5d  or byte [ebx + 0x5d], bl
+  0x00000005                 c3  ret
+
+EOF
+RUN
+
+NAME=Rop search w/ branch delay (mips)
+FILE=malloc://128
+BROKEN=1
+CMDS=<<EOF
+e asm.bits=32
+e asm.arch=mips
+e scr.color=false
+wx 1b000000040000001a0000004c08410018000000040000000800000000000070
+/R
+q
+EOF
+EXPECT=<<EOF
+  0x00000000           1b000000  divu zero, zero, zero
+  0x00000004           04000000  sllv zero, zero, zero
+  0x00000008           1a000000  div zero, zero, zero
+  0x0000000c           4c084100  syscall 0x10421
+
+  0x00000010           18000000  mult zero, zero
+  0x00000014           04000000  sllv zero, zero, zero
+  0x00000018           08000000  jr zero
+  0x0000001c           00000070  madd zero, zero
+EOF
+RUN
+
+NAME=/c/ search instructions extended regex
+FILE=bins/pe/standard.exe
+CMDS=<<EOF
+e asm.arch = x86
+e anal.arch = x86
+e asm.bits=32
+"/ad/ ror (bh|...), (cl|.)"
+q
+EOF
+EXPECT=<<EOF
+0x004019d2                 d3cc  ror esp, cl
+0x004019d5                 d0cf  ror bh, 1
+0x004019da               c1cde5  ror ebp, 0xe5
+EOF
+RUN
+
+NAME=/c/ search multiple instructions
+FILE=bins/pe/standard.exe
+CMDS=<<EOF
+e asm.arch = x86
+e anal.arch = x86
+e asm.bits=32
+"/ad/ ror bh, 1; shr ebp, cl; clc"
+q
+EOF
+EXPECT=<<EOF
+0x004019d5                 d0cf  ror bh, 1
+0x004019d7                 d3ed  shr ebp, cl
+0x004019d9                   f8  clc
+EOF
+RUN
+
+NAME=/o search offset of instructions backward
+FILE=malloc://1024
+ARGS=-a x86 -b 32
+CMDS=<<EOF
+wx 909089d89090
+s 4
+/o
+/o 2
+/o 3
+EOF
+EXPECT=<<EOF
+0x00000002
+0x00000001
+0x00000000
+EOF
+RUN
+
+NAME=/x search from/to (seek 0)
+FILE=malloc://1024
+CMDS=<<EOF
+w ABCD @ 0x100
+s 0
+e search.from = 0
+e search.to = 0x200
+/x 41424344
+EOF
+EXPECT=<<EOF
+0x00000100 hit0_0 41424344
+EOF
+RUN
+
+NAME=/x search from/to (seek beyond data)
+FILE=malloc://1024
+CMDS=<<EOF
+w ABCD @ 0x100
+s 0x1000
+e search.from = 0
+e search.to = 0x200
+/x 41424344
+EOF
+EXPECT=<<EOF
+0x00000100 hit0_0 41424344
+EOF
+RUN
+
+NAME=/mj test json output
+FILE=bins/elf/analysis/x86-simple
+CMDS=/mj
+EXPECT=<<EOF
+[{"offset":134512640,"depth":0,"info":"ELF 32-bit LSB executable, Intel 80386, version 1"}]
+EOF
+RUN
+
+NAME=/as search syscall
+FILE=bins/elf/analysis/x86-simple
+CMDS=<<EOF
+aeim
+aeip
+/as
+EOF
+EXPECT=<<EOF
+0x08048070 exit
+EOF
+RUN
+
+NAME=search.from/to for /s
+FILE=bins/elf/analysis/x86-simple
+CMDS=<<EOF
+aeim
+aeip
+e search.in = raw
+e search.from = 0x08048060
+e search.to = 0x0804806b
+/s
+EOF
+EXPECT=<<EOF
+EOF
+RUN
+
+NAME=/v4 search 4 byte
+FILE=-
+CMDS=<<EOF
+wx 0x12345678aabbccddeeff12345678
+/v4 0x78563412
+EOF
+EXPECT=<<EOF
+0x00000000 hit0_0 12345678
+0x0000000a hit0_1 12345678
+EOF
+RUN
+
+NAME=/v4j search 4 byte with json output
+FILE=-
+CMDS=<<EOF
+wx 0x12345678aabbccddeeff12345678
+/v4j 0x78563412
+EOF
+EXPECT=<<EOF
+[{"offset":0,"type":"hexpair","data":"12345678"},{"offset":10,"type":"hexpair","data":"12345678"}]
+EOF
+RUN
+
+NAME=/v4 search 8 byte
+FILE=-
+CMDS=<<EOF
+wx 0x12345678aabbccddeeff12345678
+/v4 0x78563412 0xddccbbaa
+EOF
+EXPECT=<<EOF
+0x00000000 hit0_0 12345678aabbccdd
+EOF
+RUN
+
+NAME=/V4j search 4 byte with json
+FILE=-
+CMDS=<<EOF
+wx 0x12345678aabbccddeeff12345678
+/V4j 0x78563412 0x78563420
+EOF
+EXPECT=<<EOF
+[{"offset":0,"value":2018915346},{"offset":10,"value":2018915346}]
+EOF
+RUN
+
+NAME=/V4j search 4 byte with json (cfg.json.num=hex)
+FILE=-
+CMDS=<<EOF
+e cfg.json.num=hex
+wx 0x12345678aabbccddeeff12345678
+/V4j 0x78563412 0x78563420
+EOF
+EXPECT=<<EOF
+[{"offset":"0x0","value":"0x78563412"},{"offset":"0xa","value":"0x78563412"}]
+EOF
+RUN
+
+NAME=/x search seek
+FILE=bins/pe/standard.exe
+CMDS=<<EOF
+e io.va = false
+s 0x1000
+/x 9090cd80
+s
+EOF
+EXPECT=<<EOF
+0x1000
+EOF
+RUN
+
+NAME=/x hit in the second map
+FILE=bins/elf/ioli/crackme0x00
+CMDS=/x f8820408
+EXPECT=<<EOF
+0x08049f2c hit0_0 f8820408
+EOF
+RUN
+
+NAME=/x wrong entries
+FILE=bins/elf/analysis/go_stripped
+CMDS=/x 653b2530000000724b53b834e7150883ec188
+EXPECT=<<EOF
+0x0805ae90 hit0_0 653b2530000000724b53b834e7150883ec
+0x0805b030 hit0_1 653b2530000000724b53b834e7150883ec
+EOF
+RUN
+
+NAME=search range hex
+FILE=malloc://1024
+CMDS=<<EOF
+w ABCD @ 0x100
+b 0x100
+e search.from = 0x50
+e search.to = 0x150
+/x 41424344
+EOF
+EXPECT=<<EOF
+0x00000100 hit0_0 41424344
+EOF
+RUN
+
+NAME=search range hex
+FILE=malloc://1024
+CMDS=<<EOF
+w ABCD @ 0x100
+b 0x100
+e search.from = 0x50
+e search.to = 0x90
+/x 41424344
+EOF
+EXPECT=<<EOF
+EOF
+RUN
+
+NAME=search range hex
+FILE=malloc://1024
+CMDS=<<EOF
+w ABCD @ 0x100
+b 0x100
+e search.from = 0x100
+e search.to = 0x104
+/x 41424344
+EOF
+EXPECT=<<EOF
+0x00000100 hit0_0 41424344
+EOF
+RUN
+
+NAME=search range hex
+FILE=malloc://1024
+CMDS=<<EOF
+w ABCD @ 0x100
+b 0x100
+e search.from = 0x101
+e search.to = 0x104
+/x 41424344
+EOF
+EXPECT=<<EOF
+EOF
+RUN
+
+NAME=search range hex
+FILE=malloc://1024
+CMDS=<<EOF
+w ABCD @ 0x100
+b 0x100
+e search.from = 0x100
+e search.to = 0x103
+/x 41424344
+EOF
+EXPECT=<<EOF
+EOF
+RUN
+
+NAME=search range hex @{A..B}
+FILE=malloc://1024
+CMDS=<<EOF
+w ABCD @ 0x100
+b 0x100
+/x 41424344 @{0x50 0x150}
+EOF
+EXPECT=<<EOF
+0x00000100 hit0_0 41424344
+EOF
+RUN
+
+NAME=search range hex @{A..B}
+FILE=malloc://1024
+CMDS=<<EOF
+w ABCD @ 0x100
+b 0x100
+/x 41424344 @{0x50 0x90}
+EOF
+EXPECT=<<EOF
+EOF
+RUN
+
+NAME=backward search hex
+FILE=malloc://1024
+CMDS=<<EOF
+w ABCD @ 0x100
+e search.from = 0x50
+e search.to = 0x150
+b 0x100
+/bx 41424344
+EOF
+EXPECT=<<EOF
+0x00000100 hit0_0 41424344
+EOF
+RUN
+
+NAME=backward search hex
+FILE=malloc://1024
+CMDS=<<EOF
+w ABCD @ 0x100
+e search.from = 0x110
+e search.to = 0x150
+b 0x100
+/bx 41424344
+EOF
+EXPECT=<<EOF
+EOF
+RUN
+
+NAME=backward search hex
+FILE=malloc://1024
+CMDS=<<EOF
+w ABCD @ 0x100
+e search.from = 0x100
+e search.to = 0x104
+b 0x100
+/bx 41424344
+EOF
+EXPECT=<<EOF
+0x00000100 hit0_0 41424344
+EOF
+RUN
+
+NAME=backward search hex
+FILE=malloc://1024
+CMDS=<<EOF
+w ABCD @ 0x100
+e search.from = 0x100
+e search.to = 0x103
+b 0x100
+/bx 41424344
+EOF
+EXPECT=<<EOF
+EOF
+RUN
+
+NAME=backward search hex
+FILE=malloc://1024
+CMDS=<<EOF
+w ABCD @ 0x100
+e search.from = 0x101
+e search.to = 0x104
+b 0x100
+/bx 41424344
+EOF
+EXPECT=<<EOF
+EOF
+RUN
+
+NAME=/x with bin mask
+FILE=malloc://1024
+CMDS=<<EOF
+wx aaaaaabb
+/x aa..bb
+EOF
+EXPECT=<<EOF
+0x00000001 hit0_0 aaaabb
+EOF
+RUN
+
+NAME=/x with bin mask
+FILE=malloc://1024
+CMDS=<<EOF
+wx aaaaaabb
+/x ..aabb
+EOF
+EXPECT=<<EOF
+0x00000001 hit0_0 aaaabb
+EOF
+RUN
+
+NAME=search by whole file
+FILE=malloc://64
+CMDS=<<EOF
+wx 90 @ 0x10
+/F bins/other/radiff2/radiff2_c_2
+EOF
+EXPECT=<<EOF
+0x00000010 hit0_0 90
+EOF
+RUN
+
+NAME=search by rest of file
+FILE=-
+CMDS=<<EOF
+wx 210a @ 0x10
+/F bins/elf/analysis/hello.raw 48
+EOF
+EXPECT=<<EOF
+0x00000010 hit0_0 210a
+EOF
+RUN
+
+NAME=search by rest of file dec/dec
+FILE=-
+CMDS=<<EOF
+wx 0e @ 0x10
+/F bins/elf/analysis/hello.raw 1 1
+EOF
+EXPECT=<<EOF
+0x00000010 hit0_0 0e
+EOF
+RUN
+
+NAME=search by part of file dec/hex
+FILE=-
+CMDS=<<EOF
+wx 8048 @ 0x10
+/F bins/elf/analysis/hello.raw 0x1c 0x2
+EOF
+EXPECT=<<EOF
+0x00000010 hit0_0 8048
+EOF
+RUN
+
+
+NAME=search escaped string
+FILE=bins/elf/analysis/x86-helloworld-gcc
+CMDS=/ \x90\x66~[0]
+EXPECT=<<EOF
+0x08048323
+0x08048325
+0x08048327
+0x08048329
+0x0804832b
+0x0804832d
+0x08048335
+0x08048337
+0x08048339
+0x0804833b
+0x0804833d
+0x0804841d
+EOF
+RUN
+
+NAME=search range /c in arm
+FILE=bins/arm/elf/hello_world
+CMDS=<<EOF
+af @ sym.main
+e search.in = raw
+e search.from = 0x0000050c
+e search.to = 0x00000510
+/ac add
+EOF
+EXPECT=<<EOF
+0x0000050e                 00af  add r7, sp, 0
+EOF
+RUN
+
+NAME=search range /ce in arm
+FILE=bins/arm/elf/hello_world
+CMDS=<<EOF
+af @ sym.main
+e search.in = raw
+e search.from = 0x00000512
+e search.to = 0x00000516
+/ae r3,r0,=
+EOF
+EXPECT=<<EOF
+0x00000514                 1846  mov r0, r3
+EOF
+RUN
+
+NAME=/x search hexpairs ignoring spaces
+FILE=bins/elf/ioli/crackme0x00
+ARGS=-n
+CMDS=<<EOF
+# Password
+/x 50 61 73 73 77 6F 72 64
+EOF
+EXPECT=<<EOF
+0x00000581 hit0_0 50617373776f7264
+0x0000059e hit0_1 50617373776f7264
+0x000005a9 hit0_2 50617373776f7264
+EOF
+RUN
+
+NAME=/x search hexpairs ignoring spaces
+FILE=bins/elf/ioli/crackme0x00
+ARGS=-n
+CMDS=/x 5061 73 73  776F  72 64 # Password
+EXPECT=<<EOF
+0x00000581 hit0_0 50617373776f7264
+0x0000059e hit0_1 50617373776f7264
+0x000005a9 hit0_2 50617373776f7264
+EOF
+RUN
+
+NAME=wx and /x with bin mask, both ignoring spaces
+FILE=malloc://1024
+CMDS=<<EOF
+wx a5 a5 a5 bf
+/x a5 .. bf
+EOF
+EXPECT=<<EOF
+0x00000001 hit0_0 a5a5bf
+EOF
+RUN
+
+NAME=wx and /x with bin mask, both ignoring spaces
+FILE=malloc://1024
+CMDS=<<EOF
+wx 00 cafe 5a5a 5abf affe @ 0x123
+/x .. 5a bf
+EOF
+EXPECT=<<EOF
+0x00000127 hit0_0 5a5abf
+EOF
+RUN
+
+NAME=wx and /x with custom bin mask, both ignoring spaces
+FILE=malloc://1024
+CMDS=<<EOF
+wx 01020304 a5a5a5 bf
+/x a5 e3 bf : ff 81 ff
+EOF
+EXPECT=<<EOF
+0x00000005 hit0_0 a5a5bf
+EOF
+RUN
+
+NAME=/k at start
+FILE=-
+CMDS=<<EOF
+w AAABAAABAAA
+/k AAABAAA
+EOF
+EXPECT=<<EOF
+0x00000000 hit0_0 "AAABAAABAAA"
+EOF
+RUN
+
+NAME=/k with overlap, middle
+FILE=-
+CMDS=<<EOF
+w ZAAABAAABAAA
+/k AAABAAA
+EOF
+EXPECT=<<EOF
+0x00000001 hit0_0 "ZAAABAAABAAA"
+EOF
+RUN
+
+NAME=/k at end
+FILE=-
+CMDS=<<EOF
+w ZZZZAAABAAA
+/k AAABAAA
+EOF
+EXPECT=<<EOF
+0x00000004 hit0_0 "ZZZZAAABAAA"
+EOF
+RUN
+NAME=pm lzma
+FILE=bins/other/hello-world.lzma
+CMDS=<<EOF
+pm
+EOF
+EXPECT=<<EOF
+0x00000000 0 LZMA BE compressed data dictionary size: 32768 bytes
+EOF
+RUN
+
+NAME=pm lzma
+FILE=bins/other/smol.lzma
+CMDS=pm
+EXPECT=<<EOF
+0x00000000 0 LZMA LE compressed data dictionary size: 2162620 bytes
+EOF
+RUN
+
+NAME=/as on glibc
+FILE=bins/elf/glibc-2.34-39.el9.x86_64_libc.so.6
+CMDS=/as
+EXPECT=<<EOF
+0x00029769 kill
+0x00029799 sigaltstack
+0x00029843 arch_prctl
+0x000298af rt_sigprocmask
+0x000298ee rt_sigprocmask
+0x00029abf rt_sigprocmask
+0x00029b32 arch_prctl
+0x0002a31b arch_prctl
+0x0003e8f9 uname
+0x0003e929 alarm
+0x0003e95a vfork
+0x0003e999 execve
+0x0003e9c9 getpid
+0x0003e9d9 getppid
+0x0003e9e9 getuid
+0x0003e9f9 geteuid
+0x0003ea09 getgid
+0x0003ea19 getegid
+0x0003ea29 getgroups
+0x0003ea59 getpgid
+0x0003ea89 setpgid
+0x0003eab9 getpgrp
+0x0003eac9 getsid
+0x0003eaf9 setsid
+0x0003eb29 getresuid
+0x0003eb59 getresgid
+0x0003eb89 sched_setparam
+0x0003ebb9 sched_getparam
+0x0003ebe9 sched_setscheduler
+0x0003ec19 sched_getscheduler
+0x0003ec49 sched_yield
+0x0003ec79 sched_get_priority_max
+0x0003eca9 sched_get_priority_min
+0x0003ecd9 umask
+0x0003ece9 chmod
+0x0003ed19 fchmod
+0x0003ed49 mkdir
+0x0003ed79 mkdirat
+0x0003eda9 flock
+0x0003edd9 dup
+0x0003ee09 dup2
+0x0003ee39 dup3
+0x0003ee69 pipe
+0x0003ee99 pipe2
+0x0003eec9 chdir
+0x0003eef9 fchdir
+0x0003ef29 chown
+0x0003ef59 fchown
+0x0003ef89 lchown
+0x0003efbc fchownat
+0x0003efe9 link
+0x0003f01c linkat
+0x0003f049 symlink
+0x0003f079 symlinkat
+0x0003f0a9 readlink
+0x0003f0dc readlinkat
+0x0003f109 unlink
+0x0003f139 unlinkat
+0x0003f169 rmdir
+0x0003f19c sendfile
+0x0003f1c9 setpriority
+0x0003f1f9 ioctl
+0x0003f229 sethostname
+0x0003f259 setdomainname
+0x0003f289 acct
+0x0003f2b9 chroot
+0x0003f2e9 sync
+0x0003f319 syncfs
+0x0003f349 vhangup
+0x0003f379 swapon
+0x0003f3a9 swapoff
+0x0003f419 munmap
+0x0003f449 mprotect
+0x0003f479 madvise
+0x0003f4a9 mincore
+0x0003f4dc remap_file_pages
+0x0003f509 mlock
+0x0003f539 munlock
+0x0003f569 mlockall
+0x0003f599 munlockall
+0x0003f5cc fgetxattr
+0x0003f5f9 flistxattr
+0x0003f629 fremovexattr
+0x0003f65c fsetxattr
+0x0003f68c getxattr
+0x0003f6b9 listxattr
+0x0003f6ec lgetxattr
+0x0003f719 llistxattr
+0x0003f749 lremovexattr
+0x0003f77c lsetxattr
+0x0003f7a9 removexattr
+0x0003f7dc setxattr
+0x0003f809 ioperm
+0x0003f839 iopl
+0x0003f894 clone
+0x0003f8ac exit
+0x0003f8c9 setfsuid
+0x0003f8f9 setfsgid
+0x0003f929 eventfd2
+0x0003f95c prlimit64
+0x0003f989 personality
+0x0003f9cb clone3
+0x0003f9e8 exit
+0x0003fa09 arch_prctl
+0x0003fa39 modify_ldt
+0x0003fa69 clock_gettime
+0x0003fa7c fanotify_mark
+0x0003faa9 capget
+0x0003fad9 capset
+0x0003fb09 create_module
+0x0003fb39 delete_module
+0x0003fb69 epoll_create
+0x0003fb99 epoll_create1
+0x0003fbcc epoll_ctl
+0x0003fbf9 get_kernel_syms
+0x0003fc2c init_module
+0x0003fc59 inotify_add_watch
+0x0003fc89 inotify_init
+0x0003fcb9 inotify_init1
+0x0003fce9 inotify_rm_watch
+0x0003fd19 syslog
+0x0003fd4c mount
+0x0003fd7c mremap
+0x0003fda9 nfsservctl
+0x0003fdd9 pivot_root
+0x0003fe0c query_module
+0x0003fe3c quotactl
+0x0003fe69 sysinfo
+0x0003fe99 unshare
+0x0003fec9 uselib
+0x0003fef9 timerfd_create
+0x0003ff29 fanotify_init
+0x0003ff5c name_to_handle_at
+0x0003ff89 setns
+0x0003ffb9 memfd_create
+0x0003ffe9 pkey_alloc
+0x00040019 pkey_free
+0x00040049 gettid
+0x00040059 tgkill
+0x00040089 close_range
+0x000400b9 bind
+0x000400e9 getpeername
+0x00040119 getsockname
+0x00040149 listen
+0x00040179 shutdown
+0x000401a9 socket
+0x000401dc socketpair
+0x0004030d sigaltstack
+0x00040464 exit
+0x00055327 rt_sigreturn
+0x000553f1 rt_sigaction
+0x0005555e rt_sigpending
+0x000555aa rt_sigsuspend
+0x000555d8 rt_sigsuspend
+0x00055fd6 rt_sigtimedwait
+0x00056038 rt_sigtimedwait
+0x00056129 rt_sigqueueinfo
+0x00059005 getrandom
+0x0005903d getrandom
+0x00061f39 kill
+0x00070b89 rename
+0x00070bbc renameat
+0x00070c01 renameat2
+0x00095a3e writev
+0x0009c258 futex
+0x0009c8a7 futex
+0x0009c928 futex
+0x0009ca89 futex
+0x0009caee futex
+0x0009cb46 futex
+0x0009cb65 futex
+0x0009cff8 futex
+0x0009d0e8 futex
+0x0009d1c4 futex
+0x0009d208 futex
+0x0009d35a tgkill
+0x0009d3c2 tgkill
+0x0009e0d2 futex
+0x0009e19a futex
+0x0009e616 futex
+0x0009e63e futex
+0x0009e6bb read
+0x0009e9e3 futex
+0x0009ea6c futex
+0x0009eaeb read
+0x0009ec3c read
+0x0009ec91 futex
+0x0009ece4 futex
+0x0009ed46 futex
+0x0009eefd futex
+0x0009f098 futex
+0x0009f391 futex
+0x0009f783 futex
+0x0009f9fe sched_setaffinity
+0x0009fa4f sched_setscheduler
+0x0009fb94 rseq
+0x0009fbc8 set_robust_list
+0x0009fc34 rt_sigprocmask
+0x0009fcc8 rt_sigprocmask
+0x0009fd7c exit
+0x0009fddd futex
+0x000a0421 rt_sigprocmask
+0x000a04e1 rt_sigprocmask
+0x000a0586 rt_sigprocmask
+0x000a08a7 rt_sigprocmask
+0x000a091c sched_getscheduler
+0x000a0949 sched_getparam
+0x000a0f7e sched_getaffinity
+0x000a0fca sched_getaffinity
+0x000a1a13 rt_sigprocmask
+0x000a1a5e rt_sigprocmask
+0x000a1aa7 tgkill
+0x000a1ac5 gettid
+0x000a1ada tgkill
+0x000a1d2f futex
+0x000a1e63 read
+0x000a2031 read
+0x000a2191 futex
+0x000a28a5 futex
+0x000a2aac futex
+0x000a2be3 read
+0x000a2dad rt_sigtimedwait
+0x000a2f29 futex
+0x000a3459 read
+0x000a34d3 futex
+0x000a37d9 futex
+0x000a3e98 futex
+0x000a41c5 futex
+0x000a460e futex
+0x000a4771 futex
+0x000a4ad4 futex
+0x000a4b04 futex
+0x000a4fee futex
+0x000a503c futex
+0x000a55a7 futex
+0x000a55ce futex
+0x000a565e futex
+0x000a5a38 futex
+0x000a5de5 futex
+0x000a5e0c futex
+0x000a5e96 futex
+0x000a5f6f futex
+0x000a607d futex
+0x000a60d2 futex
+0x000a6161 futex
+0x000a61c0 futex
+0x000a6431 futex
+0x000a6458 futex
+0x000a64e5 futex
+0x000a65ef sched_setaffinity
+0x000a6d89 rt_sigprocmask
+0x000a6ebe rt_tgsigqueueinfo
+0x000a75d3 futex
+0x000a85f9 sched_yield
+0x000a9b1d rt_sigprocmask
+0x000a9b4d rt_sigprocmask
+0x000a9d26 rt_sigprocmask
+0x000a9f42 rt_sigtimedwait
+0x000aa000 rt_sigqueueinfo
+0x000aabe9 close
+0x000aaf29 mq_notify
+0x000aaffe mq_notify
+0x000ab0eb mq_open
+0x000ab1b9 mq_getsetattr
+0x000ab1f8 mq_timedreceive
+0x000ab249 mq_timedreceive
+0x000ab2b8 mq_timedsend
+0x000ab306 mq_timedsend
+0x000ab372 mq_unlink
+0x000ab429 timer_create
+0x000ab56f timer_create
+0x000ab6bc timer_delete
+0x000ab7da timer_getoverrun
+0x000ab83a timer_gettime
+0x000ab89d timer_settime
+0x000ab9e6 rt_sigprocmask
+0x00108519 time
+0x0010862e gettimeofday
+0x001087de settimeofday
+0x0010af19 getitimer
+0x0010af49 setitimer
+0x001135c7 clock_getres
+0x0011364a clock_getres
+0x00113695 clock_gettime
+0x00113703 clock_settime
+0x00113768 clock_nanosleep
+0x001137a3 clock_nanosleep
+0x001143d5 getdents64
+0x00115437 setgroups
+0x00118049 times
+0x001180f8 wait4
+0x0011813d wait4
+0x001181ab waitid
+0x001181f7 waitid
+0x001182d5 pause
+0x001182f0 pause
+0x00118835 clone
+0x0011886e set_robust_list
+0x001188b2 exit
+0x001188bf exit_group
+0x00118f76 execveat
+0x00119a37 setuid
+0x00119ac7 setgid
+0x00119c57 setresuid
+0x00119cf7 setresgid
+0x00134209 sched_rr_get_interval
+0x00134248 sched_getaffinity
+0x001342b4 sched_getaffinity
+0x00134319 sched_setaffinity
+0x00134351 sched_setaffinity
+0x0013c848 pread64
+0x0013c88d pread64
+0x0013c8f8 pwrite64
+0x0013c93d pwrite64
+0x0013d0b6 rt_sigprocmask
+0x0013d147 rt_sigprocmask
+0x0013d56f close_range
+0x0013d5ab setresuid
+0x0013d6b6 setresgid
+0x0013d900 madvise
+0x0013dbac execveat
+0x0013dc7c getcpu
+0x0013dd05 getcpu
+0x0013de5c newfstatat
+0x0013e14c statx
+0x0013e1d3 mknodat
+0x0013e219 statfs
+0x0013e249 fstatfs
+0x0013e465 fchmodat
+0x0013e579 openat
+0x0013e5f2 openat
+0x0013e6f4 openat
+0x0013e781 openat
+0x0013e85a read
+0x0013e8c5 write
+0x0013e8fd write
+0x0013e959 lseek
+0x0013e989 access
+0x0013eb32 faccessat2
+0x0013ec70 faccessat
+0x0013eda9 fcntl
+0x0013edf5 fcntl
+0x0013ef75 close
+0x0013ef99 close
+0x0013f005 creat
+0x0013f031 creat
+0x0013f119 getcwd
+0x00142645 poll
+0x0014267d poll
+0x0014271d ppoll
+0x0014277c ppoll
+0x001427ec fadvise64
+0x001429e4 fallocate
+0x00142bf4 fallocate
+0x00142c38 copy_file_range
+0x00142c93 copy_file_range
+0x00142cfc utimensat
+0x00142d41 utimensat
+0x00143178 sync_file_range
+0x001431be sync_file_range
+0x00143228 fallocate
+0x0014326d fallocate
+0x001432c9 close
+0x00143333 fcntl
+0x00143367 fcntl
+0x001433c2 fcntl
+0x001433f5 fcntl
+0x0014347a openat
+0x00143518 openat
+0x00143586 read
+0x001435bc pread64
+0x001435f9 write
+0x001438e8 ioctl
+0x00143a2f ioctl
+0x00143a63 ioctl
+0x00143c52 prlimit64
+0x00143c93 prlimit64
+0x00143cc9 getrusage
+0x00143ff9 getpriority
+0x001440a9 brk
+0x001441c5 readv
+0x001441fb readv
+0x00144265 writev
+0x0014429b writev
+0x0014430b preadv
+0x00144356 preadv
+0x001443cb pwritev
+0x00144416 pwritev
+0x001444aa preadv2
+0x00144536 preadv2
+0x0014460a pwritev2
+0x00144696 pwritev2
+0x00144757 setreuid
+0x001447e7 setregid
+0x0014488e setresuid
+0x0014494e setresgid
+0x00144d47 pselect6
+0x00144ddb pselect6
+0x00144ee2 pselect6
+0x00144f50 pselect6
+0x00144fc5 fsync
+0x00144fe9 fsync
+0x00145055 fdatasync
+0x00145079 fdatasync
+0x001450e5 reboot
+0x0014564c ptrace
+0x00146419 truncate
+0x00146449 ftruncate
+0x00147cf5 mmap
+0x00147d55 msync
+0x00147d8d msync
+0x0014a1a0 ustat
+0x0014a5f6 sched_getaffinity
+0x0014e599 umount2
+0x0014e5c9 readahead
+0x0014e62e epoll_pwait
+0x0014e686 epoll_pwait
+0x0014e6f1 signalfd4
+0x0014e798 epoll_wait
+0x0014e7dc epoll_wait
+0x0014e848 tee
+0x0014e88c tee
+0x0014e8f8 vmsplice
+0x0014e93c vmsplice
+0x0014e9a8 splice
+0x0014ea03 splice
+0x0014ea75 open_by_handle_at
+0x0014eaa9 open_by_handle_at
+0x0014eb0d mlock2
+0x0014eb3d mlock
+0x0014eba1 pkey_mprotect
+0x0014ec79 timerfd_gettime
+0x0014ecac timerfd_settime
+0x0014ed2f prctl
+0x0014ed7c process_vm_readv
+0x0014edbc process_vm_writev
+0x0014edf9 clock_adjtime
+0x0014ee38 stat
+0x0014ee97 fstat
+0x0014eef8 lstat
+0x0014ef5d newfstatat
+0x0014f295 accept
+0x0014f2cd accept
+0x0014f335 connect
+0x0014f369 connect
+0x0014f3cc getsockopt
+0x0014f41e recvfrom
+0x0014f46c recvfrom
+0x0014f4d8 recvfrom
+0x0014f532 recvfrom
+0x0014f5ab recvmsg
+0x0014f5ed recvmsg
+0x0014f65e sendto
+0x0014f6ac sendto
+0x0014f715 sendmsg
+0x0014f74b sendmsg
+0x0014f7b8 sendto
+0x0014f814 sendto
+0x0014f87c setsockopt
+0x0014fa08 accept4
+0x0014fa4e accept4
+0x0014fab8 recvmmsg
+0x0014fb06 recvmmsg
+0x0014fb78 sendmmsg
+0x0014fbbc sendmmsg
+0x0014fdd8 msgsnd
+0x0014fe1e msgsnd
+0x0014fe88 msgrcv
+0x0014fed9 msgrcv
+0x0014ff39 msgget
+0x0014ff79 msgctl
+0x0014ffd9 semget
+0x0015008d semctl
+0x001500cc semtimedop
+0x00150109 shmat
+0x00150139 shmdt
+0x0015016c shmget
+0x001501bf shmctl
+0x00150437 writev
+0x00150477 writev
+0x00150531 read
+0x0015059a read
+0x001505b9 read
+0x001506b1 writev
+0x0015c14b read
+0x001676bb close
+0x00167777 close
+0x0016794d close
+0x0016dd66 writev
+0x00176910 rt_sigqueueinfo
+0x00196a7f futex
+0x00013959 write
+EOF
+RUN
+
+NAME=/gg search path from main
+FILE=bins/elf/ioli/crackme0x00
+CMDS=<<EOF
+aa
+/gg main @ 0x804848c
+EOF
+EXPECT=<<EOF
+pdb @@= 0x08048414 0x08048480 0x0804848c
+EOF
+RUN
+
+NAME=/gg search path from main #2
+FILE=bins/elf/redpill
+CMDS=<<EOF
+aa
+/gg main @ 0x1655
+EOF
+EXPECT=<<EOF
+pdb @@= 0x0000142e 0x000014c7 0x0000161a 0x00001655
+EOF
+RUN

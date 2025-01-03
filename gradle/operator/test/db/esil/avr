@@ -1,0 +1,19 @@
+NAME=AVR: aeso on call
+FILE=malloc://1024
+CMDS=<<EOF
+e asm.arch=avr
+e asm.bits=8
+wx f89408e00ebf0fe50dbf0e94080088950895
+aei
+aeim 0x00000100 0xffff avr_ram
+6aeso
+ar pc
+ar pc = 0
+7aes
+ar pc
+EOF
+EXPECT=<<EOF
+0x0000000e
+0x0000000e
+EOF
+RUN

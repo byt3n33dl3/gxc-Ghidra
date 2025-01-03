@@ -1,0 +1,50 @@
+d "invalid" 01
+ad "nop" 00
+ad "jcn 0x4 0xab" 14ab
+ad "fim r4r5, 0xab" 24ab
+ad "src r7" 2f
+ad "fin r6r7" 36
+ad "jin r6r7" 37
+ad "jun 0xa2b" 4a2b
+ad "jms 0x1f5" 51f5
+ad "inc r0" 60
+ad "inc r1" 61
+ad "isz r9, 0xd3" 79d3
+ad "add r2" 82
+ad "sub r3" 93
+ad "ld r15" af
+ad "xch r12" bc
+ad "bbl 0x5" c5
+ad "ldm 0xe" de
+
+ad "wrm" e0
+ad "wmp" e1
+ad "wrr" e2
+ad "wpm" e3
+ad "wr0" e4
+ad "wr1" e5
+ad "wr2" e6
+ad "wr3" e7
+ad "sbm" e8
+ad "rdm" e9
+ad "rdr" ea
+ad "adm" eb
+ad "rd0" ec
+ad "rd1" ed
+ad "rd2" ee
+ad "rd3" ef
+
+ad "clb" f0
+ad "clc" f1
+ad "iac" f2
+ad "cmc" f3
+ad "cma" f4
+ad "ral" f5
+ad "rar" f6
+ad "tcc" f7
+ad "dac" f8
+ad "tcs" f9
+ad "stc" fa
+ad "daa" fb
+ad "kbp" fc
+ad "dcl" fd

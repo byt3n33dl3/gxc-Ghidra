@@ -1,0 +1,94 @@
+NAME=pia20 (1)
+FILE=bins/mach0/BatteryLife
+ARGS=-a arm -b 64
+CMDS=<<EOF
+s+1
+pia 20
+EOF
+EXPECT=<<EOF
+stp x20, x19, [sp, 0x10]
+stp x29, x30, [sp, 0x20]
+add x29, sp, 0x20
+mov x19, x1
+invalid
+EOF
+RUN
+
+NAME=pia20 (2)
+FILE=bins/mach0/BatteryLife
+ARGS=-a arm -b 64
+CMDS=pia 20
+EXPECT=<<EOF
+stp x22, x21, [sp, -0x30]!
+stp x20, x19, [sp, 0x10]
+stp x29, x30, [sp, 0x20]
+add x29, sp, 0x20
+mov x19, x1
+EOF
+RUN
+
+NAME=pia20 (3)
+FILE=bins/mach0/BatteryLife
+ARGS=-a arm -b 16
+CMDS=pia 20
+EXPECT=<<EOF
+push {r4, r5, r6, r7, lr}
+add r7, sp, 0xc
+str r8, [sp, -0x4]!
+ldrh r4, [r0, 0x28]
+mov r5, r1
+mov r6, r0
+blx 0x137d68
+vsubhn.i32 d4, q13, q0
+mov r8, r0
+invalid
+EOF
+RUN
+
+NAME=pix medium size instructions
+FILE=-
+ARGS=-a x86 -b 32
+CMDS=pix 9090909090
+EXPECT=<<EOF
+nop
+nop
+nop
+nop
+nop
+EOF
+RUN
+
+NAME=pix smaller instruction
+FILE=-
+ARGS=-a x86 -b 32
+CMDS=pix 52ee
+EXPECT=<<EOF
+push edx
+out dx, al
+EOF
+RUN
+
+NAME=pix large instruction
+FILE=-
+ARGS=-a x86 -b 32
+CMDS=pix 31c09952682f636174682f62696e89e3526873737764682f2f7061682f65746389e1b00b52515389e1cd80
+EXPECT=<<EOF
+xor eax, eax
+cdq
+push edx
+push 0x7461632f
+push 0x6e69622f
+mov ebx, esp
+push edx
+push 0x64777373
+push 0x61702f2f
+push 0x6374652f
+mov ecx, esp
+mov al, 0xb
+push edx
+push ecx
+push ebx
+mov ecx, esp
+int 0x80
+EOF
+RUN

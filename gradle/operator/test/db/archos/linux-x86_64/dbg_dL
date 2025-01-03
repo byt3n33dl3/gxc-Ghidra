@@ -1,0 +1,18 @@
+NAME=dbg.dL
+FILE=bins/elf/ls-focal
+CMDS=dL
+EXPECT=<<EOF
+- bf       BF debug plugin
+- bochs    bochs debug plugin
+- esil     esil debug plugin
+- evm      evm debugger backend
+- gdb      gdb debug plugin
+- io       io debug plugin
+o native   native debug plugin
+- null     null debug plugin (does nothing)
+- qnx      qnx debug plugin
+- rap      rap debug plugin
+- rv32ima  experimental riscv32ima emulator
+- winkd    winkd debug plugin
+EOF
+RUN

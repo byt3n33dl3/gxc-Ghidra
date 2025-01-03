@@ -1,0 +1,435 @@
+NAME=one node
+FILE=-
+CMDS=<<EOF
+agn title1 body1
+aggk~nodes=
+aggk~nodes.title1.body
+aggk~nodes.title1.w
+aggk~nodes.title1.h
+EOF
+EXPECT=<<EOF
+agraph.nodes=title1
+agraph.nodes.title1.body=base64:Ym9keTE=
+agraph.nodes.title1.w=0x16
+agraph.nodes.title1.h=0x4
+EOF
+RUN
+
+NAME=two nodes
+FILE=-
+CMDS=<<EOF
+agn "Title with super long text and space" body1
+agn title2 "SuperLongBodyWithALot Of text and spaces"
+aggk~nodes=
+aggk~nodes.Title with super long text and space.body=
+aggk~nodes.title2.body=
+aggk~nodes.Title with super long text and space.w
+aggk~nodes.Title with super long text and space.h
+aggk~nodes.title2.w
+aggk~nodes.title2.h
+EOF
+EXPECT=<<EOF
+agraph.nodes=Title with super long text and space,title2
+agraph.nodes.Title with super long text and space.body=base64:Ym9keTE=
+agraph.nodes.title2.body=base64:U3VwZXJMb25nQm9keVdpdGhBTG90IE9mIHRleHQgYW5kIHNwYWNlcw==
+agraph.nodes.Title with super long text and space.w=0x2a
+agraph.nodes.Title with super long text and space.h=0x4
+agraph.nodes.title2.w=0x2c
+agraph.nodes.title2.h=0x4
+EOF
+RUN
+
+NAME=base64 body
+FILE=-
+CMDS=<<EOF
+agn title1 base64:aGVsbG8gd29ybGQ=
+aggk~nodes.title1.body=
+EOF
+EXPECT=<<EOF
+agraph.nodes.title1.body=base64:aGVsbG8gd29ybGQ=
+EOF
+RUN
+
+NAME=long base64 body
+FILE=-
+CMDS=<<EOF
+agn title1 base64:dGhpcyBpcyBhIHZlcnkgbG9uZyB0ZXh0IHRoYXQgd2hlbiBlbmNvZGVkIHdpbGwgY2F1c2UgYSAKIGluIHRoZSBiYXNlNjQ=
+aggk~nodes.title1.body=
+EOF
+EXPECT=<<EOF
+agraph.nodes.title1.body=base64:dGhpcyBpcyBhIHZlcnkgbG9uZyB0ZXh0IHRoYXQgd2hlbiBlbmNvZGVkIHdpbGwgY2F1c2UgYSAKIGluIHRoZSBiYXNlNjQ=
+EOF
+RUN
+
+NAME=two nodes same title
+FILE=-
+CMDS=<<EOF
+agn title1 body1
+agn title1 "Super long body with something"
+agn title1 "Super super super long body to do tests........"
+aggk~nodes=
+aggk~nodes.title1.body=
+aggk~nodes.title1.w=
+EOF
+EXPECT=<<EOF
+agraph.nodes=title1
+agraph.nodes.title1.body=base64:Ym9keTE=
+agraph.nodes.title1.w=0x16
+EOF
+RUN
+
+NAME=remove node
+FILE=-
+CMDS=<<EOF
+agn title1 body1
+agn- title1
+aggk~nodes=
+aggk~nodes.title1
+EOF
+EXPECT=<<EOF
+EOF
+RUN
+
+NAME=remove node with title that contain spaces
+FILE=-
+CMDS=<<EOF
+agn "Title with spaces" body1
+agn- "Title with spaces"
+aggk~nodes=
+aggk~nodes.Title with spaces
+EOF
+EXPECT=<<EOF
+EOF
+RUN
+
+NAME=remove non-existent node
+FILE=-
+CMDS=<<EOF
+agn "Title with spaces" body1
+agn- NotValid
+aggk~nodes=
+aggk~nodes.Title with spaces.body=
+EOF
+EXPECT=<<EOF
+agraph.nodes=Title with spaces
+agraph.nodes.Title with spaces.body=base64:Ym9keTE=
+EOF
+RUN
+
+NAME=remove edge
+FILE=-
+CMDS=<<EOF
+agn "Title with spaces" body1
+agn "Title with spaces 2" body2
+age- "Title with spaces" "Title with spaces 2"
+aggk~nodes=
+aggk~nodes.Title with spaces.neighbours=
+EOF
+EXPECT=<<EOF
+agraph.nodes=Title with spaces,Title with spaces 2
+EOF
+RUN
+
+NAME=get graph of a function
+FILE=bins/elf/analysis/hello-linux-x86_64
+BROKEN=1
+CMDS=<<EOF
+af
+aggk $$~nodes=
+EOF
+EXPECT=<<EOF
+agraph.nodes=0x400410
+EOF
+RUN
+
+NAME=no selected node in non-interactive
+FILE=-
+CMDS=<<EOF
+agn title1 body1
+agg
+EOF
+EXPECT=<<EOF
+.--------------------.
+|  title1            |
+| body1              |
+`--------------------'
+EOF
+RUN
+
+NAME=agf one
+FILE=-
+CMDS=<<EOF
+e asm.arch=x86
+e asm.bits=32
+e asm.cmt.calls=false
+"wa push ebp;mov ebp,esp;pop ebp;ret"
+af
+agf
+EOF
+EXPECT=<<EOF
+.----------------------.
+|  0x0                 |
+| (fcn) fcn.00000000 5 |
+| push ebp             |
+| mov ebp, esp         |
+| pop ebp              |
+| ret                  |
+`----------------------'
+EOF
+RUN
+
+NAME=agg one
+FILE=-
+CMDS=<<EOF
+agn 0x0 base64:cHVzaCBlYnAKbW92IGVicCwgZXNwCnBvcCBlYnAKcmV0
+agg
+EOF
+EXPECT=<<EOF
+.--------------------.
+|  0x0               |
+| push ebp           |
+| mov ebp, esp       |
+| pop ebp            |
+| ret                |
+`--------------------'
+EOF
+RUN
+
+NAME=graph size
+FILE=-
+CMDS=<<EOF
+aggk~agraph.w=
+aggk~agraph.h=
+agn title1 body1
+aggk~agraph.w=
+aggk~agraph.h=
+EOF
+EXPECT=<<EOF
+agraph.w=0
+agraph.h=0
+agraph.w=22
+agraph.h=7
+EOF
+RUN
+
+NAME=graph size with edges
+FILE=-
+CMDS=<<EOF
+agn title1 body1
+agn title2 "body2 long body with a lot of spaces and dots...."
+agn title3 body3
+age title1 title2
+age title2 title3
+age title1 title3
+age title3 title1
+aggk~agraph.w=0x35
+agg | head -2 | tail -1 | tr -d " " | grep "=----------------="
+EOF
+EXPECT=<<EOF
+EOF
+RUN
+
+NAME=graph size with self-referenced bb
+FILE=-
+CMDS=<<EOF
+agn title1 body1
+age title1 title1
+aggk~agraph.w=0x16
+aggk~agraph.h=0x4
+EOF
+EXPECT=<<EOF
+EOF
+RUN
+
+NAME=graph title
+FILE=-
+CMDS=<<EOF
+agn title1 body1
+e graph.title=This is the graph title
+agg
+EOF
+EXPECT=<<EOF
+This is the graph title
+.--------------------.
+|  title1            |
+| body1              |
+`--------------------'
+EOF
+RUN
+
+NAME=print r2 commands to create graph
+FILE=-
+CMDS=<<EOF
+agn title1 body1
+agn title2 body2
+agn title3 base64:dGhpcyBpcyBteSBib2R5CndpdGggbmV3bGluZXM=
+age title1 title2
+age title3 title1
+agg*
+EOF
+EXPECT=<<EOF
+agn "title3" base64:dGhpcyBpcyBteSBib2R5CndpdGggbmV3bGluZXM=
+agn "title2" base64:Ym9keTI=
+agn "title1" base64:Ym9keTE=
+age "title3" "title1"
+age "title1" "title2"
+EOF
+RUN
+
+NAME=graph self-ref block
+FILE=-
+CMDS=<<EOF
+agn title1 body1
+age title1 title1
+agg
+EOF
+EXPECT=<<EOF
+.----.
+|    |
+|.--------------------.
+||  title1            |
+|| body1              |
+|`--------------------'
+|    v
+|    |
+`----'
+EOF
+RUN
+
+NAME=with anal.nopskip
+FILE=bins/elf/analysis/ls-alxchk
+CMDS=<<EOF
+e anal.nopskip=true
+aaa
+s 0x00011390
+agf > /dev/null
+EOF
+EXPECT=<<EOF
+EOF
+RUN
+
+NAME=super mario block (#8788)
+FILE=bins/elf/analysis/hello-android-mips
+CMDS=<<EOF
+e emu.str=true
+s 0x0008049c
+af+ 0x0008049c super_mario_fix
+afb+ 0x0008049c 0x0008049c 8
+e io.cache=true
+wx c2a2c2a2c2a2 @ 0x80510
+e bin.str.enc=utf8
+agf
+e scr.strconv=asciidot
+agf
+EOF
+EXPECT=<<EOF
+.------------------------------------------------.
+|  0x8049c                                       |
+| 8: super_mario_fix ();                         |
+|    ; segment.ehdr                              |
+| lui v0, 8                                      |
+|    ; "\u00a2\u00a2\u00a2World" section..rodata |
+| addiu a0, v0, 0x510                            |
+`------------------------------------------------'
+.---------------------------------.
+|  0x8049c                        |
+| 8: super_mario_fix ();          |
+|    ; segment.ehdr               |
+| lui v0, 8                       |
+|    ; "...World" section..rodata |
+| addiu a0, v0, 0x510             |
+`---------------------------------'
+EOF
+RUN
+
+NAME=agf
+FILE=bins/mach0/ls-osx-x86_64
+CMDS=<<EOF
+af
+agf > /dev/null
+EOF
+EXPECT=<<EOF
+EOF
+RUN
+
+NAME=highlight edge
+FILE=-
+CMDS=<<EOF
+agn "0x123" body1
+agn "0x456" body2
+age 0x123 0x456
+ageh 0x123 0x456
+aggd
+EOF
+EXPECT=<<EOF
+digraph code {
+rankdir=LR;
+outputorder=edgesfirst
+graph [bgcolor=azure];
+edge [arrowhead=normal, color="#3030c0" style=bold weight=2];
+node [fillcolor=white, style=filled shape=box fontname="Courier" fontsize="8"];
+"0x123" [URL="0x123", color="lightgray", label="0x123\nbody1
+"]
+"0x456" [URL="0x456", color="lightgray", label="0x456\nbody2
+"]
+"0x123" -> "0x456" [color=cyan]
+}
+EOF
+RUN
+
+NAME=highlight edge management
+FILE=-
+CMDS=<<EOF
+ageh 0x123 0x456
+ageh
+ageh-0x123 0x456
+?e --
+ageh
+ageh 0x456 0x123
+ageh 0x123 0x456
+ageh 0x123 0x123
+?e --
+ageh
+EOF
+EXPECT=<<EOF
+agraph.edge.0x123_0x456.highlight=true
+--
+agraph.edge.0x123_0x456.highlight=true
+--
+agraph.edge.0x123_0x123.highlight=true
+agraph.edge.0x123_0x456.highlight=true
+agraph.edge.0x456_0x123.highlight=true
+EOF
+RUN
+
+NAME=lowaddr lights
+FILE=bins/elf/elf_one_symbol_shdr
+ARGS=-n
+CMDS=<<EOF
+e asm.var.summary=0
+e asm.arch=x86
+e asm.bits=64
+s 0x44b
+af
+ageh 0x452 0x458
+ageh
+agfd
+EOF
+EXPECT=<<EOF
+agraph.edge.0x452_0x458.highlight=true
+digraph code {
+	graph [fontsize=8 fontname="Courier" bgcolor=azure splines="ortho"];
+	node [fillcolor=white style=filled shape=box];
+	edge [arrowhead="normal"];
+	"0x0000044b" [URL="fcn.0000044b/0x0000044b", fontcolor="#767676", fontname="Courier", label="54: fcn.0000044b (int64_t arg1, int64_t arg2, int64_t arg_4h, int64_t arg_8h, int64_t arg_34h, int64_t arg_38h);\l; arg int64_t arg1 @ rdi\l; arg int64_t arg2 @ rsi\l; arg int64_t arg_4h @ rsp+0x4\l; arg int64_t arg_8h @ rsp+0x8\l; arg int64_t arg_34h @ rsp+0x34\l; arg int64_t arg_38h @ rsp+0x38\l0x0000044b      sar esi, 2                                             ; arg2\l0x0000044e      test esi, esi                                          ; arg2\l0x00000450      je 0x479\l"]
+	"0x00000479" [URL="fcn.0000044b/0x00000479", fontcolor="#767676", fontname="Courier", label="0x00000479      add esp, 0x1c\l0x0000047c      pop rbx\l0x0000047d      pop rsi\l0x0000047e      pop rdi\l0x0000047f      pop rbp\l0x00000480      ret\l"]
+	"0x00000452" [URL="fcn.0000044b/0x00000452", fontcolor="#767676", fontname="Courier", label="0x00000452      lea esi, [rsi]                                         ; arg2\l"]
+	"0x00000458" [URL="fcn.0000044b/0x00000458", fontcolor="#767676", fontname="Courier", label="0x00000458      mov eax, dword [arg_38h]\l0x0000045c      mov dword [rsp], ebp\l0x0000045f      mov dword [arg_8h], eax\l0x00000463      mov eax, dword [arg_34h]\l0x00000467      mov dword [arg_4h], eax\l0x0000046b      call qword [rbx + rdi*4 - 0xf8]\l0x00000472      add edi, 1                                             ; arg1\l0x00000475      cmp edi, esi                                           ; arg2\l0x00000477      jne 0x458\l"]
+        "0x0000044b" -> "0x00000479" [color="#13a10e"];
+        "0x0000044b" -> "0x00000452" [color="#c50f1f"];
+        "0x00000452" -> "0x00000458" [color="cyan"];
+        "0x00000458" -> "0x00000458" [color="#13a10e"];
+        "0x00000458" -> "0x00000479" [color="#c50f1f"];
+}
+EOF
+RUN

@@ -1,0 +1,8 @@
+PACKAGE?=radare2
+ARCH=iphoneos-arm
+SECTION=Utilities
+PRIORITY=optional
+MAINTAINER=pancake <pancake@nopcode.org>
+
+# VERSION=... get version from config-user
+include ../../../config-user.mk

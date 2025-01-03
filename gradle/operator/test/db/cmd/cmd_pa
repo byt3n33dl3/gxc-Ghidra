@@ -1,0 +1,70 @@
+# x86.nz no longer have access to RFlag/RNum
+NAME=asm/callflag
+FILE=-
+CMDS=<<EOF
+e asm.arch=x86
+f eax=33
+pa call eax
+f test=eax
+pa call test
+EOF
+EXPECT=<<EOF
+ffd0
+e81c000000
+EOF
+RUN
+
+NAME=asm.assembler
+FILE=-
+CMDS=<<EOF
+e asm.arch=x86
+pa call eax
+e asm.arch=java
+# XXX asm.assembler only works if the assembler is in asm plugin, wont fallback on anal ones
+# e asm.assembler=java
+pa bipush 33
+EOF
+EXPECT=<<EOF
+ffd0
+1021
+EOF
+RUN
+
+NAME=Invalid x86 out assembly
+FILE=-
+CMDS=<<EOF
+e asm.arch=x86
+e asm.bits=32
+pa out 256,AL
+EOF
+EXPECT=
+EXPECT_ERR=<<EOF
+ERROR: Cannot assemble 'out 256,AL' at line 1
+EOF
+RUN
+
+NAME=Invalid x86 32bit push assembly
+FILE=-
+CMDS=<<EOF
+e asm.arch=x86
+e asm.bits=32
+pa push 0x3311223311222222
+EOF
+EXPECT=
+EXPECT_ERR=<<EOF
+ERROR: Cannot assemble 'push 0x3311223311222222' at line 1
+EOF
+RUN
+
+NAME=Invalid x86 32bit mov assembly
+FILE=-
+CMDS=<<EOF
+e asm.arch=x86
+e asm.bits=32
+pa mov eax, 0x3311223311222222
+EOF
+EXPECT=
+EXPECT_ERR=<<EOF
+ERROR: Cannot assemble 'mov eax, 0x3311223311222222' at line 1
+EOF
+RUN

@@ -1,0 +1,703 @@
+NAME=?e ~$! invert tac
+FILE=bins/elf/crackme
+CMDS=<<EOF
+iS
+?e --
+iS~$!!
+EOF
+EXPECT=<<EOF
+nth paddr        size vaddr       vsize perm flags type        name
+-------------------------------------------------------------------
+0   0x00000000    0x0 0x00000000    0x0 ---- 0x0   NULL
+1   0x00000200   0x1c 0x00400200   0x1c -r-- 0x2   PROGBITS    .interp
+2   0x0000021c   0x20 0x0040021c   0x20 -r-- 0x2   NOTE        .note.ABI-tag
+3   0x0000023c   0x24 0x0040023c   0x24 -r-- 0x2   NOTE        .note.gnu.build-id
+4   0x00000260   0x3c 0x00400260   0x3c -r-- 0x2   HASH        .hash
+5   0x000002a0   0x28 0x004002a0   0x28 -r-- 0x2   GNU_HASH    .gnu.hash
+6   0x000002c8   0xf0 0x004002c8   0xf0 -r-- 0x2   DYNSYM      .dynsym
+7   0x000003b8   0x65 0x004003b8   0x65 -r-- 0x2   STRTAB      .dynstr
+8   0x0000041e   0x14 0x0040041e   0x14 -r-- 0x2   GNU_VERSYM  .gnu.version
+9   0x00000438   0x20 0x00400438   0x20 -r-- 0x2   GNU_VERNEED .gnu.version_r
+10  0x00000458   0x48 0x00400458   0x48 -r-- 0x2   RELA        .rela.dyn
+11  0x000004a0   0x90 0x004004a0   0x90 -r-- 0x2   RELA        .rela.plt
+12  0x00000530   0x18 0x00400530   0x18 -r-x 0x6   PROGBITS    .init
+13  0x00000548   0x70 0x00400548   0x70 -r-x 0x6   PROGBITS    .plt
+14  0x000005c0  0x248 0x004005c0  0x248 -r-x 0x6   PROGBITS    .text
+15  0x00000808    0xe 0x00400808    0xe -r-x 0x6   PROGBITS    .fini
+16  0x00000818   0x3a 0x00400818   0x3a -r-- 0x2   PROGBITS    .rodata
+17  0x00000854   0x24 0x00400854   0x24 -r-- 0x2   PROGBITS    .eh_frame_hdr
+18  0x00000878   0x7c 0x00400878   0x7c -r-- 0x2   PROGBITS    .eh_frame
+19  0x000008f8   0x10 0x006008f8   0x10 -rw- 0x3   PROGBITS    .ctors
+20  0x00000908   0x10 0x00600908   0x10 -rw- 0x3   PROGBITS    .dtors
+21  0x00000918    0x8 0x00600918    0x8 -rw- 0x3   PROGBITS    .jcr
+22  0x00000920  0x1a0 0x00600920  0x1a0 -rw- 0x3   DYNAMIC     .dynamic
+23  0x00000ac0    0x8 0x00600ac0    0x8 -rw- 0x3   PROGBITS    .got
+24  0x00000ac8   0x48 0x00600ac8   0x48 -rw- 0x3   PROGBITS    .got.plt
+25  0x00000b10   0x10 0x00600b10   0x10 -rw- 0x3   PROGBITS    .data
+26  0x00000b20    0x0 0x00600b20   0x28 -rw- 0x3   NOBITS      .bss
+27  0x00000b20   0x1c 0x00000000   0x1c ---- 0x30  PROGBITS    .comment
+28  0x00000b3c   0xfe 0x00000000   0xfe ---- 0x0   STRTAB      .shstrtab
+29  0x00001400  0x6a8 0x00000000  0x6a8 ---- 0x0   SYMTAB      .symtab
+30  0x00001aa8  0x269 0x00000000  0x269 ---- 0x0   STRTAB      .strtab
+--
+30  0x00001aa8  0x269 0x00000000  0x269 ---- 0x0   STRTAB      .strtab
+29  0x00001400  0x6a8 0x00000000  0x6a8 ---- 0x0   SYMTAB      .symtab
+28  0x00000b3c   0xfe 0x00000000   0xfe ---- 0x0   STRTAB      .shstrtab
+27  0x00000b20   0x1c 0x00000000   0x1c ---- 0x30  PROGBITS    .comment
+26  0x00000b20    0x0 0x00600b20   0x28 -rw- 0x3   NOBITS      .bss
+25  0x00000b10   0x10 0x00600b10   0x10 -rw- 0x3   PROGBITS    .data
+24  0x00000ac8   0x48 0x00600ac8   0x48 -rw- 0x3   PROGBITS    .got.plt
+23  0x00000ac0    0x8 0x00600ac0    0x8 -rw- 0x3   PROGBITS    .got
+22  0x00000920  0x1a0 0x00600920  0x1a0 -rw- 0x3   DYNAMIC     .dynamic
+21  0x00000918    0x8 0x00600918    0x8 -rw- 0x3   PROGBITS    .jcr
+20  0x00000908   0x10 0x00600908   0x10 -rw- 0x3   PROGBITS    .dtors
+19  0x000008f8   0x10 0x006008f8   0x10 -rw- 0x3   PROGBITS    .ctors
+18  0x00000878   0x7c 0x00400878   0x7c -r-- 0x2   PROGBITS    .eh_frame
+17  0x00000854   0x24 0x00400854   0x24 -r-- 0x2   PROGBITS    .eh_frame_hdr
+16  0x00000818   0x3a 0x00400818   0x3a -r-- 0x2   PROGBITS    .rodata
+15  0x00000808    0xe 0x00400808    0xe -r-x 0x6   PROGBITS    .fini
+14  0x000005c0  0x248 0x004005c0  0x248 -r-x 0x6   PROGBITS    .text
+13  0x00000548   0x70 0x00400548   0x70 -r-x 0x6   PROGBITS    .plt
+12  0x00000530   0x18 0x00400530   0x18 -r-x 0x6   PROGBITS    .init
+11  0x000004a0   0x90 0x004004a0   0x90 -r-- 0x2   RELA        .rela.plt
+10  0x00000458   0x48 0x00400458   0x48 -r-- 0x2   RELA        .rela.dyn
+9   0x00000438   0x20 0x00400438   0x20 -r-- 0x2   GNU_VERNEED .gnu.version_r
+8   0x0000041e   0x14 0x0040041e   0x14 -r-- 0x2   GNU_VERSYM  .gnu.version
+7   0x000003b8   0x65 0x004003b8   0x65 -r-- 0x2   STRTAB      .dynstr
+6   0x000002c8   0xf0 0x004002c8   0xf0 -r-- 0x2   DYNSYM      .dynsym
+5   0x000002a0   0x28 0x004002a0   0x28 -r-- 0x2   GNU_HASH    .gnu.hash
+4   0x00000260   0x3c 0x00400260   0x3c -r-- 0x2   HASH        .hash
+3   0x0000023c   0x24 0x0040023c   0x24 -r-- 0x2   NOTE        .note.gnu.build-id
+2   0x0000021c   0x20 0x0040021c   0x20 -r-- 0x2   NOTE        .note.ABI-tag
+1   0x00000200   0x1c 0x00400200   0x1c -r-- 0x2   PROGBITS    .interp
+0   0x00000000    0x0 0x00000000    0x0 ---- 0x0   NULL
+-------------------------------------------------------------------
+nth paddr        size vaddr       vsize perm flags type        name
+EOF
+RUN
+
+NAME=?e ~
+FILE=malloc://1024
+CMDS=?e jeje~jojo
+EXPECT=<<EOF
+EOF
+RUN
+
+NAME=quote grep
+FILE=malloc://1024
+BROKEN=1
+CMDS=<<EOF
+e asm.arch=x86
+e asm.bits=32
+wx 90cc90cc
+"pd 4"~nop
+EOF
+EXPECT=<<EOF
+            0x00000000      90             nop
+            0x00000002      90             nop
+EOF
+RUN
+
+NAME=grep and/or
+FILE=malloc://1024
+CMDS=<<EOF
+e asm.arch=x86
+e asm.bits=32
+wx 90cc90cc
+pd 4~nop
+?e ==
+pd 4~&90,nop
+?e ==
+pd 4~&90,404
+?e ==
+pd 4~90,404
+EOF
+EXPECT=<<EOF
+            0x00000000      90             nop
+            0x00000002      90             nop
+==
+            0x00000000      90             nop
+            0x00000002      90             nop
+==
+==
+            0x00000000      90             nop
+            0x00000002      90             nop
+EOF
+RUN
+
+NAME=?e \~
+FILE=malloc://1024
+CMDS=?e jeje\~jojo
+EXPECT=<<EOF
+jeje~jojo
+EOF
+RUN
+
+# Basic grep.
+NAME=px~:1[1]
+FILE=malloc://1024
+CMDS=<<EOF
+wx 10203040
+px~:1[1]
+EOF
+EXPECT=<<EOF
+1020
+EOF
+RUN
+
+NAME=px~:1[1-3]
+FILE=malloc://1024
+CMDS=<<EOF
+wx 102030405060708090
+px~:1[1-3]
+EOF
+EXPECT=<<EOF
+1020 3040 5060
+EOF
+RUN
+
+NAME=px~:1[1-]
+FILE=malloc://1024
+CMDS=<<EOF
+wx 10203040506070809010203040506070
+px~:1[1-]
+EOF
+EXPECT=<<EOF
+1020 3040 5060 7080 9010 2030 4050 6070 . 0@P`p... 0@P`p
+EOF
+RUN
+
+NAME=px~?
+FILE=malloc://1024
+CMDS=<<EOF
+wx 10203040
+b 128
+px~?
+EOF
+EXPECT=<<EOF
+9
+EOF
+RUN
+
+NAME=grep begin
+FILE=malloc://1024
+CMDS=i~^size
+EXPECT=<<EOF
+size     0x400
+EOF
+RUN
+
+NAME=grep neg begin
+FILE=malloc://1024
+ARGS=-a x86 -b 64
+CMDS=i~!^size
+EXPECT=<<EOF
+fd       3
+file     malloc://1024
+humansz  1K
+mode     rwx
+format   any
+iorw     true
+block    0x100
+EOF
+RUN
+
+NAME=grep neg begin 
+FILE=malloc://1024
+ARGS=-a x86 -b 64
+CMDS=i~!^size
+EXPECT=<<EOF
+fd       3
+file     malloc://1024
+humansz  1K
+mode     rwx
+format   any
+iorw     true
+block    0x100
+EOF
+RUN
+
+NAME=grep neg
+FILE=malloc://1024
+ARGS=-a x86 -b 64
+CMDS=i~!fd
+EXPECT=<<EOF
+file     malloc://1024
+size     0x400
+humansz  1K
+mode     rwx
+format   any
+iorw     true
+block    0x100
+EOF
+RUN
+
+NAME=double grep
+FILE=malloc://1024
+CMDS=i~f~d
+EXPECT=<<EOF
+fd       3
+EOF
+RUN
+
+NAME=double grep neg
+FILE=malloc://1024
+CMDS=i~f~!file
+EXPECT=<<EOF
+fd       3
+format   any
+EOF
+RUN
+
+NAME=i;$s
+FILE=malloc://1024
+CMDS=?v `i~size[1]`-$s;?! ?e works
+EXPECT=<<EOF
+0x0
+works
+EOF
+RUN
+
+NAME=?e~[0]
+FILE=malloc://1024
+CMDS=?e 0x3~[0];?e 0x999~[0]
+EXPECT=<<EOF
+0x3
+0x999
+EOF
+RUN
+
+NAME=?e~[0]
+FILE=malloc://1024
+CMDS=<<EOF
+?e hello world~[0]
+?e hello world~[1]
+EOF
+EXPECT=<<EOF
+hello
+world
+EOF
+RUN
+
+NAME=px~:1[3,5,0-1]
+FILE=malloc://1024
+CMDS=wx 102030405060708090;px~:1[3,5,0-1]
+EXPECT=<<EOF
+0x00000000 1020 5060 9000
+EOF
+RUN
+
+NAME=px~[3,5,0-1]:1
+FILE=malloc://1024
+CMDS=wx 102030405060708090;px~[3,5,0-1]:1
+EXPECT=<<EOF
+0x00000000 1020 5060 9000
+EOF
+RUN
+
+NAME=px~[3,5,0-1]:0..3
+FILE=malloc://1024
+CMDS=wx 102030405060708090;px~[3,5,0-1]:0..3
+EXPECT=<<EOF
+- offset 0 2
+0x00000000 1020 5060 9000
+0x00000010 0000 0000 0000
+EOF
+RUN
+
+NAME=px~[3,5,0-1]:-16
+FILE=malloc://1024
+CMDS=wx 102030405060708090;px~[3,5,0-1]:-16
+EXPECT=<<EOF
+0x00000000 1020 5060 9000
+EOF
+RUN
+
+NAME=range
+FILE=malloc://1024
+CMDS=<<EOF
+i~:0
+i~:1
+i~:2
+i~:..3
+i~:1..2
+i~:-2
+i~:-1
+?e 0\n1\n2\n3\n4~:-2
+?e 0\n1\n2\n3\n4~:-2..
+?e 0\n1\n2~:0..
+?e 0\n1\n2~:..
+EOF
+EXPECT=<<EOF
+fd       3
+file     malloc://1024
+size     0x400
+fd       3
+file     malloc://1024
+size     0x400
+file     malloc://1024
+iorw     true
+block    0x100
+3
+3
+4
+0
+1
+2
+0
+1
+2
+EOF
+RUN
+
+NAME=multigrep
+FILE=malloc://1024
+CMDS=<<EOF
+i~size~?
+i~nosuchstring~?
+i~^f~or~?
+i~?&f,or
+i~or~true
+i~&or,true
+i~or~ny[0]
+i~&or,ny[0]
+i~or[1]~any
+i~or[1]~:1
+EOF
+EXPECT=<<EOF
+1
+0
+1
+1
+iorw     true
+iorw     true
+format
+format
+any
+true
+EOF
+RUN
+
+NAME=multigrep2
+FILE=malloc://1024
+CMDS=<<EOF
+?e hello world~hello~!boing
+?e hello world~hello~world
+?e hello world~!boing~world
+?e hello world~!boing~!pongo
+EOF
+EXPECT=<<EOF
+hello world
+hello world
+hello world
+hello world
+EOF
+RUN
+
+NAME=colgrep
+CMDS=<<EOF
+?e 0x3~[0]
+?e 0x999~[0]'
+EOF
+EXPECT=<<EOF
+0x3
+0x999
+EOF
+RUN
+
+NAME=colgrep
+CMDS=<<EOF
+?e hello world~[0]
+?e hello world~[1]
+EOF
+EXPECT=<<EOF
+hello
+world
+EOF
+RUN
+
+NAME=colgrep
+CMDS=<<EOF
+?e a\na b\na b c~[0]
+?e a\na b\na b c~[1]
+?e a\na b\na b c~[2]
+EOF
+EXPECT=<<EOF
+a
+a
+a
+b
+b
+c
+EOF
+RUN
+
+NAME=colgrep
+FILE=malloc://1024
+CMDS=<<EOF
+wx 10203040
+px~:1[1]
+EOF
+EXPECT=<<EOF
+1020
+EOF
+RUN
+
+NAME=count grep
+CMDS=<<EOF
+wx 10203040
+b 128
+px~?
+EOF
+EXPECT=<<EOF
+9
+EOF
+RUN
+
+NAME=escaped grep
+FILE=bins/elf/crackme
+CMDS=pd 40~0x004005fe
+EXPECT=<<EOF
+        `-> 0x004005fe      4883c408       add rsp, 8
+EOF
+RUN
+
+NAME=sort lines
+FILE=malloc://1024
+CMDS=<<EOF
+?e -- alphabetical sort --
+?e 3\n2\n4\n1~$
+?e -- inverted alphabetical sort --
+?e 3\n2\n4\n1~$!
+?e -- invert (like tac) --
+?e 3\n2\n4\n1~$!!
+EOF
+EXPECT=<<EOF
+-- alphabetical sort --
+1
+2
+3
+4
+-- inverted alphabetical sort --
+4
+3
+2
+1
+-- invert (like tac) --
+1
+4
+2
+3
+EOF
+RUN
+
+NAME=escaped chars
+CMDS=<<EOF
+?e Hello\x40World~Hello\@
+?e Hello\x24World~Hello\@
+?e Hello\n\x23World~\#
+EOF
+EXPECT=<<EOF
+Hello@World
+#World
+EOF
+RUN
+
+NAME=escaped chars 2
+CMDS=?e Hello\n\x3bWorld~\;
+EXPECT=<<EOF
+;World
+EOF
+RUN
+
+NAME=multi-command single-line grep
+CMDS=<<EOF
+?e Hello World; ?e 4e2420~4e2420
+EOF
+EXPECT=<<EOF
+Hello World
+4e2420
+EOF
+RUN
+
+NAME=highlight grep with empty string
+ARGS=-escr.highlight.grep=true
+TIMEOUT=2
+CMDS=<<EOF
+i~[0]:0
+EOF
+EXPECT=<<EOF
+fd
+EOF
+RUN
+
+NAME=ij.gron
+FILE=bins/elf/crackme
+CMDS=<<EOF
+ij~{=}
+EOF
+EXPECT=<<EOF
+json = {};
+json.core = {};
+json.core.type = "EXEC (Executable file)";
+json.core.file = "bins/elf/crackme";
+json.core.fd = 3;
+json.core.size = 7441;
+json.core.humansz = "7.3K";
+json.core.iorw = false;
+json.core.mode = "r-x";
+json.core.block = 256;
+json.core.format = "elf64";
+json.bin = {};
+json.bin.arch = "x86";
+json.bin.baddr = 4194304;
+json.bin.binsz = 7441;
+json.bin.bintype = "elf";
+json.bin.bits = 64;
+json.bin.canary = false;
+json.bin.injprot = false;
+json.bin.class = "ELF64";
+json.bin.compiled = "";
+json.bin.compiler = "GCC: (Debian 4.4.5-8) 4.4.5";
+json.bin.crypto = false;
+json.bin.dbg_file = "";
+json.bin.endian = "little";
+json.bin.havecode = true;
+json.bin.guid = "";
+json.bin.intrp = "/lib64/ld-linux-x86-64.so.2";
+json.bin.laddr = 0;
+json.bin.lang = "c";
+json.bin.linenum = true;
+json.bin.lsyms = true;
+json.bin.machine = "AMD x86-64 architecture";
+json.bin.nx = true;
+json.bin.os = "linux";
+json.bin.cc = "";
+json.bin.pic = false;
+json.bin.relocs = true;
+json.bin.relro = "no";
+json.bin.rpath = "NONE";
+json.bin.sanitize = false;
+json.bin.static = false;
+json.bin.stripped = false;
+json.bin.subsys = "linux";
+json.bin.va = true;
+json.bin.checksums = {};
+EOF
+RUN
+
+NAME=ij.gron.grep
+FILE=bins/elf/crackme
+CMDS=<<EOF
+aiaj~{=}opsz
+EOF
+EXPECT=<<EOF
+json.minopsz = 1;
+json.maxopsz = 16;
+json.invopsz = 1;
+EOF
+RUN
+
+NAME=ij.gron.grep.two
+FILE=bins/elf/crackme
+CMDS=<<EOF
+aiaj~{=}~opsz
+EOF
+EXPECT=<<EOF
+json.minopsz = 1;
+json.maxopsz = 16;
+json.invopsz = 1;
+EOF
+RUN
+
+NAME=ij.json.grep.inv
+FILE=-
+CMDS=<<EOF
+ij~{}~fo
+EOF
+EXPECT=<<EOF
+    "format": "any"
+EOF
+RUN
+
+NAME=xml indent
+FILE=malloc://128
+CMDS=<<EOF
+'w <html><body>heh</body><a>bold</a></html>
+psz~<>
+EOF
+EXPECT=<<EOF
+
+<html>
+
+  <body>
+  heh
+  </body>
+
+  <a>
+  bold
+  </a>
+
+</html>
+
+EOF
+RUN
+
+NAME=sort + uniq
+FILE=--
+CMDS=<<EOF
+cat bins/src/sortuniq.txt
+?e --
+cat bins/src/sortuniq.txt~$$
+psz~<>
+EOF
+EXPECT=<<EOF
+hello
+world
+hello
+heheh
+world
+--
+heheh
+hello
+world
+EOF
+RUN
+
+NAME=grep $foo
+FILE=bins/mach0/mac-ls4
+ARGS=-a arm -b 64
+CMDS=<<EOF
+pd~78
+?e ----
+pd~78$
+?e ----
+pd~$call
+?e ----
+pd~$foo
+EOF
+EXPECT=<<EOF
+      ||,=< 0x100003b6c      600000b4       cbz x0, 0x100003b78
+     |||`-> 0x100003b78      a88301d1       sub x8, x29, 0x60
+----
+      ||,=< 0x100003b6c      600000b4       cbz x0, 0x100003b78
+----
+----
+EOF
+RUN
+
+NAME=count+uniq
+FILE=bins/mach0/mac-ls4
+ARGS=-a arm -b 64
+CMDS=<<EOF
+af
+pdsfq~?
+pdsfq~$$?
+pdsfq~?$$
+EOF
+EXPECT=<<EOF
+145
+94
+94
+EOF
+RUN

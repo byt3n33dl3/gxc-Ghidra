@@ -1,0 +1,146 @@
+d "abx" 3A
+d "adca #$01" 8901
+d "adca <$01" 9901
+d "adcb <$99" D999
+d "adda <$8b" 9B8B
+d "addb <$01" DB01
+dB "addb b,u" EBC5
+d "addd <$d3" D3D3
+d "andcc #$21" 1C21
+d "anda #$0f" 840F
+d "anda <$01" 9401
+dB "anda a,x" A486
+d "andb <$f0" D4F0
+dB "andb ,-y" E484
+d "asla" 48
+d "aslb" 58
+d "asra" 47
+d "asrb" 57
+d "bcc $fff6" 24F4
+d "bcs $fff2" 25F0
+d "beq $ffee" 27EC
+d "bge $0008" 2C06
+d "bgt $0004" 2E02
+d "bita #$01" 8501
+d "bita <$71" 9571
+dB "bita b,x" A585
+d "bitb #$d1" C5D1
+d "clra" 4F
+d "clrb" 5F
+d "cmpa #$d2" 81d2
+d "cmpa <$33" 9133
+dB "cmpa 78,x" A1884E
+d "cmpb <$d1" D1D1
+dB "cmpb d,y" E1AB
+d "cmps <$9c" 119C9C
+d "cmpx <$01" 9C01
+dB "cmpx 15,y" AC2F
+d "cmpy #$8001" 108C8001
+d "cmpy <$9c" 109C9C
+d "com <$04" 0304
+dB "com 0,x" 6384
+d "coma" 43
+d "comb" 53
+d "daa" 19
+d "dec <$77" 0A77
+dB "dec 16,x" 6A8810
+d "dec $7007" 7A7007
+d "deca" 4A
+d "decb" 5A
+d "eora <$51" 9851
+d "eorb <$44" D844
+d "exg a,b" 1E89
+d "inc <$21" 0C21
+d "inc $cc05" 7CCC05
+d "inca" 4C
+d "incb" 5C
+d "jmp <$4b" 0E4B
+d "jmp $8001" 7E8001
+d "lbcs $ffe8" 1025FFE4
+d "lbeq $0fe0" 10270FDC
+d "lbra $002a" 160027
+dB "lda d,x" A68B
+d "lds <$de" 10DEDE
+d "ldy <$31" 109E31
+dB "ldy 128,pc" 10AE8D0080
+d "leas" 3284
+d "leau" 3384
+dB "leax -16,y" 3030
+d "leay" 3184
+d "lsr <$02" 0402
+dB "lsr 0,x" 6484
+d "lsra" 44
+d "lsrb" 54
+d "mul" 3D
+d "neg <$0b" 000b
+d "nega" 40
+d "negb" 50
+d "nop" 12
+d "orcc #$aa" 1AAA
+d "pshs" 3400
+d "pshu" 3600
+d "puls" 3500
+d "pulu" 3700
+d "rol <$88" 0988
+d "rol $d001" 79D001
+d "rola" 49
+d "rolb" 59
+d "rora" 46
+d "rorb" 56
+d "ror <$c4" 06C4
+d "ror $8001" 768001
+d "rti" 3B
+d "rts" 39
+d "sbca <$97" 9297
+dB "sbca 32767,x" A2897FFF
+d "sex" 1D
+d "sta <$cf" 97CF
+d "sty <$aa" 109FAA
+d "suba #$01" 8001
+d "suba <$11" 9011
+d "subb <$01" D001
+dB "subb b,y" E0A5
+d "subd #$8001" 838001
+d "subd <$93" 9393
+dB "subd 32768,x" A3898000
+d "swi" 3F
+d "swi2" 103F
+d "swi3" 113F
+d "sync" 13
+d "tfr x,pc" 1F15
+d "tst <$1f" 0D1F
+d "tst $7d5d" 7D7D5D
+d "tsta" 4D
+d "tstb" 5D
+d "invalid" 01
+d "invalid" 02
+d "invalid" 05
+d "invalid" 0B
+d "invalid" 14
+d "invalid" 15
+d "invalid" 18
+d "invalid" 1B
+d "invalid" 38
+d "invalid" 3E
+d "invalid" 41
+d "invalid" 42
+d "invalid" 45
+d "invalid" 4B
+d "invalid" 4E
+d "invalid" 51
+d "invalid" 52
+d "invalid" 55
+d "invalid" 5B
+d "invalid" 5E
+d "invalid" 61
+d "invalid" 62
+d "invalid" 65
+d "invalid" 6B
+d "invalid" 71
+d "invalid" 72
+d "invalid" 75
+d "invalid" 7B
+d "invalid" 87
+d "invalid" 8F
+d "invalid" C7
+d "invalid" 1F

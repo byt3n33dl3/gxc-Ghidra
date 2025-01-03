@@ -1,0 +1,174 @@
+NAME=debruijn little endian
+FILE=-
+CMDS=<<EOF
+e cfg.bigendian=false
+wopO 0x41574141
+EOF
+EXPECT=<<EOF
+64
+EOF
+RUN
+
+NAME=debruijn big endian
+FILE=-
+CMDS=<<EOF
+e cfg.bigendian=true
+wopO 0x41574141
+EOF
+EXPECT=<<EOF
+65
+EOF
+RUN
+
+NAME=wopD 0x10 @ 0
+FILE=-
+CMDS=<<EOF
+wopD 0x10 @ 0
+p8 0x10
+EOF
+EXPECT=<<EOF
+41414142414143414144414145414146
+EOF
+RUN
+
+NAME=wopD* 0x10
+FILE=-
+CMDS=wopD* 0x10
+EXPECT=<<EOF
+wx 41414142414143414144414145414146
+EOF
+RUN
+
+NAME=wopO 0x41417641
+FILE=-
+CMDS=wopO 0x41417641
+EXPECT=<<EOF
+140
+EOF
+RUN
+
+NAME=wopO 41417641
+FILE=-
+CMDS=wopO 41417641
+EXPECT=<<EOF
+EOF
+RUN
+
+NAME=woE woD rc4
+FILE=-
+CMDS=<<EOF
+w helloworld
+woE rc4 s:key
+woD rc4 s:key
+ps
+EOF
+EXPECT=<<EOF
+helloworld
+EOF
+RUN
+
+NAME=woE woD sm4
+FILE=-
+CMDS=<<EOF
+b 32
+woE sm4-ecb 00112233445566778899aabbccddeeff
+b 32
+p8
+woD sm4-ecb 00112233445566778899aabbccddeeff
+p8
+EOF
+EXPECT=<<EOF
+72eba3039947e17092e922d7cda38ea072eba3039947e17092e922d7cda38ea0
+0000000000000000000000000000000000000000000000000000000000000000
+EOF
+RUN
+
+NAME=woE woD xor
+FILE=-
+CMDS=<<EOF
+w helloworld
+woE xor s:key
+woD xor s:key
+ps
+EOF
+EXPECT=<<EOF
+helloworld
+EOF
+RUN
+
+NAME=woE woD xor fix value
+FILE=-
+CMDS=<<EOF
+b 20
+woE xor s:helloworld
+ps
+EOF
+EXPECT=<<EOF
+helloworldhelloworld
+EOF
+RUN
+
+NAME=woE woD blowfish
+FILE=-
+CMDS=<<EOF
+w helloworld
+woE blowfish s:key
+woD blowfish s:key
+ps
+EOF
+EXPECT=<<EOF
+helloworld
+EOF
+RUN
+
+NAME=woE woD aes-ecb
+FILE=-
+CMDS=<<EOF
+w helloworld
+woE aes-ecb s:0123456789abcdef
+woD aes-ecb s:0123456789abcdef
+ps
+EOF
+EXPECT=<<EOF
+helloworld
+EOF
+RUN
+
+NAME=woE aes-ecb-192
+FILE=-
+CMDS=<<EOF
+w0 16
+b 16
+woE aes-ecb 502a6ab36984af268bf423c7f509205207fc1552af4a91e5
+p8
+EOF
+EXPECT=<<EOF
+8e06556dcbb00b809a025047cff2a940
+EOF
+RUN
+
+NAME=woS ed25519 (RFC 8032, 1 byte)
+FILE=-
+CMDS=<<EOF
+b 1
+wx 72
+woS ed25519 4ccd089b28ff96da9db6c346ec114e0f5b8a319f35aba624da8cf6ed4fb8a6fb
+p8 64
+EOF
+EXPECT=<<EOF
+92a009a9f0d4cab8720e820b5f642540a2b27b5416503f8fb3762223ebdb69da085ac1e43e15996e458f3613d0f11d8c387b2eaeb4302aeeb00d291612bb0c00
+EOF
+RUN
+
+NAME=woS ed25519 (RFC 8032, 64 bytes)
+FILE=-
+CMDS=<<EOF
+b 64
+wx ddaf35a193617abacc417349ae20413112e6fa4e89a97ea20a9eeee64b55d39a2192992a274fc1a836ba3c23a3feebbd454d4423643ce80e2a9ac94fa54ca49f @ 64
+woS ed25519 833fe62409237b9d62ec77587520911e9a759cec1d19755b7da901b96dca3d42 @ 64
+p8 64 @ 64
+EOF
+EXPECT=<<EOF
+dc2a4459e7369633a52b1bf277839a00201009a3efbf3ecb69bea2186c26b58909351fc9ac90b3ecfdfbc7c66431e0303dca179c138ac17ad9bef1177331a704
+EOF
+RUN

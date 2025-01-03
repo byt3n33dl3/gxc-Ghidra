@@ -1,0 +1,856 @@
+NAME=Resaving maps fails
+FILE=malloc://0x400
+CMDS=<<EOF
+om 3 0x8000 0x200 0x200 r--
+om 3 0xc000 0x100 0x300 r--
+rm a.r2
+PS a.r2
+om*
+?e dos
+o-*
+cat a.r2~^om
+?e tre
+. a.r2
+om*
+rm a.r2
+EOF
+EXPECT=<<EOF
+omu 3 0x00000000 0x00000400 0x00000000 rwx
+omu 3 0x00008000 0x00000200 0x00000200 r--
+omu 3 0x0000c000 0x00000100 0x00000300 r--
+dos
+omu 3 0x00000000 0x00000400 0x00000000 rwx
+omu 3 0x00008000 0x00000200 0x00000200 r--
+omu 3 0x0000c000 0x00000100 0x00000300 r--
+tre
+omu 3 0x00000000 0x00000400 0x00000000 rwx
+omu 3 0x00008000 0x00000200 0x00000200 r--
+omu 3 0x0000c000 0x00000100 0x00000300 r--
+EOF
+RUN
+
+NAME=Reloading a project twice fails
+FILE=bins/mach0/ls-m1
+ARGS=-a x86 -b 64
+CMDS=<<EOF
+e prj.vc=false
+e scr.interactive=false
+e dir.projects = bins/other/projects
+p8 16
+P-ls
+P-
+P+ls
+p8 16
+P-
+p8 16
+pd 10
+P ls
+b 64
+s+10
+s-10
+s
+o
+s
+pd 10
+om.
+p8 16
+o
+om
+EOF
+EXPECT=<<EOF
+554889e54157415641554154534881ec
+554889e54157415641554154534881ec
+554889e54157415641554154534881ec
+            ;-- main:
+            ;-- entry0:
+            ;-- func.100003c0c:
+            0x100003c0c      55             push rbp
+            0x100003c0d      4889e5         mov rbp, rsp
+            0x100003c10      4157           push r15
+            0x100003c12      4156           push r14
+            0x100003c14      4155           push r13
+            0x100003c16      4154           push r12
+            0x100003c18      53             push rbx
+            0x100003c19      4881ec3806..   sub rsp, 0x638
+            0x100003c20      4989f7         mov r15, rsi
+            0x100003c23      4189fe         mov r14d, edi
+0x100003c0c
+ 3 * r-x 0x0002daa0 bins/mach0/ls-m1
+0x100003c0c
+            ;-- main:
+            ;-- entry0:
+            ;-- func.100003c0c:
+            0x100003c0c      55             push rbp
+            0x100003c0d      4889e5         mov rbp, rsp
+            0x100003c10      4157           push r15
+            0x100003c12      4156           push r14
+            0x100003c14      4155           push r13
+            0x100003c16      4154           push r12
+            0x100003c18      53             push rbx
+            0x100003c19      4881ec3806..   sub rsp, 0x638
+            0x100003c20      4989f7         mov r15, rsi
+            0x100003c23      4189fe         mov r14d, edi
+ 3 fd: 3 +0x00004000 0x100000000 - 0x100007fff r-x fmap.__TEXT
+554889e54157415641554154534881ec
+ 3 * r-x 0x0002daa0 bins/mach0/ls-m1
+* 3 fd: 3 +0x00004000 0x100000000 - 0x100007fff r-x fmap.__TEXT
+- 2 fd: 3 +0x0000c000 0x100008000 - 0x10000bfff r-- fmap.__DATA
+- 1 fd: 3 +0x00010000 0x10000c000 - 0x100013fff r-- fmap.__LINKEDIT
+EOF
+RUN
+
+NAME=Import project
+FILE=malloc://512
+CMDS=<<EOF
+e prj.vc=false
+e scr.interactive=false
+e dir.projects = bins/other/projects
+CC hello world
+C*
+P test > /dev/null
+C*
+EOF
+EXPECT=<<EOF
+CCu base64:aGVsbG8gd29ybGQ= @ 0x00000000
+CCu base64:U29tZSB0ZXN0 @ 0x00404890
+EOF
+RUN
+
+NAME=Import project with overwriting 1
+FILE=malloc://512
+CMDS=<<EOF
+e prj.vc=false
+e asm.bits=64
+e asm.arch = x86
+e anal.arch = x86
+mkdir .tmp
+e dir.projects = .tmp/
+CC Some test @ 0x00404890
+P+import1
+P import1 > /dev/null
+P-import1
+rm .tmp
+CC*
+EOF
+EXPECT=<<EOF
+CCu base64:U29tZSB0ZXN0 @ 0x00404890
+EOF
+RUN
+
+NAME=Import project with overwriting 2
+FILE=malloc://512
+CMDS=<<EOF
+e prj.vc=false
+t-*
+e asm.arch = x86
+e anal.arch = x86
+mkdir .tmp
+e dir.projects = .tmp/
+e asm.bits=64
+wx 31ed4989d15e4889e24883e4f0505449c7c09024410048c7c12024410048c7c7a0284000e857dcfffff4
+af test
+afF @ test
+pdf
+P+import2 > /dev/null
+PS*import2~afF
+P-import2
+rm .tmp
+EOF
+EXPECT=<<EOF
+/ (fcn) test
+\           0x00000000 (42 byte folded function)
+afF @ 0x00000000
+EOF
+RUN
+
+NAME=Export project
+FILE=malloc://512
+CMDS=<<EOF
+e prj.vc=false
+mkdir .tmp
+e dir.projects = .tmp/
+CC "Some other test" @ 0x00404890
+P+ testexp > /dev/null
+cat .tmp/testexp/rc.r2 | grep base64
+rm -rf .tmp/testexp
+EOF
+EXPECT=<<EOF
+'e bin.str.debase64 = false
+CCu base64:IlNvbWUgb3RoZXIgdGVzdCI= @ 0x00404890
+EOF
+RUN
+
+NAME=Set, export, unset and import
+FILE=malloc://512
+CMDS=<<EOF
+e prj.vc=false
+e dir.projects = .tmp/
+t-*
+CC "First comment" @ 0x00404890
+CC "Second comment" @ 0x00404800
+P+ testset > /dev/null
+C- @ 0x00404890
+C- @ 0x00404800
+P project.r2
+cat .tmp/testset/rc.r2 | grep CC
+rm -rf .tmp/testset
+q 0
+EOF
+EXPECT=<<EOF
+CCu base64:IlNlY29uZCBjb21tZW50Ig== @ 0x00404800
+CCu base64:IkZpcnN0IGNvbW1lbnQi @ 0x00404890
+EOF
+RUN
+
+NAME=xrefs
+FILE=malloc://512
+CMDS=<<EOF
+e prj.vc=false
+ax 1
+e dir.projects = .tmp/
+axq
+P+ xrefs > /dev/null
+axq
+EOF
+EXPECT=<<EOF
+0x00000000 -> 0x00000001  NULL:r--
+0x00000000 -> 0x00000001  NULL:r--
+EOF
+RUN
+
+NAME=Import mapped project
+FILE=malloc://0xf000
+CMDS=<<EOF
+e prj.vc=false
+e dir.projects = bins/other/projects/
+e io.cache=true
+wx 4ce2fc@0xc000
+echo Saved `pu 3 @ 0xc000`
+# Ps resetc64
+pu 3 @2
+pu 3 @0xc000
+P resetc64
+echo Loaded `pu 3 @ 0xc000`
+pu 3 @0xc000
+EOF
+EXPECT=<<EOF
+Saved %4c%e2%fc
+%00%00%00
+%4c%e2%fc
+Loaded %4c%e2%fc
+%4c%e2%fc
+EOF
+RUN
+
+NAME=asm.emu in project
+FILE=bins/elf/analysis/simpleARM.elf
+CMDS=<<EOF
+e prj.vc=false
+e asm.flags = false
+e asm.emu = true
+e dir.projects = .tmp/
+P+ emu > /dev/null
+P emu
+CC-
+om `o~[0]` 0
+pd 1
+rm .tmp/emu
+EOF
+EXPECT=<<EOF
+            0x08000060      0d20a0e3       mov r2, 0xd                 ; r2=0xd -> 0x2000000
+EOF
+RUN
+
+NAME=Variables in project file
+FILE=bins/efi/bootia32.efi
+CMDS=<<EOF
+e prj.vc=false
+e dir.projects = .tmp/
+af
+afvr edi blahblah typeR @ 0x10002d8d
+afvb 8 ImageHandle blah @ 0x10002d8d
+P+ var > /dev/null
+PS*var~ImageHandle
+PS*var~blahblah
+rm .tmp/var
+EOF
+EXPECT=<<EOF
+'afvb 8 ImageHandle blah
+'afvr edi blahblah typeR
+EOF
+RUN
+
+
+NAME=Types and link in project file
+FILE=-
+CMDS=<<EOF
+e prj.vc=false
+e dir.projects = .tmp/
+tk zoby  =  type
+tl char @ 0x0
+P+ types > /dev/null
+PS*types~?link.,symlink,unlink
+PS*types~?zoby
+EOF
+EXPECT=<<EOF
+15
+1
+EOF
+RUN
+
+NAME=Breakpoints in project file
+FILE=bins/elf/analysis/main
+BROKEN=1
+CMDS=<<EOF
+e prj.vc=false
+e dbg.bpinmaps = false
+e dir.projects = .tmp/
+db 0x1234567
+P+ breakpoints > /dev/null
+Pc breakpoints~?0x1234567
+EOF
+EXPECT=<<EOF
+1
+EOF
+RUN
+
+NAME=Visual Marks in project file
+FILE=bins/elf/analysis/main
+CMDS=<<EOF
+e prj.vc=false
+fV 49 0x400410
+fV 50 0x400412
+P+ vmarks > /dev/null
+PS*vmarks~fV
+P- vmarks > /dev/null
+EOF
+EXPECT=<<EOF
+fV 49 0x400410
+fV 50 0x400412
+EOF
+RUN
+
+NAME=Custom types in project file
+FILE=bins/elf/analysis/main
+CMDS=<<EOF
+e prj.vc=false
+tk char **=type
+tk type.char **=**z
+tk type.char **.size=64
+P+ ctypes > /dev/null
+PS* ctypes~?char **
+"td struct Foo { int bar; int x; int y; };"
+P+ ctypes > /dev/null
+PS* ctypes~?char **
+PS* ctypes~?Foo
+P- ctypes > /dev/null
+EOF
+EXPECT=<<EOF
+12
+12
+8
+EOF
+RUN
+
+NAME=Export custom types and import again
+FILE=bins/elf/analysis/main
+BROKEN=1
+CMDS=<<EOF
+e prj.vc=false
+tk char **=type
+tk type.char **=**z
+tk type.char **.size=64
+"td struct Foo { int bar; int x; int y; };"
+P+ costom_types > /dev/null
+t- char **
+t- Foo
+tk~?char **
+tk~?Foo
+P costom_types > /dev/null
+tk~?char **
+tk~?Foo
+P- costom_types > /dev/null
+EOF
+EXPECT=<<EOF
+5
+0
+7
+5
+EOF
+RUN
+
+NAME=Save project for a binary and checking opened files
+FILE=bins/elf/analysis/main
+CMDS=<<EOF
+e prj.vc=false
+e dir.projects = .tmp/
+o
+?e --
+P- ulumulu
+P+ ulumulu > /dev/null
+PS*~^o
+Pc
+o--
+o
+P ulumulu > /dev/null
+?e files:
+o
+?e count:
+o*~?
+EOF
+EXPECT=<<EOF
+ 3 * r-x 0x000021da bins/elf/analysis/main
+ 4 - rw- 0x00000008 null://8
+--
+o "bins/elf/analysis/main" 0x00400000 r-x
+om $d 0x00600dc0 0x00000230 0x00000000 r-- fmap.LOAD1
+onnu null://8 rw-
+omu 4 0x00600910 0x00000008 0x00000000 rw- mmap.LOAD1
+omu 3 0x006006e0 0x00000230 0x000006e0 r-- fmap.LOAD1
+omu 3 0x00400000 0x000006dc 0x00000000 r-x fmap.LOAD0
+files:
+ 3 - r-x 0x000021da bins/elf/analysis/main
+ 4 * rw- 0x00000008 null://8
+count:
+4
+EOF
+RUN
+
+NAME=Save project for a binary without saving its info
+BROKEN=1
+FILE=bins/elf/analysis/main
+ARGS=-n
+CMDS=<<EOF
+e prj.vc=false
+e dir.projects = .tmp/
+# Ps blub > /dev/null
+P blub > /dev/null
+i~format
+EOF
+EXPECT=<<EOF
+format   elf64
+EOF
+RUN
+
+NAME=Save project for a binary after analysis
+FILE=bins/elf/analysis/main
+CMDS=<<EOF
+e prj.vc=false
+e dir.projects = .tmp/
+e scr.interactive=false
+aa
+P+ beer
+e scr.interactive=false
+P beer
+echo Info: `Pi~Info`
+aflc
+e scr.interactive=false
+EOF
+EXPECT=<<EOF
+Info:
+13
+EOF
+RUN
+
+NAME=Save project with baddr
+FILE=bins/elf/analysis/main
+ARGS=-B 0x1337
+CMDS=<<EOF
+e prj.vc=false
+e dir.projects = .tmp/
+o
+om
+om*
+?e --
+P- hand
+P+ hand > /dev/null
+P hand > /dev/null
+om*
+?e --
+om*~?
+om*~[2]
+EOF
+EXPECT=<<EOF
+ 3 * r-x 0x000021da bins/elf/analysis/main
+ 4 - rw- 0x00000008 null://8
+* 3 fd: 3 +0x00000000 0x00001337 - 0x00001a12 r-x fmap.LOAD0
+- 2 fd: 3 +0x000006e0 0x00201a17 - 0x00201c46 r-- fmap.LOAD1
+- 1 fd: 4 +0x00000000 0x00201c47 - 0x00201c4e rw- mmap.LOAD1
+omu 4 0x00201c47 0x00000008 0x00000000 rw- mmap.LOAD1
+omu 3 0x00201a17 0x00000230 0x000006e0 r-- fmap.LOAD1
+omu 3 0x00001337 0x000006dc 0x00000000 r-x fmap.LOAD0
+--
+omu 4 0x00201c47 0x00000008 0x00000000 rw- mmap.LOAD1
+omu 3 0x00201a17 0x00000230 0x000006e0 r-- fmap.LOAD1
+omu 3 0x00001337 0x000006dc 0x00000000 r-x fmap.LOAD0
+omu 3 0x002020f7 0x00000230 0x00000000 r-- fmap.LOAD1
+omu 3 0x00001337 0x000006dc 0x00000000 r-x fmap.LOAD0
+--
+5
+0x00201c47
+0x00201a17
+0x00001337
+0x002020f7
+0x00001337
+EOF
+RUN
+CMDS=<<EOF
+e prj.vc=false
+e dir.projects = .tmp/
+o
+om
+om*
+?e --
+e prj.name
+P-hond
+P+ hond > /dev/null
+P-
+P hond > /dev/null
+om*
+?e --
+om*~?
+om*~[2]
+EOF
+EXPECT=<<EOF
+ 3 * rwx 0x00000200 malloc://512
+* 1 fd: 3 +0x00000000 0x00000000 - 0x000001ff rwx
+omu 3 0x00000000 0x00000200 0x00000000 rwx
+--
+
+omu 3 0x00000000 0x00000200 0x00000000 rwx
+--
+1
+0x00000000
+EOF
+RUN
+
+NAME=Save PE project with maddr
+FILE=bins/pe/rabin2.exe
+CMDS=<<EOF
+e prj.vc=false
+e dir.projects = .tmp/
+CC hello world
+pd 4
+o
+om
+om*
+?e --
+P- hund
+P+ hund > /dev/null
+CC-$$
+e prj.name= # close current project
+P hund > /dev/null
+pd 4
+om*
+?e --
+om*~?
+om*~[2]
+P- hund
+rm .tmp
+EOF
+EXPECT=<<EOF
+        :   ;-- entry0:
+        :   0x14001a1d4      4883ec28       sub rsp, 0x28              ; hello world
+        :   0x14001a1d8      e85b050000     call 0x14001a738
+        :   0x14001a1dd      4883c428       add rsp, 0x28
+        `=< 0x14001a1e1      e972feffff     jmp 0x14001a058
+ 3 * r-x 0x0001fe00 bins/pe/rabin2.exe
+ 4 - r-- 0x00000e00 null://3584
+ 5 - rw- 0x00002200 null://8704
+ 6 - r-- 0x00000400 null://1024
+ 7 - r-x 0x00000200 null://512
+* 9 fd: 3 +0x00000400 0x140001000 - 0x14001adff r-x fmap..text
+- 8 fd: 7 +0x00000000 0x14001ae00 - 0x14001afff r-x mmap..text
+- 7 fd: 3 +0x0001a200 0x14001b000 - 0x14001dbff r-- fmap..rdata
+- 6 fd: 6 +0x00000000 0x14001dc00 - 0x14001dfff r-- mmap..rdata
+- 5 fd: 3 +0x0001ce00 0x14001e000 - 0x14001fdff r-- fmap..data
+- 4 fd: 5 +0x00000000 0x14001fe00 - 0x140021fff rw- mmap..data
+- 3 fd: 3 +0x0001ec00 0x140022000 - 0x140022fff r-- fmap..pdata
+- 2 fd: 3 +0x0001fc00 0x140023000 - 0x1400231ff r-- fmap..reloc
+- 1 fd: 4 +0x00000000 0x140023200 - 0x140023fff r-- mmap..reloc
+omu 4 0x140023200 0x00000e00 0x00000000 r-- mmap..reloc
+omu 3 0x140023000 0x00000200 0x0001fc00 r-- fmap..reloc
+omu 3 0x140022000 0x00001000 0x0001ec00 r-- fmap..pdata
+omu 5 0x14001fe00 0x00002200 0x00000000 rw- mmap..data
+omu 3 0x14001e000 0x00001e00 0x0001ce00 r-- fmap..data
+omu 6 0x14001dc00 0x00000400 0x00000000 r-- mmap..rdata
+omu 3 0x14001b000 0x00002c00 0x0001a200 r-- fmap..rdata
+omu 7 0x14001ae00 0x00000200 0x00000000 r-x mmap..text
+omu 3 0x140001000 0x00019e00 0x00000400 r-x fmap..text
+--
+        :   ;-- entry0:
+        :   0x14001a1d4      4883ec28       sub rsp, 0x28              ; hello world
+        :   0x14001a1d8      e85b050000     call 0x14001a738
+        :   0x14001a1dd      4883c428       add rsp, 0x28
+        `=< 0x14001a1e1      e972feffff     jmp 0x14001a058
+omu 4 0x140023200 0x00000e00 0x00000000 r-- mmap..reloc
+omu 3 0x140023000 0x00000200 0x0001fc00 r-- fmap..reloc
+omu 3 0x140022000 0x00001000 0x0001ec00 r-- fmap..pdata
+omu 5 0x14001fe00 0x00002200 0x00000000 rw- mmap..data
+omu 3 0x14001e000 0x00001e00 0x0001ce00 r-- fmap..data
+omu 6 0x14001dc00 0x00000400 0x00000000 r-- mmap..rdata
+omu 3 0x14001b000 0x00002c00 0x0001a200 r-- fmap..rdata
+omu 7 0x14001ae00 0x00000200 0x00000000 r-x mmap..text
+omu 3 0x140001000 0x00019e00 0x00000400 r-x fmap..text
+--
+9
+0x140023200
+0x140023000
+0x140022000
+0x14001fe00
+0x14001e000
+0x14001dc00
+0x14001b000
+0x14001ae00
+0x140001000
+EOF
+RUN
+
+NAME=Delete a saved project (with Pd)
+FILE=bins/elf/analysis/main
+ARGS=-n
+CMDS=<<EOF
+e prj.vc=false
+e dir.projects = .tmp/
+P+ cannot > /dev/null
+P- cannot > /dev/null
+Pl~cannot
+
+EOF
+EXPECT=<<EOF
+EOF
+RUN
+
+NAME=Delete a saved project (with P-)
+FILE=bins/elf/analysis/main
+ARGS=-n
+CMDS=<<EOF
+e prj.vc=false
+e dir.projects = .tmp/
+P+ erase > /dev/null
+P- erase > /dev/null
+Pl~erase
+EOF
+EXPECT=<<EOF
+EOF
+RUN
+
+NAME=Delete a saved project and used directory (with Pd)
+FILE=bins/elf/analysis/main
+ARGS=-n
+CMDS=<<EOF
+e prj.vc=false
+e dir.projects = .tmp/
+P+ anesthetize > /dev/null
+P- anesthetize > /dev/null
+Pl~blah
+ls -l `e dir.projects`~anesthetize
+EOF
+EXPECT=<<EOF
+EOF
+RUN
+
+NAME=Delete a saved project and used directory (with P-)
+FILE=bins/elf/analysis/main
+ARGS=-n
+BROKEN=1
+CMDS=<<EOF
+e prj.vc=false
+e dir.projects = .tmp/
+P+ lightbulb > /dev/null
+P- lightbulb > /dev/null
+Pl~lightbulb
+ls -l `e dir.projects`~lightbulb
+EOF
+EXPECT=<<EOF
+-drwxr-xr-x  1  501:20    96          .tmp/lightbulb/
+EOF
+RUN
+
+NAME=Save project for a file with x86_16 and check the value after loading again
+FILE=bins/src/hello.c
+CMDS=<<EOF
+e prj.vc=false
+e dir.projects = .tmp/
+e asm.arch=x86
+e asm.bits=16
+P+ sun > /dev/null
+P sun > /dev/null
+e asm.arch
+e asm.bits
+EOF
+EXPECT=<<EOF
+x86
+16
+EOF
+RUN
+
+NAME=prj.name saved in project
+FILE=malloc://512
+CMDS=<<EOF
+e prj.vc=false
+e dir.projects = .tmp/
+P+ namedprj > /dev/null
+e prj.name=
+P namedprj > /dev/null
+e prj.name
+rm .tmp/namedprj
+EOF
+EXPECT=<<EOF
+namedprj
+EOF
+RUN
+
+NAME=Checking e prj.name after saving again
+FILE=bins/elf/analysis/main
+CMDS=<<EOF
+e prj.vc=false
+e dir.projects = .tmp/
+P+ stupid > /dev/null
+P stupid > /dev/null
+P+ stupid > /dev/null
+P stupid > /dev/null
+e prj.name
+EOF
+EXPECT=<<EOF
+stupid
+EOF
+RUN
+
+NAME=Restoring xrefs
+FILE=malloc://512
+CMDS=<<EOF
+e prj.vc=false
+e asm.arch = x86
+e anal.arch = x86
+e asm.bits=32
+e dir.projects = .tmp/
+wx 5031c0e801000000c3b801000000c3
+af
+P+ dream > /dev/null
+P dream > /dev/null
+axq
+EOF
+EXPECT=<<EOF
+0x00000003 -> 0x00000009  CALL:--x
+EOF
+RUN
+
+NAME=Reopening projects bin info loading
+FILE=bins/elf/analysis/main
+BROKEN=1
+CMDS=<<EOF
+e prj.vc=false
+e dir.projects = .tmp/
+P+ bininfo > /dev/null
+P bininfo
+i~?
+ie~?
+ii~?
+EOF
+EXPECT=<<EOF
+37
+3
+5
+EOF
+RUN
+
+NAME=Reopening project with changes loading
+FILE=bins/elf/analysis/main
+CMDS=<<EOF
+e prj.vc=false
+aaa > /dev/null
+e dir.projects = .tmp/
+s main > /dev/null
+CC test
+P+ lapa > /dev/null
+P lapa
+pd 1 ~test
+rm .tmp/
+EOF
+EXPECT=<<EOF
+|           0x00400506      55             push rbp                    ; test
+EOF
+RUN
+
+NAME=Check Pc\'s return value
+FILE=bins/elf/analysis/main
+ARGS=-A -eprj.vc=false -edir.projects=.tmp/
+CMDS=<<EOF
+P- hello
+Pc aabb
+?v $?
+P+ hello
+Pc
+?v $?
+EOF
+EXPECT=<<EOF
+0x0
+0x1
+EOF
+RUN
+
+NAME=Close project
+FILE=bins/elf/analysis/main
+ARGS=-A -eprj.vc=false -edir.projects=.tmp/
+CMDS=<<EOF
+e prj.vc=false
+P- hjkl
+P+ hjkl
+Pi~!/
+Pc
+Pi
+EOF
+EXPECT=<<EOF
+hjkl
+EOF
+RUN
+
+NAME=Rename
+FILE=bins/elf/analysis/main
+CMDS=<<EOF
+P-hello
+P-world
+e prj.vc = false
+Ps hello
+Ps world
+EOF
+EXPECT_ERR=<<EOF
+WARN: Relocs has not been applied. Please use `-e bin.relocs.apply=true` or `-e bin.cache=true` next time
+EOF
+EXPECT=
+RUN
+
+NAME=delete memory format with Cf-
+FILE=bins/dmg/src/Hello
+CMDS=<<EOF
+e scr.interactive=false
+P-temp_proj
+e prj.vc=false
+e asm.arch=x86
+e asm.bits=64
+e asm.flags.inline=true
+pd 1
+Cf 1 x
+pd 1
+e scr.interactive=false
+P+temp_proj
+Cf-
+pd 1
+f jeje=0
+e scr.interactive=false
+Ps temp_proj
+e scr.interactive=false
+P temp_proj
+f-orax
+pd 1
+EOF
+EXPECT=<<EOF
+            0x00000000      57             push rdi
+            0x00000000 pf x # size=1
+0x00000000 = 0x6c726f57
+            0x00000000      57             push rdi
+            ;-- jeje, rax, rbx, rcx, rdx, rsi, rdi, r8, r9, r10, r11, r12, r13, r14, r15, rip, rbp, rflags, rsp:
+            0x00000000      57             push rdi
+EOF
+RUN

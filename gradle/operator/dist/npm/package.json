@@ -1,0 +1,35 @@
+{
+  "author": "pancake",
+  "bin": {
+    "radare2": "binr/radare2/radare2"
+  },
+  "scripts": {
+    "test": "make run tests",
+    "build": "cd ../.. && sys/install.sh"
+  },
+  "description": "radare2 from git",
+  "homepage": "https://www.radare.org",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/radareorg/radare2.git"
+  },
+  "engines": {
+    "node": ">=16",
+    "npm": ">=7"
+  },
+  "keywords": [
+    "radare2"
+  ],
+  "main": "binr/radare2/radare2",
+  "maintainers": [
+    "pancake <pancake@nopcode.org>"
+  ],
+  "name": "radare2",
+  "version": "5.9.9",
+  "bugs": {
+    "url": "https://github.com/radareorg/radare2/issues"
+  },
+  "dependencies": {
+    "wasm-pack": "^0.10.1"
+  }
+}

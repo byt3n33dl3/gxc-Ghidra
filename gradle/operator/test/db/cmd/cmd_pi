@@ -1,0 +1,47 @@
+NAME=tbz
+FILE=bins/other/tbz.arm64
+ARGS=-a arm -b64 -m 0x100000000
+CMDS=pi 4
+EXPECT=<<EOF
+tbz x0, 0x20, 0x100004000
+tbz x0, 0x20, 0xffff8004
+tbnz x0, 0x20, 0x100004008
+tbnz x0, 0x20, 0xffff800c
+EOF
+RUN
+
+NAME=pi+-2
+FILE=bins/elf/ls
+CMDS=<<EOF
+so 4
+pi 2
+pi+2
+pi-2
+pi -2
+EOF
+EXPECT=<<EOF
+mov rdx, rsp
+and rsp, 0xfffffffffffffff0
+mov rdx, rsp
+and rsp, 0xfffffffffffffff0
+mov ecx, edx
+pop rsi
+mov ecx, edx
+pop rsi
+EOF
+RUN
+
+NAME=pi1pd1
+FILE=bins/other/tbz.arm64
+ARGS=-a arm -b64 -m 0x100000000
+CMDS=<<EOF
+e asm.lines=0
+e asm.bytes=0
+pi1
+pd1
+EOF
+EXPECT=<<EOF
+tbz x0, 0x20, 0x100004000
+0x100000000      tbz x0, 0x20, 0x100004000
+EOF
+RUN

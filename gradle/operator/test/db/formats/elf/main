@@ -1,0 +1,164 @@
+NAME=ELF: endbr-main-mov
+FILE=bins/elf/endbr-main
+ARGS=-e log.origin=true -e log.filter=core.bin -e log.level=10
+CMDS=?v main
+EXPECT=<<EOF
+0x401126
+EOF
+EXPECT_ERR=<<EOF
+DEBUG: [core.bin] (section .dynsym) Cd 8[12] @ 0x400328
+DEBUG: [core.bin] (section .dynstr) Css 63 @ 0x400388
+DEBUG: [core.bin] (section .rela.dyn) Cd 8[6] @ 0x4003f0
+DEBUG: [core.bin] (section .rela.plt) Cd 8[3] @ 0x400420
+DEBUG: [core.bin] (section .init_array) Cd 8[1] @ 0x403e10
+DEBUG: [core.bin] (section .fini_array) Cd 8[1] @ 0x403e18
+DEBUG: [core.bin] (section .dynamic) Cd 8[58] @ 0x403e20
+DEBUG: [core.bin] (section .got) Cd 8[2] @ 0x403ff0
+DEBUG: [core.bin] (section .dynsym) Cd 8[12] @ 0x400328
+DEBUG: [core.bin] (section .dynstr) Css 63 @ 0x400388
+DEBUG: [core.bin] (section .rela.dyn) Cd 8[6] @ 0x4003f0
+DEBUG: [core.bin] (section .rela.plt) Cd 8[3] @ 0x400420
+DEBUG: [core.bin] (section .init_array) Cd 8[1] @ 0x403e10
+DEBUG: [core.bin] (section .fini_array) Cd 8[1] @ 0x403e18
+DEBUG: [core.bin] (section .dynamic) Cd 8[58] @ 0x403e20
+DEBUG: [core.bin] (section .got) Cd 8[2] @ 0x403ff0
+WARN: [core.bin] Relocs has not been applied. Please use `-e bin.relocs.apply=true` or `-e bin.cache=true` next time
+DEBUG: [core.bin] Cannot resolve symbol address __libc_start_main
+DEBUG: [core.bin] Cannot resolve symbol address __gmon_start__
+EOF
+RUN
+
+NAME=ELF: main
+FILE=bins/elf/analysis/main
+CMDS=?v main
+EXPECT=<<EOF
+0x400506
+EOF
+RUN
+
+NAME=ELF: main rebased 0
+FILE=bins/elf/analysis/pie-main
+ARGS=-B 0x200000
+CMDS=?v main
+EXPECT=<<EOF
+0x203bd0
+EOF
+RUN
+
+NAME=ELF: main rebased 1
+FILE=bins/elf/analysis/pie-main
+ARGS=-B 0x100000
+CMDS=?v main
+EXPECT=<<EOF
+0x103bd0
+EOF
+RUN
+
+NAME=ELF: main rebased 2
+FILE=bins/elf/analysis/main
+ARGS=-B 0x200000
+CMDS=?v main
+EXPECT=<<EOF
+0x200506
+EOF
+RUN
+
+NAME=ELF: main rebased 3
+FILE=-
+ARGS=-B 0x200000
+CMDS=!rabin2 -qMB 0x200000 bins/elf/analysis/main
+EXPECT=2098438
+RUN
+
+NAME=ELF: sym.main
+FILE=bins/elf/analysis/main
+CMDS=?v sym.main
+EXPECT=<<EOF
+0x400506
+EOF
+RUN
+
+NAME=ELF: pie main
+FILE=bins/elf/analysis/pie-main
+CMDS=?v main
+EXPECT=<<EOF
+0x3bd0
+EOF
+RUN
+
+NAME=MIPS: main
+FILE=bins/elf/analysis/mips-main
+CMDS=?v main
+EXPECT=<<EOF
+0x4006f0
+EOF
+RUN
+
+NAME=main non common LD script
+FILE=bins/elf/analysis/custom_ldscript
+CMDS=?v main
+EXPECT=<<EOF
+0x1c00844
+EOF
+RUN
+
+NAME=main wrong sections
+FILE=bins/elf/analysis/main_wrong_sect
+CMDS=?v main
+EXPECT=<<EOF
+0x400506
+EOF
+RUN
+
+NAME=main detection linux64 endbr64
+FILE=bins/elf/analysis/linux_x64_endbr64
+CMDS=?v main
+EXPECT=<<EOF
+0x4070
+EOF
+RUN
+
+NAME=main - arm - buildroot-201402
+FILE=bins/arm/elf/hello_world-buildroot-201402
+CMDS=<<EOF
+?v main
+aaa
+afo main
+!!rabin2 -M ${R2_FILE}
+EOF
+EXPECT=<<EOF
+0x8370
+0x00008370
+vaddr=0x00008370 paddr=0x00000370
+EOF
+RUN
+
+NAME=main - arm - linaro-201201
+FILE=bins/arm/elf/hello_world-linaro-201201
+CMDS=<<EOF
+?v main
+aaa
+afo main
+!!rabin2 -M ${R2_FILE}
+EOF
+EXPECT=<<EOF
+0x82ec
+0x000082ec
+vaddr=0x000082ec paddr=0x000002ec
+EOF
+RUN
+
+NAME=main - arm - linaro-201902
+FILE=bins/arm/elf/hello_world-linaro-201902
+CMDS=<<EOF
+?v main
+aaa
+afo main
+!!rabin2 -M ${R2_FILE}
+EOF
+EXPECT=<<EOF
+0x10310
+0x00010310
+vaddr=0x00010310 paddr=0x00000310
+EOF
+RUN

@@ -1,0 +1,668 @@
+NAME=ELF: arm64 relocs crashing
+FILE=-
+CMDS=!!rabin2 -qzz bins/elf/librsjni_androix.so~?
+EXPECT=<<EOF
+548
+EOF
+RUN
+
+NAME=ELF: arm64 relocs crashing
+FILE=bins/elf/librsjni_androix.so
+CMDS=ir
+EXPECT=<<EOF
+vaddr      paddr      type   ntype name
+---------------------------------------
+0x0000e210 0x0000e210 SET_64 1026  __cxa_finalize
+0x0000e218 0x0000e218 SET_64 1026  __stack_chk_fail
+0x0000e220 0x0000e220 SET_64 1026  dlopen
+0x0000e228 0x0000e228 SET_64 1026  loadSymbols(void*, dispatchTable&, int)
+0x0000e230 0x0000e230 SET_64 1026  dlerror
+0x0000e238 0x0000e238 SET_64 1026  __android_log_print
+0x0000e240 0x0000e240 SET_64 1026  dlclose
+0x0000e248 0x0000e248 SET_64 1026  loadIOSuppSyms(void*, ioSuppDT&)
+0x0000e250 0x0000e250 SET_64 1026  malloc
+0x0000e258 0x0000e258 SET_64 1026  calloc
+0x0000e260 0x0000e260 SET_64 1026  free
+0x0000e268 0x0000e268 SET_64 1026  AndroidBitmap_lockPixels
+0x0000e270 0x0000e270 SET_64 1026  AndroidBitmap_getInfo
+0x0000e278 0x0000e278 SET_64 1026  AndroidBitmap_unlockPixels
+0x0000e280 0x0000e280 SET_64 1026  memcpy
+0x0000e288 0x0000e288 SET_64 1026  memset
+0x0000e290 0x0000e290 SET_64 1026  dlsym
+EOF
+RUN
+
+NAME=ELF: arm64 imports crashing
+FILE=bins/elf/librsjni_androix.so
+CMDS=ii
+EXPECT=<<EOF
+nth vaddr      bind   type lib name
+-----------------------------------
+1   0x0000b7c0 GLOBAL FUNC     __cxa_finalize
+2   0x0000b880 GLOBAL FUNC     AndroidBitmap_getInfo
+3   0x0000b870 GLOBAL FUNC     AndroidBitmap_lockPixels
+4   0x0000b890 GLOBAL FUNC     AndroidBitmap_unlockPixels
+5   0x0000b810 GLOBAL FUNC     __android_log_print
+6   0x0000b7d0 GLOBAL FUNC     __stack_chk_fail
+7   0x0000b850 GLOBAL FUNC     calloc
+8   0x0000b820 GLOBAL FUNC     dlclose
+9   0x0000b800 GLOBAL FUNC     dlerror
+10  0x0000b7e0 GLOBAL FUNC     dlopen
+11  0x0000b8c0 GLOBAL FUNC     dlsym
+12  0x0000b860 GLOBAL FUNC     free
+13  0x0000b840 GLOBAL FUNC     malloc
+14  0x0000b8a0 GLOBAL FUNC     memcpy
+15  0x0000b8b0 GLOBAL FUNC     memset
+EOF
+RUN
+
+NAME=ELF: corkami elf-relro - sections
+FILE=bins/elf/analysis/elf-relro
+CMDS=iS~rel
+EXPECT=<<EOF
+9   0x0000027c    0x8 0x0804827c    0x8 -r-- 0x2   REL         .rel.dyn
+10  0x00000284   0x10 0x08048284   0x10 -r-- 0x2   REL         .rel.plt
+EOF
+RUN
+
+NAME=ELF: corkami elf-relro - relro enabled
+FILE=bins/elf/analysis/elf-relro
+CMDS=ik ***~relro
+EXPECT=<<EOF
+info/elf.relro=partial
+EOF
+RUN
+
+NAME=ELF: imports partial
+FILE=bins/elf/vim
+CMDS=<<EOF
+ik ***~relro
+ii
+EOF
+EXPECT=<<EOF
+info/elf.relro=full
+nth vaddr      bind   type   lib name
+-------------------------------------
+2   0x00051f60 GLOBAL FUNC       __ctype_toupper_loc
+3   0x00051f68 GLOBAL FUNC       __strcat_chk
+4   0x00051f70 GLOBAL FUNC       getenv
+5   0x00051f78 GLOBAL FUNC       utime
+6   0x00051f80 GLOBAL FUNC       sigprocmask
+7   0x00051f88 GLOBAL FUNC       free
+8   0x00051f90 GLOBAL FUNC       putchar
+9   0x00051f98 GLOBAL FUNC       is_selinux_enabled
+10  0x00051fa0 GLOBAL FUNC       strcasecmp
+11  0x00051fa8 GLOBAL FUNC       Gpm_Open
+12  0x00051fb0 GLOBAL FUNC       localtime
+13  0x00051fb8 GLOBAL FUNC       mblen
+14  0x00051fc0 GLOBAL FUNC       __errno_location
+15  0x00051fc8 GLOBAL FUNC       unlink
+16  0x00051fd0 GLOBAL FUNC       strncpy
+17  0x00051fd8 GLOBAL FUNC       strncmp
+18  ---------- WEAK   NOTYPE     _ITM_deregisterTMCloneTable
+19  0x00051fe0 GLOBAL FUNC       _exit
+20  0x00051fe8 GLOBAL FUNC       strcpy
+21  0x00051ff0 GLOBAL FUNC       mkdir
+22  0x00051ff8 GLOBAL FUNC       tputs
+23  0x00052000 GLOBAL FUNC       iconv
+24  0x00052008 GLOBAL FUNC       ferror
+25  0x00052010 GLOBAL FUNC       qsort
+26  0x00052018 GLOBAL FUNC       isatty
+27  0x00052020 GLOBAL FUNC       sigaction
+28  0x00052028 GLOBAL FUNC       fread
+29  0x00052030 GLOBAL FUNC       strtod
+30  0x00052038 GLOBAL FUNC       exp
+31  0x00052040 GLOBAL FUNC       readlink
+32  0x00052048 GLOBAL FUNC       fcntl
+33  0x00052050 GLOBAL FUNC       setenv
+34  0x00052058 GLOBAL FUNC       write
+35  0x00052060 GLOBAL FUNC       getpid
+36  0x00052068 GLOBAL FUNC       textdomain
+37  0x00052070 GLOBAL FUNC       atan
+38  0x00052078 GLOBAL FUNC       tgoto
+39  0x00052080 GLOBAL FUNC       fclose
+40  0x00052088 GLOBAL FUNC       __xstat64
+41  0x00052090 GLOBAL FUNC       opendir
+42  0x00052098 GLOBAL FUNC       getpwuid
+43  0x000520a0 GLOBAL FUNC       ctime
+44  0x000520a8 GLOBAL FUNC       bindtextdomain
+45  0x000520b0 GLOBAL FUNC       stpcpy
+46  0x000520b8 GLOBAL FUNC       rmdir
+47  0x000520c0 GLOBAL FUNC       dcgettext
+48  0x000520c8 GLOBAL FUNC       strlen
+49  0x000520d0 GLOBAL FUNC       chdir
+50  0x000520d8 GLOBAL FUNC       __stack_chk_fail
+51  0x000520e0 GLOBAL FUNC       getuid
+52  0x000520e8 GLOBAL FUNC       dup2
+53  0x000520f0 GLOBAL FUNC       tcflush
+54  0x000520f8 GLOBAL FUNC       strchr
+55  0x00052100 GLOBAL FUNC       printf
+56  0x00052108 GLOBAL FUNC       rewind
+57  0x00052110 GLOBAL FUNC       _IO_putc
+58  0x00052118 GLOBAL FUNC       __fdelt_chk
+59  0x00052120 GLOBAL FUNC       nanosleep
+60  0x00052128 GLOBAL FUNC       strrchr
+61  0x00052130 GLOBAL FUNC       uname
+62  0x00052138 GLOBAL FUNC       dup
+63  0x00052140 GLOBAL FUNC       gettimeofday
+64  0x00052148 GLOBAL FUNC       __assert_fail
+65  0x00052150 GLOBAL FUNC       fputs
+66  0x00052158 GLOBAL FUNC       memset
+67  0x00052160 GLOBAL FUNC       tgetflag
+68  0x00052168 GLOBAL FUNC       pow
+69  0x00052170 GLOBAL FUNC       ioctl
+70  0x00052178 GLOBAL FUNC       getcwd
+71  0x00052180 GLOBAL FUNC       log
+72  0x00052188 GLOBAL FUNC       strncat
+73  0x00052190 GLOBAL FUNC       alarm
+74  0x00052198 GLOBAL FUNC       close
+75  0x000521a0 GLOBAL FUNC       tgetent
+76  0x000521a8 GLOBAL FUNC       pipe
+77  0x000521b0 GLOBAL FUNC       setsid
+78  0x000521b8 GLOBAL FUNC       fmod
+79  0x000521c0 GLOBAL FUNC       closedir
+80  0x000521c8 GLOBAL FUNC       cos
+81  0x000521d0 GLOBAL FUNC       fputc
+82  0x000521d8 GLOBAL FUNC       memchr
+83  0x000521e0 GLOBAL FUNC       ftello64
+84  0x000521e8 GLOBAL FUNC       acos
+85  0x000521f0 GLOBAL FUNC       read
+86  ---------- GLOBAL FUNC       __libc_start_main
+87  0x000521f8 GLOBAL FUNC       srand
+88  0x00052200 GLOBAL FUNC       memcmp
+89  0x00052208 GLOBAL FUNC       fgets
+90  0x00052210 GLOBAL FUNC       tgetnum
+91  0x00052218 GLOBAL FUNC       getsockopt
+92  0x00052220 GLOBAL FUNC       _setjmp
+93  0x00052228 GLOBAL FUNC       acl_set_file
+94  0x00052230 GLOBAL FUNC       __fxstat64
+95  0x00052238 GLOBAL FUNC       strcmp
+96  0x00052240 GLOBAL FUNC       signal
+97  0x00052248 GLOBAL FUNC       getpwnam
+98  0x00052250 GLOBAL FUNC       gethostbyname
+99  0x00052258 GLOBAL FUNC       log10
+100 0x00052260 GLOBAL FUNC       __memmove_chk
+101 0x00052268 GLOBAL FUNC       setpwent
+102 0x00052270 GLOBAL FUNC       __memcpy_chk
+103 0x00052278 GLOBAL FUNC       fprintf
+104 0x00052280 GLOBAL FUNC       sigemptyset
+105 0x00052288 GLOBAL FUNC       ftell
+106 0x00052290 GLOBAL FUNC       feof
+107 ---------- WEAK   NOTYPE     __gmon_start__
+108 0x00052298 GLOBAL FUNC       umask
+109 0x000522a0 GLOBAL FUNC       fopen64
+110 0x000522a8 GLOBAL FUNC       strtol
+111 0x000522b0 GLOBAL FUNC       memcpy
+112 0x000522b8 GLOBAL FUNC       getfilecon
+113 0x000522c0 GLOBAL FUNC       getpwent
+114 0x000522c8 GLOBAL FUNC       cosh
+115 0x000522d0 GLOBAL FUNC       kill
+116 0x000522d8 GLOBAL FUNC       time
+117 0x000522e0 GLOBAL FUNC       fileno
+118 0x000522e8 GLOBAL FUNC       __stpcpy_chk
+119 0x000522f0 GLOBAL FUNC       getgid
+120 0x000522f8 GLOBAL FUNC       iswupper
+121 0x00052300 GLOBAL FUNC       select
+122 0x00052308 GLOBAL FUNC       getrlimit64
+123 0x00052310 GLOBAL FUNC       dlopen
+124 0x00052318 GLOBAL FUNC       sync
+125 0x00052320 GLOBAL FUNC       sinh
+126 0x00052328 GLOBAL FUNC       pthread_getspecific
+127 0x00052330 GLOBAL FUNC       malloc
+128 0x00052338 GLOBAL FUNC       strncasecmp
+129 0x00052340 GLOBAL FUNC       fflush
+130 0x00052348 GLOBAL FUNC       _IO_getc
+131 0x00052350 GLOBAL FUNC       acl_get_file
+132 0x00052358 GLOBAL FUNC       nl_langinfo
+133 0x00052360 GLOBAL FUNC       tan
+134 0x00052368 GLOBAL FUNC       ungetc
+135 0x00052370 GLOBAL FUNC       endpwent
+136 0x00052378 GLOBAL FUNC       sscanf
+137 0x00052380 GLOBAL FUNC       atan2
+138 0x00052388 GLOBAL FUNC       strpbrk
+139 0x00052390 GLOBAL FUNC       fseek
+140 0x00052398 GLOBAL FUNC       fseeko64
+141 0x000523a0 GLOBAL FUNC       bind_textdomain_codeset
+142 0x000523a8 GLOBAL FUNC       fchdir
+143 0x000523b0 GLOBAL FUNC       dlclose
+144 0x000523b8 GLOBAL FUNC       setfilecon
+145 0x000523c0 GLOBAL FUNC       realloc
+146 0x000523c8 GLOBAL FUNC       __strcpy_chk
+147 0x000523d0 GLOBAL FUNC       fdopen
+148 0x000523d8 GLOBAL FUNC       mkdtemp
+149 0x000523e0 GLOBAL FUNC       setlocale
+150 0x000523e8 GLOBAL FUNC       iconv_close
+151 0x000523f0 GLOBAL FUNC       chmod
+152 0x000523f8 GLOBAL FUNC       sigset
+153 0x00052400 GLOBAL FUNC       __longjmp_chk
+154 0x00052408 GLOBAL FUNC       open64
+155 0x00052410 GLOBAL FUNC       strftime
+156 0x00052418 GLOBAL FUNC       memmove
+157 0x00052420 GLOBAL FUNC       readdir64
+158 0x00052428 GLOBAL FUNC       fsync
+159 0x00052430 GLOBAL FUNC       Gpm_GetEvent
+160 0x00052438 GLOBAL FUNC       waitpid
+161 0x00052440 GLOBAL FUNC       tcgetattr
+162 0x00052448 GLOBAL FUNC       tcsetattr
+163 0x00052450 GLOBAL FUNC       access
+164 0x00052458 GLOBAL FUNC       fchown
+165 0x00052460 GLOBAL FUNC       dcngettext
+166 0x00052468 GLOBAL FUNC       perror
+167 0x00052470 GLOBAL FUNC       strtok
+168 0x00052478 GLOBAL FUNC       sysconf
+169 ---------- WEAK   NOTYPE     _Jv_RegisterClasses
+170 0x00052480 GLOBAL FUNC       towlower
+171 0x00052488 GLOBAL FUNC       rename
+172 0x00052490 GLOBAL FUNC       tgetstr
+173 0x00052498 GLOBAL FUNC       towupper
+174 0x000524a0 GLOBAL FUNC       sin
+175 0x000524a8 GLOBAL FUNC       floor
+176 0x000524b0 GLOBAL FUNC       execvp
+177 0x000524b8 GLOBAL FUNC       getpgid
+178 0x000524c0 GLOBAL FUNC       __lxstat64
+179 0x000524c8 GLOBAL FUNC       sysinfo
+180 0x000524d0 GLOBAL FUNC       strcat
+181 0x000524d8 GLOBAL FUNC       freecon
+182 0x000524e0 GLOBAL FUNC       tanh
+183 0x000524e8 GLOBAL FUNC       asin
+184 0x000524f0 GLOBAL FUNC       __memset_chk
+185 0x000524f8 GLOBAL FUNC       sprintf
+186 0x00052500 GLOBAL FUNC       exit
+187 0x00052508 GLOBAL FUNC       connect
+188 0x00052510 GLOBAL FUNC       fwrite
+189 0x00052518 GLOBAL FUNC       lseek64
+190 0x00052520 GLOBAL FUNC       __fprintf_chk
+191 ---------- WEAK   NOTYPE     _ITM_registerTMCloneTable
+192 0x00052528 GLOBAL FUNC       sqrt
+193 0x00052530 GLOBAL FUNC       sigaltstack
+194 0x00052538 GLOBAL FUNC       strerror
+195 0x00052540 GLOBAL FUNC       execl
+196 0x00052548 GLOBAL FUNC       dlsym
+197 0x00052550 GLOBAL FUNC       ceil
+198 0x00052558 GLOBAL FUNC       sleep
+199 0x00052560 GLOBAL FUNC       Gpm_Close
+200 0x00052568 WEAK   FUNC       __cxa_finalize
+201 0x00052570 GLOBAL FUNC       sigaddset
+202 0x00052578 GLOBAL FUNC       fork
+203 0x00052580 GLOBAL FUNC       strstr
+204 0x00052588 GLOBAL FUNC       rand
+205 0x00052590 GLOBAL FUNC       dlerror
+206 0x00052598 GLOBAL FUNC       __ctype_tolower_loc
+207 0x000525a0 GLOBAL FUNC       __ctype_b_loc
+208 0x000525a8 GLOBAL FUNC       acl_free
+209 0x000525b0 GLOBAL FUNC       iconv_open
+210 0x000525b8 GLOBAL FUNC       __sprintf_chk
+211 0x000525c0 GLOBAL FUNC       socket
+EOF
+RUN
+
+NAME=ELF: arm64 missing internal plt imports
+FILE=bins/elf/libcurl.so.4.2.0
+CMDS=<<EOF
+s section..plt
+pd 20
+s 0x0001de5c
+af
+pdf
+EOF
+EXPECT=<<EOF
+            ;-- section..plt:
+            0x000074dc      04e02de5       str lr, [sp, -4]!           ; [09] -r-x section size 4964 named .plt
+            0x000074e0      04e09fe5       ldr lr, [0x000074ec]        ; [0x74ec:4]=0x45610
+            0x000074e4      0ee08fe0       add lr, pc, lr
+            0x000074e8      08f0bee5       ldr pc, [lr, 8]!
+            0x000074ec      10560400       andeq r5, r4, r0, lsl r6
+            ;-- rsym.gnutls_x509_crt_get_expiration_time:
+            ;-- gnutls_x509_crt_get_expiration_time:
+            0x000074f0      00c68fe2       add ip, pc, 0, 12
+            0x000074f4      45ca8ce2       add ip, ip, 0x45000
+            0x000074f8      10f6bce5       ldr pc, [ip, 0x610]!
+            ;-- rsym.Curl_getaddrinfo_ex:
+            0x000074fc      00c68fe2       add ip, pc, 0, 12
+            0x00007500      45ca8ce2       add ip, ip, 0x45000
+            0x00007504      08f6bce5       ldr pc, [ip, 0x608]!
+            ;-- rsym.Curl_cookie_add:
+            0x00007508      00c68fe2       add ip, pc, 0, 12
+            0x0000750c      45ca8ce2       add ip, ip, 0x45000
+            0x00007510      00f6bce5       ldr pc, [ip, 0x600]!
+            ;-- rsym.Curl_unencode_gzip_write:
+            0x00007514      00c68fe2       add ip, pc, 0, 12
+            0x00007518      45ca8ce2       add ip, ip, 0x45000
+            0x0000751c      f8f5bce5       ldr pc, [ip, 0x5f8]!
+            ;-- rsym.freeifaddrs:
+            ;-- freeifaddrs:
+            0x00007520      00c68fe2       add ip, pc, 0, 12
+            0x00007524      45ca8ce2       add ip, ip, 0x45000
+            0x00007528      f0f5bce5       ldr pc, [ip, 0x5f0]!
+/ 552: sym.Curl_close (int32_t arg1);
+| `- args(r0)
+|           0x0001de5c      70402de9       push {r4, r5, r6, lr}
+|           0x0001de60      0010a0e3       mov r1, 0
+|           0x0001de64      086090e5       ldr r6, [r0, 8]             ; arg1
+|           0x0001de68      14529fe5       ldr r5, [0x0001e084]        ; [0x1e084:4]=0x2ec7c
+|           0x0001de6c      0040a0e1       mov r4, r0                  ; arg1
+|           0x0001de70      58a9ffeb       bl rsym.Curl_expire
+|           0x0001de74      000056e3       cmp r6, 0
+|           0x0001de78      05508fe0       add r5, pc, r5
+|       ,=< 0x0001de7c      0200000a       beq 0x1de8c
+|       |   0x0001de80      080094e5       ldr r0, [r4, 8]
+|       |   0x0001de84      0410a0e1       mov r1, r4
+|       |   0x0001de88      d4a5ffeb       bl rsym.curl_multi_remove_handle
+|       `-> 0x0001de8c      f4619fe5       ldr r6, rsym.Curl_splayinsert ; [0x1e088:4]=0x8594 rsym.Curl_splayinsert
+|           0x0001de90      060094e7       ldr r0, [r4, r6]
+|           0x0001de94      000050e3       cmp r0, 0
+|       ,=< 0x0001de98      0300000a       beq 0x1deac
+|       |   0x0001de9c      0010a0e3       mov r1, 0
+|       |   0x0001dea0      fda9ffeb       bl rsym.Curl_llist_destroy
+|       |   0x0001dea4      0030a0e3       mov r3, 0
+|       |   0x0001dea8      063084e7       str r3, [r4, r6]
+|       `-> 0x0001deac      b43494e5       ldr r3, [r4, 0x4b4]
+|           0x0001deb0      d4219fe5       ldr r2, [0x0001e08c]        ; [0x1e08c:4]=0x86a4
+|           0x0001deb4      0010a0e3       mov r1, 0
+|           0x0001deb8      000053e3       cmp r3, 0
+|           0x0001debc      021084e7       str r1, [r4, r2]
+|       ,=< 0x0001dec0      0200000a       beq 0x1ded0
+|       |   0x0001dec4      080093e5       ldr r0, [r3, 8]
+|       |   0x0001dec8      010050e1       cmp r0, r1
+|      ,==< 0x0001decc      0800000a       beq 0x1def4
+|      |`-> 0x0001ded0      b8119fe5       ldr r1, [0x0001e090]        ; [0x1e090:4]=0x85b0
+|      |    0x0001ded4      016094e7       ldr r6, [r4, r1]
+|      |    0x0001ded8      000056e3       cmp r6, 0
+|      |    0x0001dedc      04108112       addne r1, r1, 4
+|      |    0x0001dee0      0120a013       movne r2, 1
+|      |    0x0001dee4      0120c417       strbne r2, [r4, r1]
+|      |,=< 0x0001dee8      0e00000a       beq 0x1df28
+|     .---> 0x0001deec      0000a0e3       mov r0, 0
+|     :||   0x0001def0      7080bde8       pop {r4, r5, r6, pc}
+|    .-`--> 0x0001def4      0400a0e1       mov r0, r4
+|    :: |   0x0001def8      50f2ffeb       bl 0x1a840
+|    :: |   0x0001defc      010070e3       cmn r0, 1
+|    `====< 0x0001df00      fbffff1a       bne 0x1def4
+|     : |   0x0001df04      b40494e5       ldr r0, [r4, 0x4b4]
+|     : |   0x0001df08      53a6ffeb       bl rsym.Curl_rm_connc
+|     : |   0x0001df0c      7c119fe5       ldr r1, [0x0001e090]        ; [0x1e090:4]=0x85b0
+|     : |   0x0001df10      016094e7       ldr r6, [r4, r1]
+|     : |   0x0001df14      000056e3       cmp r6, 0
+|     : |   0x0001df18      04108112       addne r1, r1, 4
+|     : |   0x0001df1c      0120a013       movne r2, 1
+|     : |   0x0001df20      0120c417       strbne r2, [r4, r1]
+|     `===< 0x0001df24      f0ffff1a       bne 0x1deec
+|       `-> 0x0001df28      042094e5       ldr r2, [r4, 4]
+|           0x0001df2c      010052e3       cmp r2, 1
+|       ,=< 0x0001df30      4e00000a       beq 0x1e070
+|       |   ; CODE XREF from sym.Curl_close @ 0x1e080(x)
+|      .--> 0x0001df34      58e19fe5       ldr lr, [0x0001e094]        ; [0x1e094:4]=0x85c2
+|      :|   0x0001df38      0ec0d4e7       ldrb ip, [r4, lr]
+|      :|   0x0001df3c      00005ce3       cmp ip, 0
+|     ,===< 0x0001df40      3900001a       bne 0x1e02c
+|     |:|   0x0001df44      4c619fe5       ldr r6, [0x0001e098]        ; [0x1e098:4]=0x6c4
+|     |:|   ; CODE XREF from sym.Curl_close @ 0x1e044(x)
+|    .----> 0x0001df48      4ce19fe5       ldr lr, rsym.curl_global_init ; [0x1e09c:4]=0x85b8 rsym.curl_global_init
+|    :|:|   0x0001df4c      0e0094e7       ldr r0, [r4, lr]
+|    :|:|   0x0001df50      2eaaffeb       bl rsym.Curl_safefree
+|    :|:|   0x0001df54      44119fe5       ldr r1, sym.imp.gnutls_global_deinit ; [0x1e0a0:4]=0x85dc sym.imp.gnutls_global_deinit
+|    :|:|   0x0001df58      010094e7       ldr r0, [r4, r1]
+|    :|:|   0x0001df5c      2baaffeb       bl rsym.Curl_safefree
+|    :|:|   0x0001df60      0400a0e1       mov r0, r4
+|    :|:|   0x0001df64      cea7ffeb       bl rsym.Curl_ssl_close_all
+|    :|:|   0x0001df68      34319fe5       ldr r3, [0x0001e0a4]        ; [0x1e0a4:4]=0x84dc
+|    :|:|   0x0001df6c      030094e7       ldr r0, [r4, r3]
+|    :|:|   0x0001df70      26aaffeb       bl rsym.Curl_safefree
+|    :|:|   0x0001df74      2cc19fe5       ldr ip, [0x0001e0a8]        ; [0x1e0a8:4]=0x84f4
+|    :|:|   0x0001df78      0c0094e7       ldr r0, [r4, ip]
+|    :|:|   0x0001df7c      23aaffeb       bl rsym.Curl_safefree
+|    :|:|   0x0001df80      0400a0e1       mov r0, r4
+|    :|:|   0x0001df84      5aa7ffeb       bl rsym.Curl_ssl_free_certinfo
+|    :|:|   0x0001df88      a403d4e5       ldrb r0, [r4, 0x3a4]
+|    :|:|   0x0001df8c      000050e3       cmp r0, 0
+|   ,=====< 0x0001df90      3100001a       bne 0x1e05c
+|   |:|:|   ; CODE XREF from sym.Curl_close @ 0x1e06c(x)
+|  .------> 0x0001df94      9c03d4e5       ldrb r0, [r4, 0x39c]
+|  :|:|:|   0x0001df98      000050e3       cmp r0, 0
+| ,=======< 0x0001df9c      2900001a       bne 0x1e048
+| |:|:|:|   ; CODE XREF from sym.Curl_close @ 0x1e058(x)
+| --------> 0x0001dfa0      c40494e5       ldr r0, [r4, 0x4c4]
+| |:|:|:|   0x0001dfa4      19aaffeb       bl rsym.Curl_safefree
+| |:|:|:|   0x0001dfa8      0110a0e3       mov r1, 1
+| |:|:|:|   0x0001dfac      0400a0e1       mov r0, r4
+| |:|:|:|   0x0001dfb0      c2f8ffeb       bl 0x1c2c0
+| |:|:|:|   0x0001dfb4      0400a0e1       mov r0, r4
+| |:|:|:|   0x0001dfb8      01a8ffeb       bl rsym.Curl_digest_cleanup
+| |:|:|:|   0x0001dfbc      e8309fe5       ldr r3, [0x0001e0ac]        ; [0x1e0ac:4]=0x862c
+| |:|:|:|   0x0001dfc0      030094e7       ldr r0, [r4, r3]
+| |:|:|:|   0x0001dfc4      11aaffeb       bl rsym.Curl_safefree
+| |:|:|:|   0x0001dfc8      e0c09fe5       ldr ip, sym.imp.getpeername ; [0x1e0b0:4]=0x8630 sym.imp.getpeername
+| |:|:|:|   0x0001dfcc      0c0094e7       ldr r0, [r4, ip]
+| |:|:|:|   0x0001dfd0      0eaaffeb       bl rsym.Curl_safefree
+| |:|:|:|   0x0001dfd4      102094e5       ldr r2, [r4, 0x10]
+| |:|:|:|   0x0001dfd8      000052e3       cmp r2, 0
+| ========< 0x0001dfdc      0a00000a       beq 0x1e00c
+| |:|:|:|   0x0001dfe0      0110a0e3       mov r1, 1
+| |:|:|:|   0x0001dfe4      0220a0e3       mov r2, 2
+| |:|:|:|   0x0001dfe8      0400a0e1       mov r0, r4
+| |:|:|:|   0x0001dfec      0ba9ffeb       bl rsym.Curl_share_lock
+| |:|:|:|   0x0001dff0      10c094e5       ldr ip, [r4, 0x10]
+| |:|:|:|   0x0001dff4      0400a0e1       mov r0, r4
+| |:|:|:|   0x0001dff8      0110a0e3       mov r1, 1
+| |:|:|:|   0x0001dffc      04309ce5       ldr r3, [ip, 4]
+| |:|:|:|   0x0001e000      012043e2       sub r2, r3, 1
+| |:|:|:|   0x0001e004      04208ce5       str r2, [ip, 4]
+| |:|:|:|   0x0001e008      09aaffeb       bl rsym.Curl_share_unlock
+| --------> 0x0001e00c      0400a0e1       mov r0, r4
+| |:|:|:|   0x0001e010      0ea6ffeb       bl rsym.Curl_freeset
+| |:|:|:|   0x0001e014      062095e7       ldr r2, [r5, r6]
+| |:|:|:|   0x0001e018      0400a0e1       mov r0, r4
+| |:|:|:|   0x0001e01c      001092e5       ldr r1, [r2]
+| |:|:|:|   0x0001e020      31ff2fe1       blx r1
+| |:|:|:|   0x0001e024      0000a0e3       mov r0, 0
+| |:|:|:|   0x0001e028      7080bde8       pop {r4, r5, r6, pc}
+| |:|:`---> 0x0001e02c      64609fe5       ldr r6, [0x0001e098]        ; [0x1e098:4]=0x6c4
+| |:|: :|   0x0001e030      7c209fe5       ldr r2, rsym.Curl_resolv_timeout ; [0x1e0b4:4]=0x85c4 rsym.Curl_resolv_timeout
+| |:|: :|   0x0001e034      061095e7       ldr r1, [r5, r6]
+| |:|: :|   0x0001e038      020094e7       ldr r0, [r4, r2]
+| |:|: :|   0x0001e03c      003091e5       ldr r3, [r1]
+| |:|: :|   0x0001e040      33ff2fe1       blx r3
+| |:|`====< 0x0001e044      bfffffea       b 0x1df48
+| `-------> 0x0001e048      061095e7       ldr r1, [r5, r6]
+|  :|  :|   0x0001e04c      980394e5       ldr r0, [r4, 0x398]
+|  :|  :|   0x0001e050      003091e5       ldr r3, [r1]
+|  :|  :|   0x0001e054      33ff2fe1       blx r3
+| ========< 0x0001e058      d0ffffea       b 0x1dfa0
+|  :`-----> 0x0001e05c      06c095e7       ldr ip, [r5, r6]
+|  :   :|   0x0001e060      a00394e5       ldr r0, [r4, 0x3a0]
+|  :   :|   0x0001e064      00209ce5       ldr r2, [ip]
+|  :   :|   0x0001e068      32ff2fe1       blx r2
+|  `======< 0x0001e06c      c8ffffea       b 0x1df94
+|      :`-> 0x0001e070      000094e5       ldr r0, [r4]
+|      :    0x0001e074      39a7ffeb       bl rsym.Curl_hash_destroy
+|      :    0x0001e078      006084e5       str r6, [r4]
+|      :    0x0001e07c      046084e5       str r6, [r4, 4]
+\      `==< 0x0001e080      abffffea       b 0x1df34
+EOF
+RUN
+
+NAME=ELF: arm64 missing internal plt imports with baddr
+ARGS=-B 0x10000
+FILE=bins/elf/libcurl.so.4.2.0
+CMDS=<<EOF
+s section..plt
+pd 20
+s 0x0002de5c
+af
+pdf
+EOF
+EXPECT=<<EOF
+            ;-- section..plt:
+            0x000174dc      04e02de5       str lr, [sp, -4]!           ; [09] -r-x section size 4964 named .plt
+            0x000174e0      04e09fe5       ldr lr, [0x000174ec]        ; [0x174ec:4]=0x45610
+            0x000174e4      0ee08fe0       add lr, pc, lr
+            0x000174e8      08f0bee5       ldr pc, [lr, 8]!
+            0x000174ec      10560400       andeq r5, r4, r0, lsl r6
+            ;-- rsym.gnutls_x509_crt_get_expiration_time:
+            ;-- gnutls_x509_crt_get_expiration_time:
+            0x000174f0      00c68fe2       add ip, pc, 0, 12
+            0x000174f4      45ca8ce2       add ip, ip, 0x45000
+            0x000174f8      10f6bce5       ldr pc, [ip, 0x610]!
+            ;-- rsym.Curl_getaddrinfo_ex:
+            0x000174fc      00c68fe2       add ip, pc, 0, 12
+            0x00017500      45ca8ce2       add ip, ip, 0x45000
+            0x00017504      08f6bce5       ldr pc, [ip, 0x608]!
+            ;-- rsym.Curl_cookie_add:
+            0x00017508      00c68fe2       add ip, pc, 0, 12
+            0x0001750c      45ca8ce2       add ip, ip, 0x45000
+            0x00017510      00f6bce5       ldr pc, [ip, 0x600]!
+            ;-- rsym.Curl_unencode_gzip_write:
+            0x00017514      00c68fe2       add ip, pc, 0, 12
+            0x00017518      45ca8ce2       add ip, ip, 0x45000
+            0x0001751c      f8f5bce5       ldr pc, [ip, 0x5f8]!
+            ;-- rsym.freeifaddrs:
+            ;-- freeifaddrs:
+            0x00017520      00c68fe2       add ip, pc, 0, 12
+            0x00017524      45ca8ce2       add ip, ip, 0x45000
+            0x00017528      f0f5bce5       ldr pc, [ip, 0x5f0]!
+/ 552: sym.Curl_close (int32_t arg1);
+| `- args(r0)
+|           0x0002de5c      70402de9       push {r4, r5, r6, lr}
+|           0x0002de60      0010a0e3       mov r1, 0
+|           0x0002de64      086090e5       ldr r6, [r0, 8]             ; arg1
+|           0x0002de68      14529fe5       ldr r5, [0x0002e084]        ; [0x2e084:4]=0x2ec7c
+|           0x0002de6c      0040a0e1       mov r4, r0                  ; arg1
+|           0x0002de70      58a9ffeb       bl rsym.Curl_expire
+|           0x0002de74      000056e3       cmp r6, 0
+|           0x0002de78      05508fe0       add r5, pc, r5
+|       ,=< 0x0002de7c      0200000a       beq 0x2de8c
+|       |   0x0002de80      080094e5       ldr r0, [r4, 8]
+|       |   0x0002de84      0410a0e1       mov r1, r4
+|       |   0x0002de88      d4a5ffeb       bl rsym.curl_multi_remove_handle
+|       `-> 0x0002de8c      f4619fe5       ldr r6, [0x0002e088]        ; [0x2e088:4]=0x8594
+|           0x0002de90      060094e7       ldr r0, [r4, r6]
+|           0x0002de94      000050e3       cmp r0, 0
+|       ,=< 0x0002de98      0300000a       beq 0x2deac
+|       |   0x0002de9c      0010a0e3       mov r1, 0
+|       |   0x0002dea0      fda9ffeb       bl rsym.Curl_llist_destroy
+|       |   0x0002dea4      0030a0e3       mov r3, 0
+|       |   0x0002dea8      063084e7       str r3, [r4, r6]
+|       `-> 0x0002deac      b43494e5       ldr r3, [r4, 0x4b4]
+|           0x0002deb0      d4219fe5       ldr r2, [0x0002e08c]        ; [0x2e08c:4]=0x86a4
+|           0x0002deb4      0010a0e3       mov r1, 0
+|           0x0002deb8      000053e3       cmp r3, 0
+|           0x0002debc      021084e7       str r1, [r4, r2]
+|       ,=< 0x0002dec0      0200000a       beq 0x2ded0
+|       |   0x0002dec4      080093e5       ldr r0, [r3, 8]
+|       |   0x0002dec8      010050e1       cmp r0, r1
+|      ,==< 0x0002decc      0800000a       beq 0x2def4
+|      |`-> 0x0002ded0      b8119fe5       ldr r1, [0x0002e090]        ; [0x2e090:4]=0x85b0
+|      |    0x0002ded4      016094e7       ldr r6, [r4, r1]
+|      |    0x0002ded8      000056e3       cmp r6, 0
+|      |    0x0002dedc      04108112       addne r1, r1, 4
+|      |    0x0002dee0      0120a013       movne r2, 1
+|      |    0x0002dee4      0120c417       strbne r2, [r4, r1]
+|      |,=< 0x0002dee8      0e00000a       beq 0x2df28
+|     .---> 0x0002deec      0000a0e3       mov r0, 0
+|     :||   0x0002def0      7080bde8       pop {r4, r5, r6, pc}
+|    .-`--> 0x0002def4      0400a0e1       mov r0, r4
+|    :: |   0x0002def8      50f2ffeb       bl 0x2a840
+|    :: |   0x0002defc      010070e3       cmn r0, 1                   ; 1
+|    `====< 0x0002df00      fbffff1a       bne 0x2def4
+|     : |   0x0002df04      b40494e5       ldr r0, [r4, 0x4b4]
+|     : |   0x0002df08      53a6ffeb       bl rsym.Curl_rm_connc
+|     : |   0x0002df0c      7c119fe5       ldr r1, [0x0002e090]        ; [0x2e090:4]=0x85b0
+|     : |   0x0002df10      016094e7       ldr r6, [r4, r1]
+|     : |   0x0002df14      000056e3       cmp r6, 0
+|     : |   0x0002df18      04108112       addne r1, r1, 4
+|     : |   0x0002df1c      0120a013       movne r2, 1
+|     : |   0x0002df20      0120c417       strbne r2, [r4, r1]
+|     `===< 0x0002df24      f0ffff1a       bne 0x2deec
+|       `-> 0x0002df28      042094e5       ldr r2, [r4, 4]
+|           0x0002df2c      010052e3       cmp r2, 1                   ; 1
+|       ,=< 0x0002df30      4e00000a       beq 0x2e070
+|       |   ; CODE XREF from sym.Curl_close @ 0x2e080(x)
+|      .--> 0x0002df34      58e19fe5       ldr lr, [0x0002e094]        ; [0x2e094:4]=0x85c2
+|      :|   0x0002df38      0ec0d4e7       ldrb ip, [r4, lr]
+|      :|   0x0002df3c      00005ce3       cmp ip, 0
+|     ,===< 0x0002df40      3900001a       bne 0x2e02c
+|     |:|   0x0002df44      4c619fe5       ldr r6, [0x0002e098]        ; [0x2e098:4]=0x6c4
+|     |:|   ; CODE XREF from sym.Curl_close @ 0x2e044(x)
+|    .----> 0x0002df48      4ce19fe5       ldr lr, [0x0002e09c]        ; [0x2e09c:4]=0x85b8
+|    :|:|   0x0002df4c      0e0094e7       ldr r0, [r4, lr]
+|    :|:|   0x0002df50      2eaaffeb       bl rsym.Curl_safefree
+|    :|:|   0x0002df54      44119fe5       ldr r1, [0x0002e0a0]        ; [0x2e0a0:4]=0x85dc
+|    :|:|   0x0002df58      010094e7       ldr r0, [r4, r1]
+|    :|:|   0x0002df5c      2baaffeb       bl rsym.Curl_safefree
+|    :|:|   0x0002df60      0400a0e1       mov r0, r4
+|    :|:|   0x0002df64      cea7ffeb       bl rsym.Curl_ssl_close_all
+|    :|:|   0x0002df68      34319fe5       ldr r3, [0x0002e0a4]        ; [0x2e0a4:4]=0x84dc
+|    :|:|   0x0002df6c      030094e7       ldr r0, [r4, r3]
+|    :|:|   0x0002df70      26aaffeb       bl rsym.Curl_safefree
+|    :|:|   0x0002df74      2cc19fe5       ldr ip, [0x0002e0a8]        ; [0x2e0a8:4]=0x84f4
+|    :|:|   0x0002df78      0c0094e7       ldr r0, [r4, ip]
+|    :|:|   0x0002df7c      23aaffeb       bl rsym.Curl_safefree
+|    :|:|   0x0002df80      0400a0e1       mov r0, r4
+|    :|:|   0x0002df84      5aa7ffeb       bl rsym.Curl_ssl_free_certinfo
+|    :|:|   0x0002df88      a403d4e5       ldrb r0, [r4, 0x3a4]
+|    :|:|   0x0002df8c      000050e3       cmp r0, 0
+|   ,=====< 0x0002df90      3100001a       bne 0x2e05c
+|   |:|:|   ; CODE XREF from sym.Curl_close @ 0x2e06c(x)
+|  .------> 0x0002df94      9c03d4e5       ldrb r0, [r4, 0x39c]
+|  :|:|:|   0x0002df98      000050e3       cmp r0, 0
+| ,=======< 0x0002df9c      2900001a       bne 0x2e048
+| |:|:|:|   ; CODE XREF from sym.Curl_close @ 0x2e058(x)
+| --------> 0x0002dfa0      c40494e5       ldr r0, [r4, 0x4c4]
+| |:|:|:|   0x0002dfa4      19aaffeb       bl rsym.Curl_safefree
+| |:|:|:|   0x0002dfa8      0110a0e3       mov r1, 1
+| |:|:|:|   0x0002dfac      0400a0e1       mov r0, r4
+| |:|:|:|   0x0002dfb0      c2f8ffeb       bl 0x2c2c0
+| |:|:|:|   0x0002dfb4      0400a0e1       mov r0, r4
+| |:|:|:|   0x0002dfb8      01a8ffeb       bl rsym.Curl_digest_cleanup
+| |:|:|:|   0x0002dfbc      e8309fe5       ldr r3, [0x0002e0ac]        ; [0x2e0ac:4]=0x862c
+| |:|:|:|   0x0002dfc0      030094e7       ldr r0, [r4, r3]
+| |:|:|:|   0x0002dfc4      11aaffeb       bl rsym.Curl_safefree
+| |:|:|:|   0x0002dfc8      e0c09fe5       ldr ip, [0x0002e0b0]        ; [0x2e0b0:4]=0x8630
+| |:|:|:|   0x0002dfcc      0c0094e7       ldr r0, [r4, ip]
+| |:|:|:|   0x0002dfd0      0eaaffeb       bl rsym.Curl_safefree
+| |:|:|:|   0x0002dfd4      102094e5       ldr r2, [r4, 0x10]
+| |:|:|:|   0x0002dfd8      000052e3       cmp r2, 0
+| ========< 0x0002dfdc      0a00000a       beq 0x2e00c
+| |:|:|:|   0x0002dfe0      0110a0e3       mov r1, 1
+| |:|:|:|   0x0002dfe4      0220a0e3       mov r2, 2
+| |:|:|:|   0x0002dfe8      0400a0e1       mov r0, r4
+| |:|:|:|   0x0002dfec      0ba9ffeb       bl rsym.Curl_share_lock
+| |:|:|:|   0x0002dff0      10c094e5       ldr ip, [r4, 0x10]
+| |:|:|:|   0x0002dff4      0400a0e1       mov r0, r4
+| |:|:|:|   0x0002dff8      0110a0e3       mov r1, 1
+| |:|:|:|   0x0002dffc      04309ce5       ldr r3, [ip, 4]
+| |:|:|:|   0x0002e000      012043e2       sub r2, r3, 1
+| |:|:|:|   0x0002e004      04208ce5       str r2, [ip, 4]
+| |:|:|:|   0x0002e008      09aaffeb       bl rsym.Curl_share_unlock
+| --------> 0x0002e00c      0400a0e1       mov r0, r4
+| |:|:|:|   0x0002e010      0ea6ffeb       bl rsym.Curl_freeset
+| |:|:|:|   0x0002e014      062095e7       ldr r2, [r5, r6]
+| |:|:|:|   0x0002e018      0400a0e1       mov r0, r4
+| |:|:|:|   0x0002e01c      001092e5       ldr r1, [r2]
+| |:|:|:|   0x0002e020      31ff2fe1       blx r1
+| |:|:|:|   0x0002e024      0000a0e3       mov r0, 0
+| |:|:|:|   0x0002e028      7080bde8       pop {r4, r5, r6, pc}
+| |:|:`---> 0x0002e02c      64609fe5       ldr r6, [0x0002e098]        ; [0x2e098:4]=0x6c4
+| |:|: :|   0x0002e030      7c209fe5       ldr r2, [0x0002e0b4]        ; [0x2e0b4:4]=0x85c4
+| |:|: :|   0x0002e034      061095e7       ldr r1, [r5, r6]
+| |:|: :|   0x0002e038      020094e7       ldr r0, [r4, r2]
+| |:|: :|   0x0002e03c      003091e5       ldr r3, [r1]
+| |:|: :|   0x0002e040      33ff2fe1       blx r3
+| |:|`====< 0x0002e044      bfffffea       b 0x2df48
+| `-------> 0x0002e048      061095e7       ldr r1, [r5, r6]
+|  :|  :|   0x0002e04c      980394e5       ldr r0, [r4, 0x398]
+|  :|  :|   0x0002e050      003091e5       ldr r3, [r1]
+|  :|  :|   0x0002e054      33ff2fe1       blx r3
+| ========< 0x0002e058      d0ffffea       b 0x2dfa0
+|  :`-----> 0x0002e05c      06c095e7       ldr ip, [r5, r6]
+|  :   :|   0x0002e060      a00394e5       ldr r0, [r4, 0x3a0]
+|  :   :|   0x0002e064      00209ce5       ldr r2, [ip]
+|  :   :|   0x0002e068      32ff2fe1       blx r2
+|  `======< 0x0002e06c      c8ffffea       b 0x2df94
+|      :`-> 0x0002e070      000094e5       ldr r0, [r4]
+|      :    0x0002e074      39a7ffeb       bl rsym.Curl_hash_destroy
+|      :    0x0002e078      006084e5       str r6, [r4]
+|      :    0x0002e07c      046084e5       str r6, [r4, 4]
+\      `==< 0x0002e080      abffffea       b 0x2df34
+EOF
+RUN

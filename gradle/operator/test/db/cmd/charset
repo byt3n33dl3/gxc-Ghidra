@@ -1,0 +1,316 @@
+NAME=ebcdic37 rabin env
+FILE=-
+CMDS=<<EOF
+e cfg.charset=ebcdic37
+%RABIN2_CHARSET
+# %RABIN2_CHARSET=ebcdic37
+!!rabin2 -N 8 -qqzz bins/s390/zos/prueba/prueba~ola
+EOF
+EXPECT=<<EOF
+ebcdic37
+Hola mundo\n
+EOF
+RUN
+
+NAME=ebcdic37
+FILE=-
+CMDS=<<EOF
+b 10
+wx c89693814094a495849615
+e cfg.charset=ebcdic37
+ps
+EOF
+EXPECT=<<EOF
+Hola mundo
+EOF
+RUN
+
+NAME=ebcdic37 hexstr
+FILE=bins/s390/zos/prueba/prueba
+ARGS=-n
+CMDS=<<EOF
+s 0x19a8
+px 16
+psx 10
+e cfg.charset=ebcdic37
+px 16
+ps 10
+EOF
+EXPECT=<<EOF
+- offset -  A8A9 AAAB ACAD AEAF B0B1 B2B3 B4B5 B6B7  89ABCDEF01234567
+0x000019a8  c896 9381 4094 a495 8496 1500 0000 0000  ....@...........
+\xc8\x96\x93\x81@\x94\xa4\x95\x84\x96
+- offset -  A8A9 AAAB ACAD AEAF B0B1 B2B3 B4B5 B6B7  89ABCDEF01234567
+0x000019a8  c896 9381 4094 a495 8496 1500 0000 0000  Hola mundo.?????
+Hola mundo
+EOF
+RUN
+
+NAME=rival charset
+FILE=-
+CMDS=<<EOF
+e cfg.charset=pokered
+"w <RIVAL>"
+p8 4
+EOF
+EXPECT=<<EOF
+53000000
+EOF
+RUN
+
+NAME=e cfg.charset
+FILE=-
+CMDS=<<EOF
+e cfg.charset=?
+b 32
+wx a6b1aeb4ada37fb3ae7fafb1aeb3a4a2b349a8b3b2a4aba57fa5b1aeac7fa8b3
+ps
+e cfg.charset=pokered
+ps
+EOF
+EXPECT=<<EOF
+arabic_iso
+arabic_windows
+ascii
+ascii_ansi
+ascii_oem
+big5
+cyrillic_iso
+cyrillic_windows
+ebcdic37
+greek_iso
+greek_windows
+hebrew_iso
+hebrew_windows
+hiragana
+iso8859_1
+iso_646
+katakana
+macintosh
+pokered
+
+ground-to-protect<PAGE>itself-fr
+EOF
+RUN
+
+NAME=ps and psz
+FILE=-
+CMDS=<<EOF
+e cfg.charset=?
+b 32
+wx 7f7f7f7f7f7f7f7f92a4aba5e3b1a4afaba8a2a0b3a8ada67f7f7f7fa0b1a1a8b3b1a0b1b87fa2aea3a47f7f7f7f7f7fa1b87f8cb182a7a4a4b9a47f9c9b7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f
+e cfg.charset=pokered
+ps $b
+ps  # should be the same as ps $b but its not
+psz
+e cfg.charset=?
+ps $b
+psz
+EOF
+EXPECT=<<EOF
+arabic_iso
+arabic_windows
+ascii
+ascii_ansi
+ascii_oem
+big5
+cyrillic_iso
+cyrillic_windows
+ebcdic37
+greek_iso
+greek_windows
+hebrew_iso
+hebrew_windows
+hiragana
+iso8859_1
+iso_646
+katakana
+macintosh
+pokered
+--------Self-replicating----arbi
+--------Self-replicating----arbi
+--------Self-replicating----arbi
+arabic_iso
+arabic_windows
+ascii
+ascii_ansi
+ascii_oem
+big5
+cyrillic_iso
+cyrillic_windows
+ebcdic37
+greek_iso
+greek_windows
+hebrew_iso
+hebrew_windows
+hiragana
+iso8859_1
+iso_646
+katakana
+macintosh
+pokered
+--------Self-replicating----arbi
+--------Self-replicating----arbi
+EOF
+RUN
+
+NAME=ps and psz with write
+FILE=-
+CMDS=<<EOF
+wx 7f7f7f7f7f7f7f7f92a4aba5e3b1a4afaba8a2a0b3a8ada67f7f7f7fa0b1a1a8b3b1a0b1b87fa2aea3a47f7f7f7f7f7fa1b87f8cb182a7a4a4b9a47f9c9b7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f
+e cfg.charset=pokered
+ps
+w hello-world-this-is-very-new
+wx 00 @ 28
+b 34
+ps
+psz
+pszj
+psj
+EOF
+EXPECT=<<EOF
+--------Self-replicating----arbitrary-code------by-MrCheeze-:)---------------------<NULL><NULL><NULL><NULL><NULL><NULL><NULL><NULL><NULL><NULL><NULL><NULL><NULL><NULL><NULL><NULL><NULL><NULL><NULL><NULL><NULL><NULL><NULL><NULL><NULL><NULL><NULL><NULL><NULL
+hello-world-this-is-very-new<NULL>
+hello-world-this-is-very-new
+{"string":"hello-world-this-is-very-new","offset":0,"section":"unknown","length":28,"type":"ascii"}
+{"string":"hello-world-this-is-very-new<NULL>","offset":0,"section":"unknown","length":34,"type":"ascii"}
+EOF
+RUN
+
+
+NAME=ps on iso8859_1
+FILE=-
+CMDS=<<EOF
+wx 4141410041414101
+e cfg.charset=iso8859_1
+ps 16
+EOF
+EXPECT=<<EOF
+AAA[nul]AAA[stx]
+EOF
+RUN
+
+NAME=ps on katakana
+FILE=-
+CMDS=<<EOF
+e cfg.charset=katakana
+w radare
+pr 9
+?e
+EOF
+EXPECT=<<EOF
+ラダレ
+EOF
+RUN
+
+NAME=ps and psz on ascii
+FILE=-
+NEWABI=1
+CMDS=<<EOF
+e cfg.charset=ascii
+wx 41424301
+ps
+psz
+EOF
+EXPECT=<<EOF
+ABC
+ABC?
+EOF
+RUN
+
+NAME=chinese text in disasm
+ARGS=-A
+FILE=bins/elf/truechin.so
+CMDS=<<EOF
+-e asm.bytes=0
+-e asm.lines=0
+-e asm.cmt.col=50
+-e emu.str=true
+-e scr.strconv=raw
+af
+s 0x000017f4
+pdui ret
+EOF
+EXPECT=<<EOF
+0x000017f4      add x0, sp, 0x28                  ; int64_t arg1
+0x000017f8      mov x1, x0                        ; char *arg2
+0x000017fc      ldr w0, [var_8ch]
+0x00001800      bl sym.getXa_int__char_const_     ; getXa(int, char const*) ; sym.getXa_int__char_const_(0x0, 0x178028, 0x0)
+0x00001804      str x0, [var_80h]
+0x00001808      ldr x1, [var_80h]
+0x0000180c      mov x0, 0x9c80
+0x00001810      movk x0, 0x1d2, lsl 16
+0x00001814      add x0, x1, x0                    ; int64_t arg1
+0x00001818      bl sym.lsp64_long_                ; lsp64(long) ; sym.lsp64_long_(0x1d29c80)
+0x0000181c      add x0, x0, 8
+0x00001820      str x0, [var_78h]
+0x00001824      adrp x0, 0x1000
+0x00001828      add x0, x0, 0x9f0                 ; 0x19f0
+                                                  ; str. ; const char *s ; "基址搜索完成"
+0x0000182c      bl sym.imp.puts                   ; int puts(const char *s)
+                                                  ; int puts("基址搜索完成")
+0x00001830      ldr x1, [var_78h]
+0x00001834      adrp x0, 0x1000
+0x00001838      add x0, x0, 0xa08                 ; 0x1a08 ; "步数地址=%lx" ; const char *format ; str._n_lx_n
+0x0000183c      bl sym.imp.printf                 ; int printf(const char *format)
+                                                  ; int printf("步数地址=%lx")
+0x00001840      mov w1, 0x63                      ; 'c'
+0x00001844      ldr x0, [var_78h]                 ; int64_t arg1
+0x00001848      bl sym.WriteAddress_DWORD_long__int_ ; WriteAddress_DWORD(long, int) ; sym.WriteAddress_DWORD_long__int_(0x0, 0x63)
+0x0000184c      adrp x0, 0x1000
+0x00001850      add x0, x0, 0xa20                 ; 0x1a20 ; "修改成功" ; const char *s ; str._n_n
+0x00001854      bl sym.imp.puts                   ; int puts(const char *s)
+                                                  ; int puts("修改成功")
+0x00001858      mov w0, 0
+0x0000185c      ldp x29, x30, [sp], 0x90
+0x00001860      ret
+EOF
+RUN
+
+NAME=chinese text in disasm defaults
+ARGS=-A
+FILE=bins/elf/truechin.so
+CMDS=<<EOF
+-e asm.bytes=0
+-e asm.lines=0
+-e asm.cmt.col=50
+-e emu.str=true
+af
+s 0x000017f4
+pdui ret
+EOF
+EXPECT=<<EOF
+0x000017f4      add x0, sp, 0x28                  ; int64_t arg1
+0x000017f8      mov x1, x0                        ; char *arg2
+0x000017fc      ldr w0, [var_8ch]
+0x00001800      bl sym.getXa_int__char_const_     ; getXa(int, char const*) ; sym.getXa_int__char_const_(0x0, 0x178028, 0x0)
+0x00001804      str x0, [var_80h]
+0x00001808      ldr x1, [var_80h]
+0x0000180c      mov x0, 0x9c80
+0x00001810      movk x0, 0x1d2, lsl 16
+0x00001814      add x0, x1, x0                    ; int64_t arg1
+0x00001818      bl sym.lsp64_long_                ; lsp64(long) ; sym.lsp64_long_(0x1d29c80)
+0x0000181c      add x0, x0, 8
+0x00001820      str x0, [var_78h]
+0x00001824      adrp x0, 0x1000
+0x00001828      add x0, x0, 0x9f0                 ; 0x19f0
+                                                  ; str. ; const char *s ; "\u57fa\u5740\u641c\u7d22\u5b8c\u6210"
+0x0000182c      bl sym.imp.puts                   ; int puts(const char *s)
+                                                  ; int puts("\xe5\x9f\xba\xe5\x9d\x80\xe6\x90\x9c\xe7\xb4\xa2\xe5\xae\x8c\xe6\x88\x90")
+0x00001830      ldr x1, [var_78h]
+0x00001834      adrp x0, 0x1000
+0x00001838      add x0, x0, 0xa08                 ; 0x1a08 ; "\n\u6b65\u6570\u5730\u5740=%lx\n" ; const char *format ; str._n_lx_n
+0x0000183c      bl sym.imp.printf                 ; int printf(const char *format)
+                                                  ; int printf("\n\xe6\xad\xa5\xe6\x95\xb0\xe5\x9c\xb0\xe5\x9d\x80=%lx\n")
+0x00001840      mov w1, 0x63                      ; 'c'
+0x00001844      ldr x0, [var_78h]                 ; int64_t arg1
+0x00001848      bl sym.WriteAddress_DWORD_long__int_ ; WriteAddress_DWORD(long, int) ; sym.WriteAddress_DWORD_long__int_(0x0, 0x63)
+0x0000184c      adrp x0, 0x1000
+0x00001850      add x0, x0, 0xa20                 ; 0x1a20 ; "\n\u4fee\u6539\u6210\u529f\n" ; const char *s ; str._n_n
+0x00001854      bl sym.imp.puts                   ; int puts(const char *s)
+                                                  ; int puts("\n\xe4\xbf\xae\xe6\x94\xb9\xe6\x88\x90\xe5\x8a\x9f\n")
+0x00001858      mov w0, 0
+0x0000185c      ldp x29, x30, [sp], 0x90
+0x00001860      ret
+EOF
+RUN

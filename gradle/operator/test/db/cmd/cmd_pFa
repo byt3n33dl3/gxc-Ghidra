@@ -1,0 +1,94 @@
+NAME=pFa der decoding
+FILE=bins/cert/der
+CMDS=<<EOF
+pFa
+EOF
+EXPECT=<<EOF
+  OFFSET  HDR +    OBJ DEPTH FORM NAME                : VALUE
+       0  0x3 +   0x9f     0 cons SEQUENCE            : 30
+     0x3  0x2 +    0xd     1 cons SEQUENCE            : 30
+     0x5  0x2 +    0x9     2 prim OBJECT_IDENTIFIER   : rsaEncryption
+    0x12  0x3 +   0x8d     1 prim BIT_STRING          : 30818902818100cc61f9ef5ad0bc21de5b3ca69ee725d2c504edf99a6e97a0279d959f2364ed21aaef8c704552d5d1a3deb2... (1120 bits)
+
+EOF
+RUN
+
+NAME=pFa der json decoding
+FILE=bins/cert/der
+CMDS=<<EOF
+pFaj~{}
+EOF
+EXPECT=<<EOF
+{
+  "offset": 0,
+  "length": 159,
+  "form": "cons",
+  "name": "SEQUENCE",
+  "children": [
+    {
+      "offset": 3,
+      "length": 13,
+      "form": "cons",
+      "name": "SEQUENCE",
+      "children": [
+        {
+          "offset": 5,
+          "length": 9,
+          "form": "prim",
+          "name": "OBJECT_IDENTIFIER",
+          "value": "rsaEncryption"
+        }
+      ]
+    },
+    {
+      "offset": 18,
+      "length": 141,
+      "form": "prim",
+      "name": "BIT_STRING",
+      "value": "30818902818100cc61f9ef5ad0bc21de5b3ca69ee725d2c504edf99a6e97a0279d959f2364ed21aaef8c704552d5d1a3deb2ee1a0be1558e3ca182b11a8c14392b6de52346bc7c88bf75e3fb2b9f27fab21f5cf19934e3110ea4ad72a6f073f8ab38b9939bb639e78ad7f434119d8cc2b1bde4eaf9513b056508c908ed43c99b0ceb222cbbe1ef0203010001"
+    }
+  ]
+}
+EOF
+RUN
+
+NAME=pFa BIT_STRING with number of unused bits
+FILE=-
+CMDS=<<EOF
+wx 030801016e500dc00000
+pFa
+EOF
+EXPECT=<<EOF
+  OFFSET  HDR +    OBJ DEPTH FORM NAME                : VALUE
+       0  0x2 +    0x8     0 prim BIT_STRING          : 016e500dc0000000 (55 bits)
+
+EOF
+RUN
+
+NAME=pFa on Ed25519 OID
+FILE=-
+CMDS=<<EOF
+wx 06032b6570
+pFa
+EOF
+EXPECT=<<EOF
+  OFFSET  HDR +    OBJ DEPTH FORM NAME                : VALUE
+       0  0x2 +    0x3     0 prim OBJECT_IDENTIFIER   : id-Ed25519
+
+EOF
+RUN
+
+NAME=pFa OCTET_STRING
+FILE=-
+CMDS=<<EOF
+wx 3009040265210403650065
+pFa
+EOF
+EXPECT=<<EOF
+  OFFSET  HDR +    OBJ DEPTH FORM NAME                : VALUE
+       0  0x2 +    0x9     0 cons SEQUENCE            : 30
+     0x2  0x2 +    0x2     1 prim OCTET_STRING        : e!
+     0x6  0x2 +    0x3     1 prim OCTET_STRING        : 650065
+
+EOF
+RUN
