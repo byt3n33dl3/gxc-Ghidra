@@ -38,10 +38,10 @@ vulnerabilities in networks and systems.
 
 ## The `Expand` Update
 
-ghidra is a complete rewrite of radare. It provides a set of libraries, tools and
+thc-Ghidra is a complete rewrite of the NSA Ghidra. It provides a set of libraries, tools and
 plugins to ease reverse engineering tasks. Distributed mostly under LGPLv3, and Apache 2.0 each plugin can have different licenses (see ghidra -L, rasm2 -L, ...).
 
-The radare project started as a simple command-line hexadecimal editor focused
+The NSA Ghidra project started as a simple command-line hexadecimal editor focused
 on forensics. Today, ghidra is a featureful low-level command-line tool with
 support for scripting with the embedded Javascript interpreter or via ghidrapipe.
 
@@ -203,7 +203,7 @@ GB/GBA, NDS and N3DS, and mount several filesystems like NTFS, FAT, HFS+, EXT.
 <p align="center">
     <picture>
         <source media="(prefers-color-scheme: dark)" srcset="Ghidra/Features/Base/src/main/resources/images/Seal_of_the_U.S._National_Security_Agency.svg">
-        <img src="Ghidra/Features/Base/src/main/resources/images/Seal_of_the_U.S._National_Security_Agency.svg" alt="ghidra" width='220' />
+        <img src="Ghidra/Features/Base/src/main/resources/images/Seal_of_the_U.S._National_Security_Agency.svg" alt="ghidra" width='190' />
     </picture>
 </p>
 
