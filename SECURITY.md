@@ -1,7 +1,7 @@
 # Security Policies and Procedures
 
 We take security seriously, and encourage everyone to use the last version of
-thc-ghidra from git if possible. We do not backport security fixes to old
+gxc-Ghidra from git if possible. We do not backport security fixes to old
 releases.
 
 Security bugs are considered top priority and a fix is required within 24 hours
@@ -9,9 +9,9 @@ of disclosure.
 
 ## Reporting a vulnerability
 
-If you discover a security issue in thc-ghidra (or any related project under the
+If you discover a security issue in gxc-Ghidra (or any related project under the
 byt3n33dl3 umbrella), please submit a public issue in the [GitHub issue
-section](https://github.com/byt3n33dl3/thc-ghidra/issues) repository for that
+section](https://github.com/byt3n33dl3/gxc-Ghidra/issues) repository for that
 project.
 
 If possible, we would appreciate a pull request with your suggested fix
@@ -26,7 +26,7 @@ We don't believe in secrecy when security matters. Keeping the bugs for
 yourself or for a limited amount of people results in a false sense of
 security for the community.
 
-We encourage full disclosure of any and all security bugs in thc-ghidra's codebase.
+We encourage full disclosure of any and all security bugs in gxc-Ghidra's codebase.
 
 Please see the "Reporting a vulnerability" section above for information on how
 to report a bug. If you do not have or can not create a GitHub account, you may
@@ -35,7 +35,7 @@ fix on your behalf.
 
 ## Privacy
 
-While we are able to publicly acknowledge you for your contribution to thc-ghidra
+While we are able to publicly acknowledge you for your contribution to gxc-Ghidra
 for helping us keep our software secure for users, if you so choose we will
 keep your contribution anonymous.
 

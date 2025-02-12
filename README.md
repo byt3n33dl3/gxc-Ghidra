@@ -38,7 +38,7 @@ vulnerabilities in networks and systems.
 
 ## The `Expand` Update
 
-thc-Ghidra is a complete rewrite of the NSA Ghidra. It provides a set of libraries, tools and
+gxc-Ghidra is a complete rewrite of the NSA Ghidra. It provides a set of libraries, tools and
 plugins to ease reverse engineering tasks. Distributed mostly under LGPLv3, and Apache 2.0 each plugin can have different licenses (see ghidra -L, rasm2 -L, ...).
 
 The NSA Ghidra project started as a simple command-line hexadecimal editor focused
@@ -96,8 +96,8 @@ cd ghidra-master
 ```
 **NOTE:** Instead of downloading the compressed source, you may instead want to clone the GitHub repository: 
 
-```
-git clone https://github.com/byt3n33dl3/ghidra.git
+```sh
+git clone https://github.com/byt3n33dl3/gxc-Ghidra.git
 ```
 
 ##### Download additional build dependencies into source repository:
@@ -238,6 +238,6 @@ source project.
 
 Virtual hug to everyone who Contributed, Moreover the rest of the team was under [National Security Agency](www.nsa.gov) account.
 
-<a href="https://github.com/byt3n33dl3/thc-Ghidra/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=byt3n33dl3/thc-Ghidra"/>
+<a href="https://github.com/byt3n33dl3/gxc-Ghidra/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=byt3n33dl3/gxc-Ghidra"/>
 </a>
