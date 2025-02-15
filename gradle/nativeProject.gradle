@@ -46,7 +46,7 @@ rootProject.assembleDistribution {
 }
 
 task cleanNatives {
-	File nativeOutputDir = file('build/os')
+	File nativeOutputDir = file('build/distro')
 	doFirst {
 		delete nativeOutputDir
 	}
