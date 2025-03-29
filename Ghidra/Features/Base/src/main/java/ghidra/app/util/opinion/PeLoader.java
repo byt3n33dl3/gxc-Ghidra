@@ -975,16 +975,22 @@ public class PeLoader extends AbstractPeDebugLoader {
 			DOSHeader dh = pe.getDOSHeader();
 
 			// Check for Rust.  Program object is required, which may be null.
-			if (program != null && RustUtilities.isRust(program.getMemory().getBlock(".rdata"))) {
-				try {
-					int extensionCount = RustUtilities.addExtensions(program, monitor,
-						RustConstants.RUST_EXTENSIONS_WINDOWS);
-					log.appendMsg("Installed " + extensionCount + " Rust cspec extensions");
+			try {
+				if (program != null && RustUtilities.isRust(program,
+					program.getMemory().getBlock(".rdata"), monitor)) {
+					try {
+						int extensionCount = RustUtilities.addExtensions(program, monitor,
+							RustConstants.RUST_EXTENSIONS_WINDOWS);
+						log.appendMsg("Installed " + extensionCount + " Rust cspec extensions");
+					}
+					catch (IOException e) {
+						log.appendMsg("Rust error: " + e.getMessage());
+					}
+					return CompilerEnum.Rustc;
 				}
-				catch (IOException e) {
-					log.appendMsg("Rust error: " + e.getMessage());
-				}
-				return CompilerEnum.Rustc;
+			}
+			catch (CancelledException e) {
+				// Move on
 			}
 			
 			// Check for Swift
@@ -1099,15 +1105,6 @@ public class PeLoader extends AbstractPeDebugLoader {
 				// Pretty sure it's Borland, but didn't get 0x100 or 0x200
 				return CompilerEnum.BorlandUnk;
 			}
-
-//			if ((offsetChoice == CompilerEnum.GCC_VS) || (errStringChoice == CompilerEnum.GCC_VS)) {
-//				// Pretty sure it's either gcc or Visual Studio
-//				compilerType = CompilerEnum.GCC_VS;
-//				// TODO: nothing feeds off of this state
-//			}
-
-			// Reaching this point implies that we did not find "DanS and we didn't
-			// see the Borland DOS complaint
 
 			FileHeader fileHeader = pe.getNTHeader().getFileHeader();
 			if (fileHeader.getSectionHeader("CODE") != null) {
