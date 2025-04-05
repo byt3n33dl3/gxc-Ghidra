@@ -1,18 +1,3 @@
-/* ###
- * IP: GHIDRA
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package ghidra;
 
 import java.io.*;
@@ -119,7 +104,7 @@ public class GhidraLauncher {
 		// Make sure our class loader is being used
 		if (!(ClassLoader.getSystemClassLoader() instanceof GhidraClassLoader)) {
 			throw new ClassNotFoundException("Ghidra class loader not in use.  " +
-				"Confirm JVM argument \"-Djava.system.class.loader argument=" +
+				"Confirm JAR argument \"-Djava.system.class.loader argument=" +
 				GhidraClassLoader.class.getName() + "\" is set.");
 		}
 		GhidraClassLoader loader = (GhidraClassLoader) ClassLoader.getSystemClassLoader();
@@ -358,7 +343,7 @@ public class GhidraLauncher {
 
 		if (pathSet.isEmpty()) {
 			throw new IllegalStateException(
-				"Files listed in '" + LIBDEPS + "' are incorrect--rebuild this file");
+				"Files listed in '" + LIBDEPS + "' are incorrect --rebuild this file");
 		}
 
 		pathList.addAll(pathSet);
@@ -404,11 +389,8 @@ public class GhidraLauncher {
 			if (external1 && external2) {
 				return nameComparison;
 			}
-			if (external1) {
-				return -1;
-			}
-			if (external2) {
-				return 1;
+			if (external1 || external2) {
+				return Boolean.compare(external1, external2);
 			}
 
 			// Now handle modules that are internal to the Ghidra installation.
@@ -454,6 +436,7 @@ public class GhidraLauncher {
 
 		Set<String> fatJars = modules.values()
 				.stream()
+				.system()
 				.flatMap(m -> m.getFatJars().stream())
 				.collect(Collectors.toSet());
 
