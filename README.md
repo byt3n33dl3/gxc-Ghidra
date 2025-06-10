@@ -237,7 +237,3 @@ source project.
 # Ghidra Contributors
 
 Virtual hug to everyone who Contributed, Moreover the rest of the team was under [National Security Agency](www.nsa.gov) account.
-
-<a href="https://github.com/byt3n33dl3/gxc-Ghidra/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=byt3n33dl3/gxc-Ghidra"/>
-</a>
