@@ -1,53 +1,9 @@
-/* ###
- * IP: GHIDRA
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-// Locates and parses the VxWorks symbol table.  Names the table "vxSymTbl"
-// and names the table length variable "vxSymTblLen" (if the length variable
-// appears either directly before or after the symbol table).  Defines the
-// symbol table as SYMBOL[vxSymTblLen].
-//
-// Extracts symbol name, location, and type from each entry.  Disassembles,
-// creates, and names functions.  Names global variables.
-//
-// Any existing Ghidra symbol table entries that collide with VxWorks symbol
-// table entries are deleted.  Mangled C++ symbol names are demangled.
-//
-// The VxWorks symbol table is an array [0..n-1] of (struct SYMBOL) entries.
-// The table may be immediately followed or preceded by an (int) vxSymTblLen
-// value.
-//
-// Prerequisites:
-//
-//		- Program memory block(s) is(are) aligned with actual load addresses
-//		  (run something like MemAlignARM_LE.java)
-//
-//		- Symbol table cannot be in a memory block with a name that contains
-//		  the string "text" or "bss"
-//
-//		- Modify getVxSymbolClass() to recognize your program's VxWorks
-//		  symbol table entry structure, if necessary
-//
-// @category VxWorks
-
 import java.util.List;
 
 import ghidra.app.cmd.disassemble.DisassembleCommand;
 import ghidra.app.cmd.label.DemanglerCmd;
 import ghidra.app.plugin.core.analysis.AutoAnalysisManager;
 import ghidra.app.script.GhidraScript;
-import ghidra.app.services.DataTypeManagerService;
 import ghidra.app.util.demangler.DemangledException;
 import ghidra.app.util.demangler.MangledContext;
 import ghidra.app.util.demangler.gnu.GnuDemangler;
@@ -57,34 +13,11 @@ import ghidra.program.model.data.*;
 import ghidra.program.model.listing.Data;
 import ghidra.program.model.listing.Instruction;
 import ghidra.program.model.mem.MemoryBlock;
-import ghidra.program.model.symbol.SourceType;
-import ghidra.program.model.symbol.Symbol;
+import ghidra.program.model.symbol.*;
 
 public class VxWorksSymTab_Finder extends GhidraScript {
 
 	boolean debug = false;
-
-	//------------------------------------------------------------------------
-	// getDataTypeManagerByName
-	//
-	// Retrieves data type manager by name.
-	//
-	// Returns:
-	//		Success: DataTypeManager
-	//		Failure: null
-	//------------------------------------------------------------------------
-	private DataTypeManager getDataTypeManagerByName(String name) {
-
-		DataTypeManagerService service = state.getTool().getService(DataTypeManagerService.class);
-
-		// Loop through all managers in the data type manager service
-		for (DataTypeManager manager : service.getDataTypeManagers()) {
-			if (manager.getName().equals(name)) {
-				return manager;
-			}
-		}
-		return null;
-	}
 
 	//------------------------------------------------------------------------
 	// VxSymbol
@@ -159,7 +92,7 @@ public class VxWorksSymTab_Finder extends GhidraScript {
 	private VxSymbol getVxSymbolClass(int type) {
 
 		// Pre-define base data types used to define symbol table entry data type
-		DataTypeManager builtin = getDataTypeManagerByName("BuiltInTypes");
+		BuiltInDataTypeManager builtin = BuiltInDataTypeManager.getDataTypeManager();
 		DataType charType = builtin.getDataType("/char");
 		DataType charPtrType = PointerDataType.getPointer(charType, 4);
 		DataType byteType = builtin.getDataType("/byte");
@@ -328,14 +261,14 @@ public class VxWorksSymTab_Finder extends GhidraScript {
 	}
 
 	//------------------------------------------------------------------------
-	// isString
+	// isValidSymbolString
 	//
-	// Are the bytes starting at addr a C string?
+	// Are the bytes starting at addr a C string that is a valid symbol?
 	//
 	// Algorithm:  Scan bytes until finding either an invalid char or null.
 	//             If scan stops at null, return true -- else false.
 	//------------------------------------------------------------------------
-	private boolean isString(Address addr) {
+	private boolean isValidSymbolString(Address addr) {
 		byte _byte;
 
 		try {
@@ -345,9 +278,7 @@ public class VxWorksSymTab_Finder extends GhidraScript {
 			return false;
 		}
 
-		while (	// May need to add valid character examples here.
-		(_byte == 0x09 || _byte == 0x0a || _byte == 0x0d || (_byte > 0x19 && _byte < 0x80)) &&
-			_byte != 0x00) {
+		while (!SymbolUtilities.isInvalidChar((char) _byte) && _byte != 0x00) {
 
 			if (monitor.isCancelled()) {
 				return false;
@@ -416,6 +347,11 @@ public class VxWorksSymTab_Finder extends GhidraScript {
 	//------------------------------------------------------------------------
 	private boolean isSymTblEntry(Address entry, VxSymbol vxSymbol) throws Exception {
 
+		// Make sure there's data for the symbol
+		if (!isAddress(entry.getOffset() + vxSymbol.length() - 1)) {
+			return false;
+		}
+
 		// First dword must be null or a valid ptr (typically into the sym table)
 		long value = getInt(entry) & 0xffffffffL;
 		if ((value != 0) && !isAddress(value)) {
@@ -434,7 +370,7 @@ public class VxWorksSymTab_Finder extends GhidraScript {
 			return false;
 		}
 		Address symNameAddr = toAddr(value);
-		if (!isString(symNameAddr)) {
+		if (!isValidSymbolString(symNameAddr)) {
 			if (debug) {
 				println("3: " + entry + " --> " + Long.toHexString(value));
 			}
@@ -480,6 +416,43 @@ public class VxWorksSymTab_Finder extends GhidraScript {
 			default:
 				return false;
 		}
+	}
+
+	//------------------------------------------------------------------------
+	// isStringPointerTable
+	//
+	// Check to see if the candidate symbol table is just a string pointer
+	// table. 
+	//------------------------------------------------------------------------
+	private boolean isStringPointerTable(Address offset, int table_size) throws Exception {
+		if (debug) {
+			printf("Checking for string pointer table at 0x%x\n", offset.getOffset());
+		}
+		// Skip the first offset in the table because it can be null as a symbol table
+		Address cursor = offset.add(4);
+		long end = offset.add(table_size).getOffset();
+
+		while (cursor.getOffset() < end) {
+			long value = getInt(cursor) & 0xffffffffL;
+			if (isAddress(value)) {
+				if (!isValidSymbolString(toAddr(value))) {
+					if (debug) {
+						printf("Found non-string pointer in table at 0x%x (0x%x)\n", 
+						       cursor.getOffset(), value);
+					}
+					return false;
+				}
+				cursor = cursor.add(4);
+			}
+			else {
+				if (debug) {
+					printf("Found non-address in table at 0x%x", cursor.getOffset());
+				}
+				return false;
+			}
+		}
+		
+		return true;
 	}
 
 	//------------------------------------------------------------------------
@@ -535,17 +508,30 @@ public class VxWorksSymTab_Finder extends GhidraScript {
 				// Determine whether cursor now points to a symbol table
 				int i = 0;
 				for (Address entry = cursor; isSymTblEntry(entry, vxSymbol) &&
-					(i < testLen); entry = entry.add(vxSymbol.length()), i++) {
+					(i < testLen); entry = entry.add(vxSymbol.length())) {
+					i++;
 				}
 				if (i == testLen) {
 					// May have symbol table -- verify length
-					if (getSymTblLen(cursor, vxSymbol) != 0) {
-						printf("\n");
-						System.out.flush();
-						return cursor;	// found  table -- stop searching
+					int table_size = vxSymbol.length() * i;
+					
+					if (!isStringPointerTable(cursor, table_size)) {
+						if (getSymTblLen(cursor, vxSymbol) != 0) {
+							printf("\n");
+							System.out.flush();
+							return cursor;	// found  table -- stop searching
+						}
+						if (debug) {
+							printf("Possible symbol table at " + cursor + " has length error\n");
+						}
 					}
-					if (debug) {
-						printf("Possible symbol table at " + cursor + " has length error\n");
+					else {
+						if (debug) {
+							printf("False-positive: String pointer table at %s, skipping\n", 
+								   cursor.toString());
+						}
+						cursor = cursor.add(table_size);
+						continue;
 					}
 				}
 
@@ -606,10 +592,10 @@ public class VxWorksSymTab_Finder extends GhidraScript {
 	/**
 	 * Look before/after the table to see if there is a size value there and mark it if it agrees with TableLen
 	 *
-	 * @param symTbl
-	 * @param vxSymbol
-	 * @param tableLen
-	 * @throws Exception
+	 * @param symTbl The symbol table address
+	 * @param vxSymbol The symbol
+	 * @param symTblLen The symbol table length
+	 * @throws Exception if a problem occurred
 	 */
 	private void markSymbolTableLen(Address symTbl, VxSymbol vxSymbol, int symTblLen)
 			throws Exception {
@@ -832,7 +818,7 @@ public class VxWorksSymTab_Finder extends GhidraScript {
 
 				case 4: // Local .text
 				case 5: // Global .text  
-					
+
 					doLocalDisassemble(symLoc);
 					createFunction(symLoc, symName);
 					if (getFunctionAt(symLoc) != null) {
